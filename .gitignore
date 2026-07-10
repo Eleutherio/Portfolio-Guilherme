@@ -1,0 +1,120 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.*
+
+# Production and framework build output
+dist/
+dist-ssr/
+build/
+out/
+.output/
+.nitro/
+.vinxi/
+.tanstack/
+.vercel/
+.netlify/
+.wrangler/
+coverage/
+.workspace/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+!.env.template
+*.local
+.dev.vars
+.dev.vars.*
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+*.secret
+secrets.*
+
+# Logs and diagnostics
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+bun-debug.log*
+*.tsbuildinfo
+
+# Package manager caches
+.npm/
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnpm-store/
+.bun/
+
+# Test and tooling caches
+.eslintcache
+.stylelintcache
+.cache/
+.parcel-cache/
+.turbo/
+.rollup.cache/
+playwright-report/
+test-results/
+blob-report/
+.nyc_output/
+
+# Local databases and generated data
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.dump
+*.bak
+*.backup
+
+# Supabase local runtime
+supabase/.branches/
+supabase/.temp/
+supabase/.cache/
+supabase/.env
+supabase/.env.*
+supabase/seed.local.sql
+
+# OS files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Editor and IDE files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.code-workspace
+
+# Misc local artifacts
+*.tmp
+*.temp
+*.pid
+*.seed
+*.pid.lock

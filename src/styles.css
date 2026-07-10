@@ -1,0 +1,402 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource-variable/dm-sans";
+@import "@fontsource-variable/inter";
+
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   MIV — TOKENS DE MARCA
+   Editar apenas este bloco para trocar a identidade visual.
+   Consulte docs/MIV.md para o manual completo.
+   ============================================================ */
+
+
+@theme inline {
+  --font-display: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter Variable", "Inter", "DM Sans Variable", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-hairline: var(--hairline);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-ring: var(--ring);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-foreground);
+  --color-secondary: var(--surface);
+  --color-secondary-foreground: var(--foreground);
+  --color-destructive: oklch(0.62 0.22 27);
+  --color-destructive-foreground: oklch(0.985 0 0);
+  --color-success: var(--success);
+  --color-input: var(--border);
+}
+
+/* Light — Paper & Steel (default) */
+:root,
+.light {
+  --background: oklch(0.985 0.006 262);
+  --surface: oklch(0.97 0.008 262);
+  --surface-2: oklch(0.95 0.010 262);
+  --foreground: oklch(0.18 0.02 265);
+  --muted: oklch(0.96 0.008 262);
+  --muted-foreground: oklch(0.42 0.025 265);
+  --border: oklch(0.88 0.015 268);
+  --hairline: oklch(0.86 0.020 268);
+  --accent: oklch(0.55 0.19 258);
+  --accent-2: oklch(0.55 0.22 295);
+  --accent-soft: oklch(0.94 0.03 265);
+  --accent-foreground: oklch(0.99 0.002 260);
+  --ring: oklch(0.55 0.19 258);
+  --success: oklch(0.62 0.16 152);
+  --gradient-brand: linear-gradient(135deg, oklch(0.55 0.19 258), oklch(0.55 0.22 295));
+  --gradient-brand-soft: linear-gradient(135deg, oklch(0.55 0.19 258 / 0.10), oklch(0.55 0.22 295 / 0.10));
+  --shadow-card: 0 1px 2px oklch(0.15 0.02 265 / 0.04), 0 4px 12px -4px oklch(0.15 0.02 265 / 0.06);
+  --shadow-card-hover: 0 2px 4px oklch(0.15 0.02 265 / 0.06), 0 16px 32px -12px oklch(0.55 0.19 258 / 0.18);
+  --code-syntax-1: oklch(0.55 0.19 258);
+  --code-syntax-2: oklch(0.55 0.22 295);
+  --code-comment: oklch(0.58 0.02 265);
+  --footer-bg: oklch(0.22 0.04 265);
+  --footer-foreground: oklch(0.92 0.010 265);
+  --footer-muted: oklch(0.72 0.020 265);
+  --footer-hairline: oklch(0.32 0.035 265);
+}
+
+
+.dark {
+  --background: oklch(0.14 0.02 265);
+  --surface: oklch(0.19 0.03 265);
+  --surface-2: oklch(0.23 0.035 265);
+  --foreground: oklch(0.97 0.008 265);
+  --muted: oklch(0.22 0.03 265);
+  --muted-foreground: oklch(0.72 0.03 265);
+  --border: oklch(0.30 0.035 265);
+  --hairline: oklch(0.28 0.035 265);
+  --accent: oklch(0.72 0.16 258);
+  --accent-2: oklch(0.72 0.18 295);
+  --accent-soft: oklch(0.30 0.10 265);
+  --accent-foreground: oklch(0.14 0.02 265);
+  --ring: oklch(0.72 0.16 258);
+  --success: oklch(0.75 0.16 152);
+  --gradient-brand: linear-gradient(135deg, oklch(0.72 0.16 258), oklch(0.72 0.18 295));
+  --gradient-brand-soft: linear-gradient(135deg, oklch(0.72 0.16 258 / 0.14), oklch(0.72 0.18 295 / 0.14));
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.30), 0 4px 12px -4px oklch(0 0 0 / 0.45);
+  --shadow-card-hover: 0 2px 6px oklch(0 0 0 / 0.35), 0 20px 40px -14px oklch(0.72 0.16 258 / 0.35);
+  --code-syntax-1: oklch(0.78 0.14 220);
+  --code-syntax-2: oklch(0.80 0.14 295);
+  --code-comment: oklch(0.58 0.02 265);
+  --footer-bg: oklch(0.11 0.02 265);
+  --footer-foreground: oklch(0.94 0.008 265);
+  --footer-muted: oklch(0.68 0.025 265);
+  --footer-hairline: oklch(0.24 0.030 265);
+}
+
+
+/* ============================================================
+   UTILITÁRIOS DERIVADOS
+   Compõem os tokens acima. Não editar para trocar de MIV.
+   ============================================================ */
+
+@layer base {
+  * { border-color: var(--color-border); }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    background-color: var(--color-background);
+    color-scheme: light;
+  }
+  html.dark { color-scheme: dark; }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    transition: background-color 0.35s ease, color 0.35s ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.025em;
+    font-weight: 600;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-accent-foreground);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+
+@utility section-container {
+  width: min(100% - 2rem, 1080px);
+  margin-inline: auto;
+}
+
+@media (min-width: 768px) {
+  .section-container {
+    width: min(100% - 4rem, 1080px);
+  }
+}
+
+
+@utility section-number {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* Constrain body copy to a comfortable reading measure (~640px) */
+@utility prose-measure {
+  max-width: 40rem; /* 640px */
+  line-height: 1.6;
+}
+
+/* Animated hairline divider used between sections (draws on view) */
+@utility hairline-draw {
+  position: relative;
+}
+
+.hairline-draw::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-hairline) 12%, var(--color-hairline) 88%, transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.in-view.hairline-draw::after {
+  transform: scaleX(1);
+}
+
+/* Underline link — ink style */
+@utility link-ink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  color: var(--color-foreground);
+  padding-bottom: 2px;
+  background-image: linear-gradient(var(--color-foreground), var(--color-foreground));
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  transition: background-size 0.4s ease, color 0.2s ease;
+}
+
+.link-ink:hover {
+  background-size: 0% 1px;
+  color: var(--color-accent);
+}
+
+/* Card surface with soft border and shadow, hover accent */
+@utility card-surface {
+  position: relative;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  isolation: isolate;
+  transition: box-shadow 0.35s ease, border-color 0.35s ease, transform 0.35s ease;
+}
+
+.card-surface:hover {
+  border-color: color-mix(in oklab, var(--color-accent) 65%, var(--color-hairline));
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Subtle top accent filet used on content cards (Projects, Timeline, WhyHire) */
+@utility card-surface--accent {
+  position: relative;
+}
+
+.card-surface--accent::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-image: var(--gradient-brand);
+  opacity: 0.35;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.card-surface--accent:hover::before {
+  opacity: 0.7;
+}
+
+
+/* Chip for stack tokens */
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-foreground);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-hairline);
+  border-radius: 999px;
+  transition: color 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.chip:hover {
+  color: var(--color-accent);
+  border-color: color-mix(in oklab, var(--color-accent) 55%, var(--color-hairline));
+}
+
+/* Gradient text */
+@utility text-gradient {
+  background-image: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Buttons — unified typography, inverse-color hover */
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 1.2rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background-image: var(--gradient-brand);
+  background-color: var(--color-accent);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease, background-image 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.btn-primary:hover {
+  background-image: none;
+  background-color: transparent;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+@utility btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 1.2rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  background-color: transparent;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.btn-outline:hover {
+  background-image: var(--gradient-brand);
+  background-color: var(--color-accent);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+
+
+
+@keyframes flag-pop {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  35% {
+    transform: scale(1.12);
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+.animate-flag-pop {
+  animation: flag-pop 0.5s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-flag-pop {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+@keyframes tw-blink {
+  50% { opacity: 0; }
+}
+
+.tw-caret {
+  display: inline-block;
+  margin-left: 1px;
+  font-weight: 400;
+  color: currentColor;
+  animation: tw-blink 1s step-end infinite;
+}
+
+
+
+
+
