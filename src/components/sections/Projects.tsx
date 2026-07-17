@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion, type PanInfo } from "motion/react";
 import { Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, ArrowUpRight, ExternalLink } from "lucide-react";
+import { ArrowUpRight, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { GithubIcon } from "@/components/icons/Brand";
 import { ImageCover } from "@/components/ImageCover";
 import { useApp } from "@/i18n/AppContext";
@@ -104,7 +104,10 @@ function ProjectRow({ p, eager }: { p: LocalizedProjectSummary; eager: boolean }
             </p>
             <ul className="mt-3 space-y-1.5">
               {p.evidence.map((item) => (
-                <li key={item} className="flex items-start gap-2.5 text-sm leading-relaxed text-foreground">
+                <li
+                  key={item}
+                  className="flex items-start gap-2.5 text-sm leading-relaxed text-foreground"
+                >
                   <span aria-hidden="true" className="mt-2 h-px w-3 shrink-0 bg-accent" />
                   <span>{item}</span>
                 </li>
@@ -117,9 +120,7 @@ function ProjectRow({ p, eager }: { p: LocalizedProjectSummary; eager: boolean }
             <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
               {t.projects.stackLabel}
             </p>
-            <p className="mt-2 font-mono text-xs text-foreground">
-              {p.stack.join("  •  ")}
-            </p>
+            <p className="mt-2 font-mono text-xs text-foreground">{p.stack.join("  •  ")}</p>
           </div>
 
           {/* Links */}
@@ -170,8 +171,6 @@ export function Projects() {
 
   const total = projects.length;
   const current = projects[index];
-  const prevLabel = lang === "pt" ? "anterior" : "previous";
-  const nextLabel = lang === "pt" ? "próximo" : "next";
   const goToLabel = (i: number) =>
     lang === "pt" ? `Ir para projeto ${i + 1}` : `Go to project ${i + 1}`;
 
@@ -200,38 +199,11 @@ export function Projects() {
   const exitY = direction === 1 ? -40 : 40;
 
   return (
-    <SectionShell id="projetos" number="02" label={t.projects.title} sublabel={t.projects.subtitle}>
+    <SectionShell id="projetos" number="03" label={t.projects.title} sublabel={t.projects.subtitle}>
       <div className="md:col-span-12">
-        {/* Controles anterior/próximo */}
-        <div className="flex items-center justify-between gap-4 pb-3">
-          <button
-            type="button"
-            onClick={prev}
-            disabled={index === 0}
-            aria-label={prevLabel}
-            className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-          >
-            <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>{prevLabel}</span>
-          </button>
-          <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-            {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
-          </span>
-          <button
-            type="button"
-            onClick={next}
-            disabled={index === total - 1}
-            aria-label={nextLabel}
-            className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-          >
-            <span>{nextLabel}</span>
-            <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
-        </div>
-
         {/* Card + paginação lateral */}
         <div className="relative border-t border-hairline">
-          <div className="relative overflow-hidden pr-6 md:pr-10">
+          <div className="relative overflow-hidden pr-10 md:pr-12">
             <AnimatePresence mode="wait" custom={direction} initial={false}>
               <motion.div
                 key={current.slug}
@@ -250,50 +222,63 @@ export function Projects() {
             </AnimatePresence>
           </div>
 
-          {/* Indicador de paginação (bolinhas) — direita, centralizado */}
-          <div className="pointer-events-none absolute inset-y-0 right-0 hidden items-center md:flex">
-            <ul className="pointer-events-auto flex flex-col gap-2.5">
-              {projects.map((p, i) => (
-                <li key={p.slug}>
-                  <button
-                    type="button"
-                    onClick={() => go(i)}
-                    aria-label={goToLabel(i)}
-                    aria-current={i === index ? "true" : undefined}
-                    className={`block h-1.5 w-1.5 rounded-full transition-all ${
-                      i === index
-                        ? "scale-125 bg-accent"
-                        : "bg-hairline hover:bg-muted-foreground"
-                    }`}
-                  />
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Bolinhas mobile — centralizadas abaixo */}
-          <div className="mt-4 flex items-center justify-center gap-2 md:hidden">
-            {projects.map((p, i) => (
+          {/* Paginação vertical: anterior, total em bolinhas e próximo */}
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center">
+            <div className="pointer-events-auto flex flex-col items-center gap-3">
               <button
-                key={p.slug}
                 type="button"
-                onClick={() => go(i)}
-                aria-label={goToLabel(i)}
-                aria-current={i === index ? "true" : undefined}
-                className={`block h-1.5 w-1.5 rounded-full transition-all ${
-                  i === index
-                    ? "scale-125 bg-accent"
-                    : "bg-hairline hover:bg-muted-foreground"
-                }`}
-              />
-            ))}
+                onClick={prev}
+                disabled={index === 0}
+                aria-label={t.projects.paginationPrev}
+                className="group grid h-8 w-8 shrink-0 place-items-center text-muted-foreground transition-colors hover:text-accent disabled:pointer-events-none disabled:opacity-30"
+              >
+                <ChevronUp
+                  className="h-5 w-5 transition-transform group-hover:-translate-y-0.5"
+                  aria-hidden="true"
+                />
+              </button>
+
+              <ul className="flex flex-col items-center" aria-label={t.projects.title}>
+                {projects.map((p, i) => (
+                  <li key={p.slug} className="flex">
+                    <button
+                      type="button"
+                      onClick={() => go(i)}
+                      aria-label={goToLabel(i)}
+                      aria-current={i === index ? "true" : undefined}
+                      className="group grid h-8 w-8 place-items-center rounded-full"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`block h-1.5 w-1.5 rounded-full transition-all ${
+                          i === index
+                            ? "scale-125 bg-accent"
+                            : "bg-hairline group-hover:bg-muted-foreground"
+                        }`}
+                      />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                type="button"
+                onClick={next}
+                disabled={index === total - 1}
+                aria-label={t.projects.paginationNext}
+                className="group grid h-8 w-8 shrink-0 place-items-center text-muted-foreground transition-colors hover:text-accent disabled:pointer-events-none disabled:opacity-30"
+              >
+                <ChevronDown
+                  className="h-5 w-5 transition-transform group-hover:translate-y-0.5"
+                  aria-hidden="true"
+                />
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-hairline pt-8 sm:flex-row">
-          <p className="prose-measure text-sm text-muted-foreground md:text-base">
-            {ctaText}
-          </p>
+          <p className="prose-measure text-sm text-muted-foreground md:text-base">{ctaText}</p>
           <a href="#contato" className="btn-primary group !py-2.5 !text-[13px]">
             <span>{ctaLabel}</span>
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
