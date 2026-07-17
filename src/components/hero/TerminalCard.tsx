@@ -58,12 +58,12 @@ function highlightStatic(line: string, key: string | number) {
           p.c === "kw"
             ? "text-[var(--code-syntax-1)] font-medium"
             : p.c === "str"
-            ? "text-[var(--code-syntax-2)]"
-            : p.c === "com"
-            ? "text-[color:var(--code-comment)] italic"
-            : p.c === "punc"
-            ? "text-muted-foreground"
-            : "text-foreground";
+              ? "text-[var(--code-syntax-2)]"
+              : p.c === "com"
+                ? "text-[color:var(--code-comment)] italic"
+                : p.c === "punc"
+                  ? "text-muted-foreground"
+                  : "text-foreground";
         return (
           <span key={i} className={cls}>
             {p.t}
@@ -78,13 +78,23 @@ function DynamicString({ value, showCaret }: { value: string; showCaret: boolean
   return (
     <span>
       <span className="text-[var(--code-syntax-2)]">{`"${value}`}</span>
-      {showCaret && <span className="tw-caret" aria-hidden="true">_</span>}
+      {showCaret && (
+        <span className="tw-caret" aria-hidden="true">
+          _
+        </span>
+      )}
       <span className="text-[var(--code-syntax-2)]">{`"`}</span>
     </span>
   );
 }
 
-function renderLine(line: string, key: number, word1: string, word2: string, prefersReduced: boolean) {
+function renderLine(
+  line: string,
+  key: number,
+  word1: string,
+  word2: string,
+  prefersReduced: boolean,
+) {
   const slotRe = /\{\{word1\}\}|\{\{word2\}\}/g;
   if (!slotRe.test(line)) {
     return <div key={key}>{line.length === 0 ? "\u00A0" : highlightStatic(line, key)}</div>;
@@ -106,7 +116,11 @@ function renderLine(line: string, key: number, word1: string, word2: string, pre
       // no quote — just append prefix as static then value plain
       if (beforeSlot.length > 0) parts.push(highlightStatic(beforeSlot, `s${partIdx++}`));
       const value = m[0] === "{{word1}}" ? word1 : word2;
-      parts.push(<span key={`v${partIdx++}`} className="text-[var(--code-syntax-2)]">{value}</span>);
+      parts.push(
+        <span key={`v${partIdx++}`} className="text-[var(--code-syntax-2)]">
+          {value}
+        </span>,
+      );
     } else {
       const prefix = beforeSlot.slice(0, quoteRel);
       if (prefix.length > 0) parts.push(highlightStatic(prefix, `s${partIdx++}`));
@@ -114,13 +128,7 @@ function renderLine(line: string, key: number, word1: string, word2: string, pre
       const afterStart = m.index + m[0].length;
       const closingQuoteIdx = line.indexOf('"', afterStart);
       const value = m[0] === "{{word1}}" ? word1 : word2;
-      parts.push(
-        <DynamicString
-          key={`v${partIdx++}`}
-          value={value}
-          showCaret={!prefersReduced}
-        />,
-      );
+      parts.push(<DynamicString key={`v${partIdx++}`} value={value} showCaret={!prefersReduced} />);
       last = closingQuoteIdx >= 0 ? closingQuoteIdx + 1 : afterStart;
       continue;
     }
@@ -142,7 +150,7 @@ export function TerminalCard() {
   const lines = TEMPLATE.split("\n");
 
   return (
-    <div className="font-mono text-[11.5px] leading-[1.65] md:text-[12.5px]">
+    <div className="font-mono text-[clamp(8px,1vw,12.5px)] leading-[1.65]">
       <div className="grid grid-cols-[2.2rem_minmax(0,1fr)] gap-x-3">
         <div className="select-none text-right text-muted-foreground/60 tabular-nums">
           {lines.map((_, i) => (

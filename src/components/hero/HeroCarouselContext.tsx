@@ -23,7 +23,7 @@ const HeroCarouselCtx = createContext<Ctx | null>(null);
  *  current item index so callers can react on cycle completion. */
 function useTypewriter(items: string[], prefersReduced: boolean) {
   const [idx, setIdx] = useState(0);
-  const [displayed, setDisplayed] = useState<string>(prefersReduced ? items[0] ?? "" : "");
+  const [displayed, setDisplayed] = useState<string>(prefersReduced ? (items[0] ?? "") : "");
   const [phase, setPhase] = useState<Phase>("typing");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -68,7 +68,7 @@ function useTypewriter(items: string[], prefersReduced: boolean) {
   // Reset when language switches items
   useEffect(() => {
     setIdx(0);
-    setDisplayed(prefersReduced ? items[0] ?? "" : "");
+    setDisplayed(prefersReduced ? (items[0] ?? "") : "");
     setPhase("typing");
   }, [items, prefersReduced]);
 
@@ -79,14 +79,16 @@ function useTypewriter(items: string[], prefersReduced: boolean) {
  *  `targetIdx` changes; otherwise stays at the full current word. */
 function useControlledTypewriter(items: string[], targetIdx: number, prefersReduced: boolean) {
   const [currentIdx, setCurrentIdx] = useState(targetIdx);
-  const [displayed, setDisplayed] = useState<string>(prefersReduced ? items[targetIdx] ?? "" : "");
+  const [displayed, setDisplayed] = useState<string>(
+    prefersReduced ? (items[targetIdx] ?? "") : "",
+  );
   const [phase, setPhase] = useState<Phase>("typing");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset on language switch
   useEffect(() => {
     setCurrentIdx(targetIdx);
-    setDisplayed(prefersReduced ? items[targetIdx] ?? "" : "");
+    setDisplayed(prefersReduced ? (items[targetIdx] ?? "") : "");
     setPhase("typing");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, prefersReduced]);
@@ -156,8 +158,8 @@ export function HeroCarouselProvider({ children }: { children: ReactNode }) {
   const { t } = useApp();
   const prefersReduced = usePrefersReducedMotion();
 
-  const c1 = (t.hero as any).carousel1 as string[] | undefined;
-  const c2 = (t.hero as any).carousel2 as string[] | undefined;
+  const c1 = t.hero.carousel1;
+  const c2 = t.hero.carousel2;
   const items1 = c1 && c1.length > 0 ? c1 : ["aplicativo"];
   const items2 = c2 && c2.length > 0 ? c2 : ["arquitetura escalável & tecnologia moderna"];
 
@@ -176,7 +178,11 @@ export function HeroCarouselProvider({ children }: { children: ReactNode }) {
 
   // Kind derived from pillar cycle count
   const targetIdx1 = pillarCycles % items1.length;
-  const { displayed: word1, full: full1 } = useControlledTypewriter(items1, targetIdx1, prefersReduced);
+  const { displayed: word1, full: full1 } = useControlledTypewriter(
+    items1,
+    targetIdx1,
+    prefersReduced,
+  );
 
   return (
     <HeroCarouselCtx.Provider value={{ word1, word2, full1, full2, prefersReduced }}>

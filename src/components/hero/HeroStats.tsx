@@ -8,7 +8,6 @@ import { getCoffeeCount, tapCoffee } from "@/lib/coffee.functions";
 import { useApp } from "@/i18n/AppContext";
 import { CoffeeIcon, type CoffeeState } from "@/components/hero/CoffeeIcon";
 
-
 const VISITOR_KEY = "gf_visitor_id";
 const TAPPED_KEY = "gf_coffee_tapped";
 
@@ -32,12 +31,12 @@ export function HeroStats() {
   const [coffeeState, setCoffeeState] = useState<CoffeeState>("idle");
   const timersRef = useRef<Array<ReturnType<typeof setTimeout>>>([]);
 
-
   useEffect(() => {
     setVisitorId(ensureVisitorId());
     setTapped(window.localStorage.getItem(TAPPED_KEY) === "1");
+    const timers = timersRef.current;
     return () => {
-      timersRef.current.forEach(clearTimeout);
+      timers.forEach(clearTimeout);
     };
   }, []);
 
@@ -87,7 +86,7 @@ export function HeroStats() {
   const coffeeCountValue = coffee.data?.count ?? 0;
 
   return (
-    <div className="flex w-full flex-wrap items-center justify-center gap-x-3.5 gap-y-2 text-[15px] text-muted-foreground">
+    <div className="flex w-full flex-wrap items-center justify-start gap-x-3 gap-y-2 font-mono text-[12px] text-muted-foreground sm:justify-center sm:text-[13px]">
       <a
         href="https://github.com/Eleutherio"
         target="_blank"
@@ -100,12 +99,17 @@ export function HeroStats() {
             {gh.data ? gh.data.total.toLocaleString(locale) : "—"}
           </span>{" "}
           {s.commitsLabel}
-
         </span>
       </a>
-      <span aria-hidden="true" className="text-muted-foreground/50">·</span>
-      <span className="tabular-nums text-foreground">{gh.data ? gh.data.year : new Date().getFullYear()}</span>
-      <span aria-hidden="true" className="text-muted-foreground/50">·</span>
+      <span aria-hidden="true" className="text-muted-foreground/50">
+        ·
+      </span>
+      <span className="tabular-nums text-foreground">
+        {gh.data ? gh.data.year : new Date().getFullYear()}
+      </span>
+      <span aria-hidden="true" className="text-muted-foreground/50">
+        ·
+      </span>
       <button
         type="button"
         onClick={runTapAnimation}
