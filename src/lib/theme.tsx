@@ -16,7 +16,9 @@ function readInitial(): Theme {
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY) as Theme | null;
     if (stored === "dark" || stored === "light") return stored;
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return "light";
 }
 
@@ -35,19 +37,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.classList.toggle("dark", theme === "dark");
     root.classList.toggle("light", theme === "light");
     root.style.colorScheme = theme;
-    try { window.localStorage.setItem(STORAGE_KEY, theme); } catch { /* ignore */ }
+    try {
+      window.localStorage.setItem(STORAGE_KEY, theme);
+    } catch {
+      /* ignore */
+    }
   }, [theme, mounted]);
 
   const setTheme = useCallback((t: Theme) => setThemeState(t), []);
-  const toggle = useCallback(
-    () => setThemeState((t) => (t === "dark" ? "light" : "dark")),
-    [],
-  );
+  const toggle = useCallback(() => setThemeState((t) => (t === "dark" ? "light" : "dark")), []);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggle }}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={{ theme, setTheme, toggle }}>{children}</ThemeContext.Provider>
   );
 }
 

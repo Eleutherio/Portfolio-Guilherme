@@ -31,7 +31,8 @@ export type ProjectSummaryDefinition = {
   locale: Record<Lang, ProjectSummaryLocale>;
 };
 
-export type LocalizedProjectSummary = Omit<ProjectSummaryDefinition, "locale"> & ProjectSummaryLocale;
+export type LocalizedProjectSummary = Omit<ProjectSummaryDefinition, "locale"> &
+  ProjectSummaryLocale;
 
 const buildImage = (fallback: string): ResponsiveImage => ({
   fallback,
@@ -82,11 +83,7 @@ export const projectSummaries: ProjectSummaryDefinition[] = [
         projectType: "LMS platform / Gamified training system",
         oneLineSummary:
           "Gamified corporate training platform with authentication, learning paths, progress tracking and admin-oriented flows.",
-        evidence: [
-          "Authenticated user flow",
-          "Backend/API separation",
-          "Progress tracking logic",
-        ],
+        evidence: ["Authenticated user flow", "Backend/API separation", "Progress tracking logic"],
       },
     },
   },
@@ -134,11 +131,7 @@ export const projectSummaries: ProjectSummaryDefinition[] = [
         projectType: "Landing page / Local 24/7 service",
         oneLineSummary:
           "24/7 locksmith landing page focused on turning urgent searches into immediate contact.",
-        evidence: [
-          "Serverless contact API",
-          "Optimized local SEO",
-          "Performance and mobile-first",
-        ],
+        evidence: ["Serverless contact API", "Optimized local SEO", "Performance and mobile-first"],
       },
     },
   },
@@ -166,11 +159,7 @@ export const projectSummaries: ProjectSummaryDefinition[] = [
         projectType: "Landing page 2-step / Marca pessoal",
         oneLineSummary:
           "Site de marca pessoal com prova social, arquitetura de conversão e formulário protegido.",
-        evidence: [
-          "Design system reutilizável",
-          "SEO técnico on-page",
-          "Formulário com anti-spam",
-        ],
+        evidence: ["Design system reutilizável", "SEO técnico on-page", "Formulário com anti-spam"],
       },
       en: {
         category: "2-step landing page",
@@ -186,11 +175,7 @@ export const projectSummaries: ProjectSummaryDefinition[] = [
         projectType: "2-step landing page / Personal brand",
         oneLineSummary:
           "Personal brand site with social proof, conversion architecture and a protected contact form.",
-        evidence: [
-          "Reusable design system",
-          "On-page technical SEO",
-          "Anti-spam contact form",
-        ],
+        evidence: ["Reusable design system", "On-page technical SEO", "Anti-spam contact form"],
       },
     },
   },
@@ -198,7 +183,10 @@ export const projectSummaries: ProjectSummaryDefinition[] = [
 
 export const getProjectCasePath = (slug: ProjectCaseSlug) => `/projetos/${slug}`;
 
-export const localizeProjectSummary = (project: ProjectSummaryDefinition, lang: Lang): LocalizedProjectSummary => ({
+export const localizeProjectSummary = (
+  project: ProjectSummaryDefinition,
+  lang: Lang,
+): LocalizedProjectSummary => ({
   id: project.id,
   slug: project.slug,
   coverSrc: project.coverSrc,
@@ -213,4 +201,5 @@ export const localizeProjectSummary = (project: ProjectSummaryDefinition, lang: 
 export const getLocalizedProjectSummaries = (lang: Lang): LocalizedProjectSummary[] =>
   projectSummaries.map((project) => localizeProjectSummary(project, lang));
 
-export const findProjectSummaryBySlug = (slug: string) => projectSummaries.find((project) => project.slug === slug);
+export const findProjectSummaryBySlug = (slug: string) =>
+  projectSummaries.find((project) => project.slug === slug);

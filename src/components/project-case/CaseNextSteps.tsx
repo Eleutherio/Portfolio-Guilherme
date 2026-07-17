@@ -87,12 +87,7 @@ export function CaseNextSteps({ prev, next, t }: CaseNextStepsProps) {
                   viewport={{ once: true, margin: "-40px" }}
                   transition={{ duration: 0.5, delay: i * 0.05 }}
                 >
-                  <Link
-                    to={item.to}
-                    params={item.params}
-                    hash={item.hash}
-                    className="group block"
-                  >
+                  <Link to={item.to} params={item.params} hash={item.hash} className="group block">
                     {content}
                   </Link>
                 </motion.li>

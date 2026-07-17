@@ -66,7 +66,11 @@ export function useLiveMetrics() {
           }
         }
       });
-      po.observe({ type: "event", buffered: true, durationThreshold: 16 } as PerformanceObserverInit);
+      po.observe({
+        type: "event",
+        buffered: true,
+        durationThreshold: 16,
+      } as PerformanceObserverInit);
       return () => po.disconnect();
     } catch {
       /* unsupported */
@@ -79,7 +83,9 @@ export function useLiveMetrics() {
     let total = 0;
     try {
       const po = new PerformanceObserver((list) => {
-        for (const e of list.getEntries() as Array<PerformanceEntry & { value: number; hadRecentInput: boolean }>) {
+        for (const e of list.getEntries() as Array<
+          PerformanceEntry & { value: number; hadRecentInput: boolean }
+        >) {
           if (!e.hadRecentInput) total += e.value;
         }
         setCls(total);
@@ -184,7 +190,10 @@ export function useLiveMetrics() {
     uptime,
     ping: ping != null ? `${Math.round(ping)} ms` : "—",
     fps: fps != null ? `${fps} fps` : "—",
-    region: typeof navigator !== "undefined" && navigator.language ? navigator.language.toLowerCase() : "edge",
+    region:
+      typeof navigator !== "undefined" && navigator.language
+        ? navigator.language.toLowerCase()
+        : "edge",
   };
 
   return { metrics, status };

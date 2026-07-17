@@ -86,12 +86,19 @@ function DiscoveryArt({ reduced }: { reduced: boolean }) {
   );
 }
 
-
 function BuildArt({ reduced }: { reduced: boolean }) {
   // Linhas "de código" — animam pathLength em sequência para simular digitação.
   // Editor (topo): linhas azuis restritas ao card cinza.
   // Celular (base): linhas accent-2 dentro da silhueta do celular.
-  const codeLines: Array<{ key: string; x1: number; y1: number; x2: number; y2: number; delay: number; accent?: boolean }> = [
+  const codeLines: Array<{
+    key: string;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    delay: number;
+    accent?: boolean;
+  }> = [
     { key: "l1", x1: 94, y1: 70, x2: 150, y2: 70, delay: 0 },
     { key: "l2", x1: 94, y1: 82, x2: 140, y2: 82, delay: 0.55 },
     { key: "l3", x1: 94, y1: 94, x2: 145, y2: 94, delay: 1.1 },

@@ -88,7 +88,9 @@ export function ThanksTypewriter() {
       aria-live="polite"
     >
       <span>{displayed}</span>
-      <span className="tw-caret" aria-hidden="true">_</span>
+      <span className="tw-caret" aria-hidden="true">
+        _
+      </span>
     </p>
   );
 }

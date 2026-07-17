@@ -6,14 +6,18 @@ export type CoffeeState = "idle" | "filling" | "tipping";
  * Small coffee mug SVG with animated steam (idle) and a fill→tip sequence on tap.
  * Dimensions match a ~14px inline glyph.
  */
-export function CoffeeIcon({ state = "idle", className }: { state?: CoffeeState; className?: string }) {
+export function CoffeeIcon({
+  state = "idle",
+  className,
+}: {
+  state?: CoffeeState;
+  className?: string;
+}) {
   const reduced = useReducedMotion();
 
   // Animate rotation of the whole mug when tipping
   const cupTransform =
-    state === "tipping" && !reduced
-      ? { rotate: -22, x: 1 }
-      : { rotate: 0, x: 0 };
+    state === "tipping" && !reduced ? { rotate: -22, x: 1 } : { rotate: 0, x: 0 };
 
   // Coffee liquid height inside cup (baseline y=13, max top y=6 → h=7)
   const targetH = state === "idle" ? 3 : state === "filling" ? 7 : 0;

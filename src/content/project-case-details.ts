@@ -272,7 +272,10 @@ const projectCaseDetails: ProjectCaseDefinition[] = [
   },
 ];
 
-export const getLocalizedProjectCaseBySlug = (slug: string, lang: Lang): LocalizedProjectCase | undefined => {
+export const getLocalizedProjectCaseBySlug = (
+  slug: string,
+  lang: Lang,
+): LocalizedProjectCase | undefined => {
   const summary = getLocalizedProjectSummaries(lang).find((project) => project.slug === slug);
   const detail = projectCaseDetails.find((project) => project.slug === slug);
 

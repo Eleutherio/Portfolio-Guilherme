@@ -56,9 +56,7 @@ export function SectionShell({ id, number, label, sublabel, lead, children, head
               {label}
             </h2>
             {lead ? (
-              <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-                {lead}
-              </p>
+              <p className="mt-4 text-base leading-relaxed text-muted-foreground">{lead}</p>
             ) : null}
           </motion.header>
         )}
@@ -68,4 +66,3 @@ export function SectionShell({ id, number, label, sublabel, lead, children, head
     </section>
   );
 }
-

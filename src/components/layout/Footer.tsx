@@ -4,11 +4,7 @@ import { GithubIcon, LinkedinIcon } from "@/components/icons/Brand";
 import { ThanksTypewriter } from "@/components/layout/ThanksTypewriter";
 import { useApp } from "@/i18n/AppContext";
 import { useLiveMetrics } from "@/lib/useLiveMetrics";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 function useClock(locale: string) {
   const [time, setTime] = useState<string>("");
@@ -36,17 +32,19 @@ export function Footer() {
   return (
     <footer
       className="border-t"
-      style={{
-        backgroundColor: "var(--footer-bg)",
-        color: "var(--footer-foreground)",
-        borderColor: "var(--footer-hairline)",
-        // Scope-local overrides so descendant tokens inherit the footer palette
-        ["--foreground" as string]: "var(--footer-foreground)",
-        ["--muted-foreground" as string]: "var(--footer-muted)",
-        ["--hairline" as string]: "var(--footer-hairline)",
-        ["--border" as string]: "var(--footer-hairline)",
-        ["--surface" as string]: "color-mix(in oklab, var(--footer-bg) 85%, white 15%)",
-      } as CSSProperties}
+      style={
+        {
+          backgroundColor: "var(--footer-bg)",
+          color: "var(--footer-foreground)",
+          borderColor: "var(--footer-hairline)",
+          // Scope-local overrides so descendant tokens inherit the footer palette
+          ["--foreground" as string]: "var(--footer-foreground)",
+          ["--muted-foreground" as string]: "var(--footer-muted)",
+          ["--hairline" as string]: "var(--footer-hairline)",
+          ["--border" as string]: "var(--footer-hairline)",
+          ["--surface" as string]: "color-mix(in oklab, var(--footer-bg) 85%, white 15%)",
+        } as CSSProperties
+      }
       data-scroll-lock
     >
       <div className="section-container grid grid-cols-1 gap-8 py-12 md:py-16 lg:grid-cols-[1.4fr_auto_auto] lg:items-start">

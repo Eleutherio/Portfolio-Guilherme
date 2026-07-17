@@ -108,7 +108,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify(PERSON_JSONLD),
       },
     ],
-
   }),
   shellComponent: RootShell,
   component: RootComponent,

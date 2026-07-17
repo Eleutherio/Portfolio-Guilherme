@@ -52,7 +52,6 @@ export function NextSteps() {
                     {content}
                   </a>
                 </motion.li>
-
               );
             })}
           </ul>

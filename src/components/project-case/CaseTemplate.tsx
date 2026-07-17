@@ -167,7 +167,15 @@ function Meta({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
-function CaseBlock({ number, title, children }: { number: string; title: string; children: React.ReactNode }) {
+function CaseBlock({
+  number,
+  title,
+  children,
+}: {
+  number: string;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="border-b border-hairline">
       <div className="section-container grid grid-cols-1 gap-10 py-16 md:grid-cols-12 md:gap-8 md:py-24">

@@ -30,9 +30,7 @@ export function WhyHire() {
               <h4 className="mt-3 font-display text-lg font-medium leading-snug text-foreground">
                 {r.title}
               </h4>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {r.text}
-              </p>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{r.text}</p>
             </motion.article>
           ))}
         </div>
