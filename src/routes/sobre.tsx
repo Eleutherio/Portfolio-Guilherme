@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { About } from "@/components/sections/About";
 import { NextSteps } from "@/components/sections/NextSteps";
 import { useApp } from "@/i18n/AppContext";
+import profileImg from "@/assets/guilherme-profile.jpg";
 
 const TITLE = "Sobre — Guilherme Ferreira Eleutherio";
 const DESCRIPTION =
@@ -20,7 +21,10 @@ export const Route = createFileRoute("/sobre")({
       { property: "og:type", content: "profile" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "/sobre" }],
+    links: [
+      { rel: "canonical", href: "/sobre" },
+      { rel: "preload", as: "image", href: profileImg, fetchpriority: "high" },
+    ],
   }),
   component: SobrePage,
 });

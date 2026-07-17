@@ -2,10 +2,10 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CaseTemplate } from "@/components/project-case/CaseTemplate";
-import { getProjectCaseDefinitionBySlug } from "@/content/project-case-details";
 
 export const Route = createFileRoute("/projetos/$slug")({
-  loader: ({ params }) => {
+  loader: async ({ params }) => {
+    const { getProjectCaseDefinitionBySlug } = await import("@/content/project-case-details");
     const data = getProjectCaseDefinitionBySlug(params.slug);
     if (!data) throw notFound();
     return data;
