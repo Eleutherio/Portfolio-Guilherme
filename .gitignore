@@ -118,3 +118,7 @@ $RECYCLE.BIN/
 *.pid
 *.seed
 *.pid.lock
+
+# Local documentation drafts
+docs/MIV.md
+docs/AUDITORIA_COMPLETA_*.md
