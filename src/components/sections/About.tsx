@@ -8,12 +8,7 @@ export function About() {
   const { t } = useApp();
 
   return (
-    <SectionShell
-      id="sobre"
-      number="05"
-      label={t.about.title}
-      sublabel={t.about.subtitle}
-    >
+    <SectionShell id="sobre" number="01" label={t.about.title} sublabel={t.about.subtitle}>
       {/* Wrapper to vertically center image and text on desktop */}
       <div className="contents md:col-span-12 md:grid md:grid-cols-12 md:items-center md:gap-8">
         {/* Portrait */}
@@ -105,8 +100,6 @@ export function About() {
           )}
         </div>
       </div>
-
-
     </SectionShell>
   );
 }

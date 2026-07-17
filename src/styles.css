@@ -22,10 +22,10 @@ html {
    Consulte docs/MIV.md para o manual completo.
    ============================================================ */
 
-
 @theme inline {
   --font-display: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Inter Variable", "Inter", "DM Sans Variable", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:
+    "Inter Variable", "Inter", "DM Sans Variable", "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
 
   --radius-sm: 4px;
@@ -66,12 +66,12 @@ html {
 .light {
   --background: oklch(0.985 0.006 262);
   --surface: oklch(0.97 0.008 262);
-  --surface-2: oklch(0.95 0.010 262);
+  --surface-2: oklch(0.95 0.01 262);
   --foreground: oklch(0.18 0.02 265);
   --muted: oklch(0.96 0.008 262);
   --muted-foreground: oklch(0.42 0.025 265);
   --border: oklch(0.88 0.015 268);
-  --hairline: oklch(0.86 0.020 268);
+  --hairline: oklch(0.86 0.02 268);
   --accent: oklch(0.55 0.19 258);
   --accent-2: oklch(0.55 0.22 295);
   --accent-soft: oklch(0.94 0.03 265);
@@ -79,18 +79,22 @@ html {
   --ring: oklch(0.55 0.19 258);
   --success: oklch(0.62 0.16 152);
   --gradient-brand: linear-gradient(135deg, oklch(0.55 0.19 258), oklch(0.55 0.22 295));
-  --gradient-brand-soft: linear-gradient(135deg, oklch(0.55 0.19 258 / 0.10), oklch(0.55 0.22 295 / 0.10));
+  --gradient-brand-soft: linear-gradient(
+    135deg,
+    oklch(0.55 0.19 258 / 0.1),
+    oklch(0.55 0.22 295 / 0.1)
+  );
   --shadow-card: 0 1px 2px oklch(0.15 0.02 265 / 0.04), 0 4px 12px -4px oklch(0.15 0.02 265 / 0.06);
-  --shadow-card-hover: 0 2px 4px oklch(0.15 0.02 265 / 0.06), 0 16px 32px -12px oklch(0.55 0.19 258 / 0.18);
+  --shadow-card-hover:
+    0 2px 4px oklch(0.15 0.02 265 / 0.06), 0 16px 32px -12px oklch(0.55 0.19 258 / 0.18);
   --code-syntax-1: oklch(0.55 0.19 258);
   --code-syntax-2: oklch(0.55 0.22 295);
   --code-comment: oklch(0.58 0.02 265);
   --footer-bg: oklch(0.22 0.04 265);
-  --footer-foreground: oklch(0.92 0.010 265);
-  --footer-muted: oklch(0.72 0.020 265);
+  --footer-foreground: oklch(0.92 0.01 265);
+  --footer-muted: oklch(0.72 0.02 265);
   --footer-hairline: oklch(0.32 0.035 265);
 }
-
 
 .dark {
   --background: oklch(0.14 0.02 265);
@@ -99,27 +103,30 @@ html {
   --foreground: oklch(0.97 0.008 265);
   --muted: oklch(0.22 0.03 265);
   --muted-foreground: oklch(0.72 0.03 265);
-  --border: oklch(0.30 0.035 265);
+  --border: oklch(0.3 0.035 265);
   --hairline: oklch(0.28 0.035 265);
   --accent: oklch(0.72 0.16 258);
   --accent-2: oklch(0.72 0.18 295);
-  --accent-soft: oklch(0.30 0.10 265);
+  --accent-soft: oklch(0.3 0.1 265);
   --accent-foreground: oklch(0.14 0.02 265);
   --ring: oklch(0.72 0.16 258);
   --success: oklch(0.75 0.16 152);
   --gradient-brand: linear-gradient(135deg, oklch(0.72 0.16 258), oklch(0.72 0.18 295));
-  --gradient-brand-soft: linear-gradient(135deg, oklch(0.72 0.16 258 / 0.14), oklch(0.72 0.18 295 / 0.14));
-  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.30), 0 4px 12px -4px oklch(0 0 0 / 0.45);
+  --gradient-brand-soft: linear-gradient(
+    135deg,
+    oklch(0.72 0.16 258 / 0.14),
+    oklch(0.72 0.18 295 / 0.14)
+  );
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 4px 12px -4px oklch(0 0 0 / 0.45);
   --shadow-card-hover: 0 2px 6px oklch(0 0 0 / 0.35), 0 20px 40px -14px oklch(0.72 0.16 258 / 0.35);
   --code-syntax-1: oklch(0.78 0.14 220);
-  --code-syntax-2: oklch(0.80 0.14 295);
+  --code-syntax-2: oklch(0.8 0.14 295);
   --code-comment: oklch(0.58 0.02 265);
   --footer-bg: oklch(0.11 0.02 265);
   --footer-foreground: oklch(0.94 0.008 265);
   --footer-muted: oklch(0.68 0.025 265);
-  --footer-hairline: oklch(0.24 0.030 265);
+  --footer-hairline: oklch(0.24 0.03 265);
 }
-
 
 /* ============================================================
    UTILITÁRIOS DERIVADOS
@@ -127,7 +134,9 @@ html {
    ============================================================ */
 
 @layer base {
-  * { border-color: var(--color-border); }
+  * {
+    border-color: var(--color-border);
+  }
 
   html {
     -webkit-font-smoothing: antialiased;
@@ -136,17 +145,26 @@ html {
     background-color: var(--color-background);
     color-scheme: light;
   }
-  html.dark { color-scheme: dark; }
+  html.dark {
+    color-scheme: dark;
+  }
 
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     font-feature-settings: "ss01", "cv11";
-    transition: background-color 0.35s ease, color 0.35s ease;
+    transition:
+      background-color 0.35s ease,
+      color 0.35s ease;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     letter-spacing: -0.025em;
     font-weight: 600;
@@ -164,7 +182,6 @@ html {
   }
 }
 
-
 @utility section-container {
   width: min(100% - 2rem, 1080px);
   margin-inline: auto;
@@ -175,7 +192,6 @@ html {
     width: min(100% - 4rem, 1080px);
   }
 }
-
 
 @utility section-number {
   font-family: var(--font-mono);
@@ -201,7 +217,13 @@ html {
   inset-inline: 0;
   bottom: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--color-hairline) 12%, var(--color-hairline) 88%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-hairline) 12%,
+    var(--color-hairline) 88%,
+    transparent
+  );
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -223,7 +245,9 @@ html {
   background-position: 0 100%;
   background-repeat: no-repeat;
   background-size: 100% 1px;
-  transition: background-size 0.4s ease, color 0.2s ease;
+  transition:
+    background-size 0.4s ease,
+    color 0.2s ease;
 }
 
 .link-ink:hover {
@@ -240,7 +264,10 @@ html {
   box-shadow: var(--shadow-card);
   overflow: hidden;
   isolation: isolate;
-  transition: box-shadow 0.35s ease, border-color 0.35s ease, transform 0.35s ease;
+  transition:
+    box-shadow 0.35s ease,
+    border-color 0.35s ease,
+    transform 0.35s ease;
 }
 
 .card-surface:hover {
@@ -271,7 +298,6 @@ html {
   opacity: 0.7;
 }
 
-
 /* Chip for stack tokens */
 @utility chip {
   display: inline-flex;
@@ -286,7 +312,10 @@ html {
   background-color: var(--color-surface);
   border: 1px solid var(--color-hairline);
   border-radius: 999px;
-  transition: color 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease,
+    background-color 0.25s ease;
 }
 
 .chip:hover {
@@ -306,7 +335,9 @@ html {
 @utility btn-primary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.55rem;
+  min-height: 44px;
   padding: 0.7rem 1.2rem;
   font-family: var(--font-mono);
   font-size: 11px;
@@ -318,7 +349,12 @@ html {
   background-color: var(--color-accent);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  transition: background-color 0.2s ease, background-image 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    background-image 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 .btn-primary:hover {
   background-image: none;
@@ -330,7 +366,9 @@ html {
 @utility btn-outline {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.55rem;
+  min-height: 44px;
   padding: 0.7rem 1.2rem;
   font-family: var(--font-mono);
   font-size: 11px;
@@ -341,7 +379,11 @@ html {
   background-color: transparent;
   border: 1px solid var(--color-accent);
   border-radius: var(--radius-sm);
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 .btn-outline:hover {
   background-image: var(--gradient-brand);
@@ -349,9 +391,6 @@ html {
   color: #ffffff;
   border-color: transparent;
 }
-
-
-
 
 @keyframes flag-pop {
   0% {
@@ -373,7 +412,9 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
@@ -385,7 +426,9 @@ html {
 }
 
 @keyframes tw-blink {
-  50% { opacity: 0; }
+  50% {
+    opacity: 0;
+  }
 }
 
 .tw-caret {
@@ -395,8 +438,3 @@ html {
   color: currentColor;
   animation: tw-blink 1s step-end infinite;
 }
-
-
-
-
-

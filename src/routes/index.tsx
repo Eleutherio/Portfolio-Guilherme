@@ -1,19 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { lazy, Suspense } from "react";
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import { BackToTop } from "@/components/layout/BackToTop";
 import { useApp } from "@/i18n/AppContext";
 
 import { Hero } from "@/components/sections/Hero";
-import { ProofBar } from "@/components/hero/ProofBar";
-import { Projects } from "@/components/sections/Projects";
-import { Skills } from "@/components/sections/Skills";
-import { Timeline } from "@/components/sections/Timeline";
-import { WhyHire } from "@/components/sections/WhyHire";
-import { Contact } from "@/components/sections/Contact";
 
-
-import profileImg from "@/assets/guilherme-profile.jpg";
+const About = lazy(() => import("@/components/sections/About").then((m) => ({ default: m.About })));
+const Skills = lazy(() =>
+  import("@/components/sections/Skills").then((m) => ({ default: m.Skills })),
+);
+const Projects = lazy(() =>
+  import("@/components/sections/Projects").then((m) => ({ default: m.Projects })),
+);
+const Timeline = lazy(() =>
+  import("@/components/sections/Timeline").then((m) => ({ default: m.Timeline })),
+);
+const Contact = lazy(() =>
+  import("@/components/sections/Contact").then((m) => ({ default: m.Contact })),
+);
+const Footer = lazy(() =>
+  import("@/components/layout/Footer").then((m) => ({ default: m.Footer })),
+);
+const BackToTop = lazy(() =>
+  import("@/components/layout/BackToTop").then((m) => ({ default: m.BackToTop })),
+);
 
 const TITLE = "Guilherme Ferreira Eleutherio — Full-stack Developer";
 const DESCRIPTION =
@@ -32,11 +42,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESCRIPTION },
     ],
-    links: [
-      { rel: "canonical", href: "/" },
-      // Preload the LCP-candidate portrait so it decodes early.
-      { rel: "preload", as: "image", href: profileImg, fetchpriority: "high" },
-    ],
+    links: [{ rel: "canonical", href: "/" }],
   }),
   component: Index,
 });
@@ -54,17 +60,21 @@ function Index() {
       <Header />
       <div className="h-[64px] shrink-0" aria-hidden="true" />
       <main id="main" className="flex-1 overflow-x-clip [&_section]:scroll-mt-20">
-        <div id="home"><Hero /></div>
-        <ProofBar />
-        <Skills />
-        <Projects />
-        <Timeline />
-        <WhyHire />
-        <Contact />
-
+        <div id="home">
+          <Hero />
+        </div>
+        <Suspense fallback={null}>
+          <About />
+          <Timeline />
+          <Projects />
+          <Skills />
+          <Contact />
+        </Suspense>
       </main>
-      <Footer />
-      <BackToTop />
+      <Suspense fallback={null}>
+        <Footer />
+        <BackToTop />
+      </Suspense>
     </div>
   );
 }

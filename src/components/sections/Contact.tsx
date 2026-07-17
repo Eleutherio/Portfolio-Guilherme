@@ -15,7 +15,10 @@ const buildSchema = (lang: "pt" | "en") => {
     name: z
       .string()
       .trim()
-      .min(2, msg("Informe seu nome (mín. 2 caracteres).", "Please enter your name (min. 2 chars)."))
+      .min(
+        2,
+        msg("Informe seu nome (mín. 2 caracteres).", "Please enter your name (min. 2 chars)."),
+      )
       .max(100, msg("Nome muito longo.", "Name is too long.")),
     email: z
       .string()
@@ -25,8 +28,14 @@ const buildSchema = (lang: "pt" | "en") => {
     message: z
       .string()
       .trim()
-      .min(10, msg("Mensagem muito curta (mín. 10 caracteres).", "Message too short (min. 10 chars)."))
-      .max(1000, msg("Mensagem muito longa (máx. 1000 caracteres).", "Message too long (max 1000 chars).")),
+      .min(
+        10,
+        msg("Mensagem muito curta (mín. 10 caracteres).", "Message too short (min. 10 chars)."),
+      )
+      .max(
+        1000,
+        msg("Mensagem muito longa (máx. 1000 caracteres).", "Message too long (max 1000 chars)."),
+      ),
   });
 };
 
@@ -75,8 +84,7 @@ export function Contact() {
 
   const inputCls =
     "w-full border-0 border-b border-border bg-transparent px-0 py-3 text-base text-foreground placeholder:text-muted-foreground transition-colors focus:border-accent focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-[invalid=true]:border-destructive";
-  const labelCls =
-    "block font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground";
+  const labelCls = "block font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground";
   const errorCls = "mt-1.5 font-mono text-[11px] text-destructive";
 
   const primaryLinks = [
@@ -102,15 +110,12 @@ export function Contact() {
 
   const primaryLabel = lang === "pt" ? "Contato principal" : "Primary contact";
   const formLabel = lang === "pt" ? "Ou envie uma mensagem" : "Or send a message";
-  const fallbackLabel =
-    lang === "pt"
-      ? "Preferiu por e-mail? "
-      : "Prefer email instead? ";
+  const fallbackLabel = lang === "pt" ? "Preferiu por e-mail? " : "Prefer email instead? ";
 
   return (
     <SectionShell
       id="contato"
-      number="06"
+      number="05"
       label={t.contact.subtitle || t.contact.title}
       sublabel={t.contact.title}
     >
@@ -256,7 +261,9 @@ export function Contact() {
             {status === "submitting" ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             ) : null}
-            <span>{status === "submitting" ? t.contact.form.submitting : t.contact.form.submit}</span>
+            <span>
+              {status === "submitting" ? t.contact.form.submitting : t.contact.form.submit}
+            </span>
             {status !== "submitting" && (
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             )}

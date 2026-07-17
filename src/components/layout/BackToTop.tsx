@@ -22,7 +22,7 @@ export function BackToTop() {
           type="button"
           data-back-to-top
           onClick={() => window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" })}
-          aria-label={(t.toggles as any).backToTop ?? "Voltar ao topo"}
+          aria-label={t.toggles.backToTop}
           initial={reduced ? { opacity: 0 } : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           exit={reduced ? { opacity: 0 } : { opacity: 0, y: 12 }}

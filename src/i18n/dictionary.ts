@@ -5,6 +5,7 @@ export const dictionary = {
     nav: {
       sobre: "sobre",
       projetos: "projetos",
+      processo: "processo",
       tecnologias: "tecnologias",
       trajetoria: "trajetória",
       contratar: "contratar",
@@ -16,9 +17,11 @@ export const dictionary = {
       hudLabel: "Hardware & Software",
       role: "Desenvolvedor Full Stack",
       promptGreeting: "olá — eu sou",
-      headline: "Olá, seja bem-vindo(a),\nEu me chamo Guilherme Eleuthério.\nDesenvolvedor de Software e profissional de TI.",
+      headline:
+        "Olá, seja bem-vindo(a),\nEu me chamo Guilherme Eleuthério.\nDesenvolvedor de Software e profissional de TI.",
       headlineHighlight: "Guilherme Eleuthério",
-      tagline: "Construo aplicações full-stack com React, TypeScript, Django e PostgreSQL, unindo pensamento de produto, arquitetura limpa e entrega prática.",
+      tagline:
+        "Construo aplicações full-stack com React, TypeScript, Django e PostgreSQL, unindo pensamento de produto, arquitetura limpa e entrega prática.",
       carousel1: ["sistemas", "websites", "aplicativos"],
       taglinePrefix: "Construo",
       taglineJoin: "com",
@@ -61,13 +64,28 @@ export const dictionary = {
       facts: [
         { label: "experiência", value: "+4 anos" },
         { label: "Localizado em", value: "Porto Alegre - RS, Brazil" },
-        { label: "Trabalhos", value: "Desenvolvimento de aplicativos · Websites · Hardware & Software" },
+        {
+          label: "Trabalhos",
+          value: "Desenvolvimento de aplicativos · Websites · Hardware & Software",
+        },
         { label: "disponibilidade", value: "Trabalho remoto & Híbrido" },
       ],
       process: [
-        { label: "descoberta", title: "Entender antes de codar", text: "Mapeio o problema real, restrições e o que já existe. Decisão técnica só depois de clareza sobre o produto." },
-        { label: "execução", title: "Iteração curta e revisão", text: "Trabalho em ciclos pequenos, com commits objetivos, tipos fortes e revisão de código como parte do fluxo — não como etapa final." },
-        { label: "entrega", title: "Deploy sem drama", text: "Automação, observabilidade básica e documentação enxuta para que o próximo dev (às vezes eu mesmo) entenda em minutos." },
+        {
+          label: "descoberta",
+          title: "Entender antes de codar",
+          text: "Mapeio o problema real, restrições e o que já existe. Decisão técnica só depois de clareza sobre o produto.",
+        },
+        {
+          label: "execução",
+          title: "Iteração curta e revisão",
+          text: "Trabalho em ciclos pequenos, com commits objetivos, tipos fortes e revisão de código como parte do fluxo — não como etapa final.",
+        },
+        {
+          label: "entrega",
+          title: "Deploy sem drama",
+          text: "Automação, observabilidade básica e documentação enxuta para que o próximo dev (às vezes eu mesmo) entenda em minutos.",
+        },
       ],
 
       p1: "Sou desenvolvedor full-stack em formação, unindo experiência prática de suporte de TI, estudos em Análise e Desenvolvimento de Sistemas e projetos web hands-on.",
@@ -80,8 +98,6 @@ export const dictionary = {
         "React + TanStack Start",
       ],
       backHome: "voltar para o início",
-
-
     },
 
     projects: {
@@ -156,13 +172,15 @@ export const dictionary = {
         {
           kicker: "descoberta",
           title: "Entrevista e levantamento",
-          description: "Entendo o contexto, objetivos e requisitos para alinhar expectativas e prioridades.",
+          description:
+            "Entendo o contexto, objetivos e requisitos para alinhar expectativas e prioridades.",
           tags: ["Escuta ativa", "Requisitos", "Análise"],
         },
         {
           kicker: "construção",
           title: "Validação e produção",
-          description: "Prototipo, valido e desenvolvo a solução com foco em qualidade e performance.",
+          description:
+            "Prototipo, valido e desenvolvo a solução com foco em qualidade e performance.",
           tags: ["Protótipo", "Desenvolvimento", "Testes"],
         },
         {
@@ -297,9 +315,21 @@ export const dictionary = {
       titleC: "",
       titleD: "",
       reasons: [
-        { label: "código & arquitetura", title: "Código sustentável", text: "Priorizo estrutura clara, nomes previsíveis e componentes reutilizáveis para que o projeto evolua sem virar frágil." },
-        { label: "produto & processo", title: "Visão de produto e processo", text: "Penso além da tela: fluxo de usuário, casos-limite, documentação, manutenibilidade e restrições de entrega." },
-        { label: "IA no dia a dia", title: "Uso responsável de IA", text: "Uso IA para acelerar pesquisa, refactor e validação, mantendo ownership técnico sobre as decisões finais." },
+        {
+          label: "código & arquitetura",
+          title: "Código sustentável",
+          text: "Priorizo estrutura clara, nomes previsíveis e componentes reutilizáveis para que o projeto evolua sem virar frágil.",
+        },
+        {
+          label: "produto & processo",
+          title: "Visão de produto e processo",
+          text: "Penso além da tela: fluxo de usuário, casos-limite, documentação, manutenibilidade e restrições de entrega.",
+        },
+        {
+          label: "IA no dia a dia",
+          title: "Uso responsável de IA",
+          text: "Uso IA para acelerar pesquisa, refactor e validação, mantendo ownership técnico sobre as decisões finais.",
+        },
       ],
       aboutCta: "Sobre mim",
     },
@@ -372,18 +402,24 @@ export const dictionary = {
         { label: "Voltar ao início", href: "/", meta: "home" },
         { label: "Entrar em contato", href: "/#contato", meta: "contato" },
       ],
-
     },
     aboutTeaser: {
       question: "Quer conhecer a pessoa por trás do código?",
       cta: "Ler minha história",
     },
-    toggles: { langLabel: "Mudar idioma", themeLabel: "Mudar tema", themeToLight: "Mudar para tema claro", themeToDark: "Mudar para tema escuro", backToTop: "Voltar ao topo" },
+    toggles: {
+      langLabel: "Mudar idioma",
+      themeLabel: "Mudar tema",
+      themeToLight: "Mudar para tema claro",
+      themeToDark: "Mudar para tema escuro",
+      backToTop: "Voltar ao topo",
+    },
   },
   en: {
     nav: {
       sobre: "about",
       projetos: "projects",
+      processo: "process",
       tecnologias: "stack",
       trajetoria: "journey",
       contratar: "hire_me",
@@ -397,7 +433,8 @@ export const dictionary = {
       promptGreeting: "hello — i'm",
       headline: "Hi, welcome,\nI'm Guilherme Eleuthério.\nDeveloper and IT professional",
       headlineHighlight: "Guilherme Eleuthério",
-      tagline: "I build full-stack applications with React, TypeScript, Django and PostgreSQL, combining product thinking, clean architecture and practical delivery.",
+      tagline:
+        "I build full-stack applications with React, TypeScript, Django and PostgreSQL, combining product thinking, clean architecture and practical delivery.",
       carousel1: ["systems", "websites", "apps"],
       taglinePrefix: "I build",
       taglineJoin: "with",
@@ -444,23 +481,30 @@ export const dictionary = {
         { label: "availability", value: "Remote & Hybrid" },
       ],
       process: [
-        { label: "discovery", title: "Understand before coding", text: "I map the real problem, constraints and what already exists. Technical decisions come after product clarity." },
-        { label: "execution", title: "Short cycles, real review", text: "I work in small iterations with focused commits, strong types and code review as part of the flow — not as a final step." },
-        { label: "delivery", title: "Deploy without drama", text: "Automation, basic observability and lean docs so the next dev (sometimes future me) gets it in minutes." },
+        {
+          label: "discovery",
+          title: "Understand before coding",
+          text: "I map the real problem, constraints and what already exists. Technical decisions come after product clarity.",
+        },
+        {
+          label: "execution",
+          title: "Short cycles, real review",
+          text: "I work in small iterations with focused commits, strong types and code review as part of the flow — not as a final step.",
+        },
+        {
+          label: "delivery",
+          title: "Deploy without drama",
+          text: "Automation, basic observability and lean docs so the next dev (sometimes future me) gets it in minutes.",
+        },
       ],
 
       p1: "I am a full-stack developer in formation, combining IT support experience, Systems Analysis studies and hands-on web development projects.",
       p2: "My work focuses on readable architecture, practical product decisions and interfaces that remain maintainable as the project grows.",
       p3: "Today, I am looking for internship or junior opportunities where I can contribute with frontend/full-stack development, documentation and problem-solving.",
       currentFocusLabel: "current focus",
-      currentFocus: [
-        "Django + DRF APIs",
-        "PostgreSQL performance",
-        "React + TanStack Start",
-      ],
+      currentFocus: ["Django + DRF APIs", "PostgreSQL performance", "React + TanStack Start"],
       backHome: "back to home",
     },
-
 
     projects: {
       title: "Projects",
@@ -534,13 +578,15 @@ export const dictionary = {
         {
           kicker: "discovery",
           title: "Interview & requirements",
-          description: "I map the context, goals and requirements to align expectations and priorities.",
+          description:
+            "I map the context, goals and requirements to align expectations and priorities.",
           tags: ["Active listening", "Requirements", "Analysis"],
         },
         {
           kicker: "build",
           title: "Validation & production",
-          description: "I prototype, validate and build the solution focused on quality and performance.",
+          description:
+            "I prototype, validate and build the solution focused on quality and performance.",
           tags: ["Prototype", "Development", "Testing"],
         },
         {
@@ -658,11 +704,7 @@ export const dictionary = {
           title: "Abriu Chaveiro & Cia",
           description:
             "Institutional website for a real client, focused on digital presence with social proof, organic SEO and transactional quote emails.",
-          evidence: [
-            "Local on-page SEO",
-            "Serverless contact API",
-            "Performance and mobile-first",
-          ],
+          evidence: ["Local on-page SEO", "Serverless contact API", "Performance and mobile-first"],
         },
       ],
     },
@@ -675,9 +717,21 @@ export const dictionary = {
       titleC: "",
       titleD: "",
       reasons: [
-        { label: "code & architecture", title: "Sustainable code", text: "I prioritize clear structure, predictable naming and reusable components so projects can evolve without becoming fragile." },
-        { label: "product & process", title: "Product & process mindset", text: "I think beyond screens: user flow, edge cases, documentation, maintainability and delivery constraints." },
-        { label: "AI day-to-day", title: "Responsible use of AI", text: "I use AI to speed up research, refactoring and validation while keeping technical ownership over final decisions." },
+        {
+          label: "code & architecture",
+          title: "Sustainable code",
+          text: "I prioritize clear structure, predictable naming and reusable components so projects can evolve without becoming fragile.",
+        },
+        {
+          label: "product & process",
+          title: "Product & process mindset",
+          text: "I think beyond screens: user flow, edge cases, documentation, maintainability and delivery constraints.",
+        },
+        {
+          label: "AI day-to-day",
+          title: "Responsible use of AI",
+          text: "I use AI to speed up research, refactoring and validation while keeping technical ownership over final decisions.",
+        },
       ],
       aboutCta: "About me",
     },
@@ -750,14 +804,19 @@ export const dictionary = {
         { label: "Back to home", href: "/", meta: "home" },
         { label: "Get in touch", href: "/#contato", meta: "contact" },
       ],
-
     },
     aboutTeaser: {
       question: "Want to meet the person behind the code?",
       cta: "Read my story",
     },
-    toggles: { langLabel: "Switch language", themeLabel: "Switch theme", themeToLight: "Switch to light theme", themeToDark: "Switch to dark theme", backToTop: "Back to top" },
+    toggles: {
+      langLabel: "Switch language",
+      themeLabel: "Switch theme",
+      themeToLight: "Switch to light theme",
+      themeToDark: "Switch to dark theme",
+      backToTop: "Back to top",
+    },
   },
 };
 
-export type Dict = typeof dictionary["pt"];
+export type Dict = (typeof dictionary)["pt"];

@@ -84,13 +84,14 @@ export function LanguageToggle({
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       aria-label={ariaLabel}
       className={`
         relative isolate overflow-hidden rounded-md border border-hairline
         font-mono uppercase tracking-[0.3em] text-foreground
         transition-colors hover:border-accent hover:text-accent
-        ${isDesktop ? "px-2.5 py-1.5 text-[11px]" : "flex-1 px-3 py-3 text-xs min-h-11"}
+        ${isDesktop ? "h-10 px-3 text-[11px]" : "flex-1 px-3 py-3 text-xs min-h-11"}
       `}
     >
       <span className="relative z-10">{label}</span>
