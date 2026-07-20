@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { dictionary, type Dict, type Lang } from "./dictionary";
 
 type AppContextValue = {
@@ -11,33 +18,54 @@ type AppContextValue = {
 const AppContext = createContext<AppContextValue | null>(null);
 const STORAGE_KEY = "gf-lang";
 
-function readInitial(): Lang {
-  if (typeof window === "undefined") return "pt";
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  if (stored === "pt" || stored === "en") return stored;
+const listeners = new Set<() => void>();
+
+function readStoredLanguage(): Lang {
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored === "pt" || stored === "en") return stored;
+  } catch {
+    /* ignore unavailable storage */
+  }
   return "pt";
 }
 
-export function AppProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("pt");
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === STORAGE_KEY) listener();
+  };
+  window.addEventListener("storage", onStorage);
+  return () => {
+    listeners.delete(listener);
+    window.removeEventListener("storage", onStorage);
+  };
+}
 
-  useEffect(() => {
-    setLangState(readInitial());
-  }, []);
+function emitChange() {
+  listeners.forEach((listener) => listener());
+}
+
+export function AppProvider({ children }: { children: ReactNode }) {
+  const lang = useSyncExternalStore<Lang>(subscribe, readStoredLanguage, () => "pt");
 
   useEffect(() => {
     document.documentElement.lang = lang === "pt" ? "pt-BR" : "en";
+  }, [lang]);
+
+  const setLang = useCallback((next: Lang) => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, lang);
+      window.localStorage.setItem(STORAGE_KEY, next);
     } catch {
       /* ignore */
     }
-  }, [lang]);
+    emitChange();
+  }, []);
 
   const value: AppContextValue = {
     lang,
-    setLang: setLangState,
-    toggleLang: () => setLangState((p) => (p === "pt" ? "en" : "pt")),
+    setLang,
+    toggleLang: () => setLang(lang === "pt" ? "en" : "pt"),
     t: dictionary[lang],
   };
 
