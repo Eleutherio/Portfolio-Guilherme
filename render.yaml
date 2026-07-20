@@ -11,9 +11,9 @@ services:
       - key: NODE_VERSION
         value: 22.16.0
       - key: API_ALLOWED_ORIGINS
-        value: https://guifer.tech,https://www.guifer.tech
+        value: https://portfolio-guilherme-et1.pages.dev,https://guifer.tech,https://www.guifer.tech
       - key: CONTACT_ALLOWED_ORIGINS
-        value: https://guifer.tech,https://www.guifer.tech
+        value: https://portfolio-guilherme-et1.pages.dev,https://guifer.tech,https://www.guifer.tech
       - key: BREVO_SMTP_HOST
         value: smtp-relay.brevo.com
       - key: BREVO_SMTP_PORT
@@ -21,7 +21,7 @@ services:
       - key: RECAPTCHA_MIN_SCORE
         value: "0.5"
       - key: RECAPTCHA_ALLOWED_HOSTNAMES
-        value: guifer.tech,www.guifer.tech
+        value: portfolio-guilherme-et1.pages.dev,guifer.tech,www.guifer.tech
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
