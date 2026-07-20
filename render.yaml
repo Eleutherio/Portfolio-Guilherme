@@ -1,0 +1,47 @@
+services:
+  - type: web
+    name: guifer-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build:api
+    startCommand: npm run start:api
+    healthCheckPath: /health/live
+    autoDeployTrigger: off
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: API_ALLOWED_ORIGINS
+        value: https://guifer.tech,https://www.guifer.tech
+      - key: CONTACT_ALLOWED_ORIGINS
+        value: https://guifer.tech,https://www.guifer.tech
+      - key: BREVO_SMTP_HOST
+        value: smtp-relay.brevo.com
+      - key: BREVO_SMTP_PORT
+        value: "2525"
+      - key: RECAPTCHA_MIN_SCORE
+        value: "0.5"
+      - key: RECAPTCHA_ALLOWED_HOSTNAMES
+        value: guifer.tech,www.guifer.tech
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: BREVO_SMTP_USER
+        sync: false
+      - key: BREVO_SMTP_KEY
+        sync: false
+      - key: CONTACT_EMAIL_FROM
+        sync: false
+      - key: CONTACT_EMAIL_TO
+        sync: false
+      - key: RECAPTCHA_SECRET_KEY
+        sync: false
+      - key: CONTACT_RATE_LIMIT_SECRET
+        generateValue: true
+      - key: COFFEE_RATE_LIMIT_SECRET
+        generateValue: true
+      - key: KEEP_ALIVE_SECRET
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
