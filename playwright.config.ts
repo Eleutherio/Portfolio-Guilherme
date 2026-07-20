@@ -19,7 +19,6 @@ export default defineConfig({
     baseURL: BASE_URL,
     browserName: "chromium",
     locale: "pt-BR",
-    reducedMotion: "reduce",
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
   },

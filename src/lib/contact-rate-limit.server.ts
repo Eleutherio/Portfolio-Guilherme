@@ -1,5 +1,3 @@
-import "@tanstack/react-start/server-only";
-
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 type RateLimitResult = {
@@ -32,10 +30,17 @@ function getRateLimitConfig() {
   };
 }
 
+type ScopedRateLimitOptions = {
+  scope: string;
+  secret: string;
+  windowSeconds: number;
+  perIp: number;
+  global: number;
+};
+
 function getClientAddress(request: Request): string {
   const address =
     request.headers.get("cf-connecting-ip") ??
-    request.headers.get("x-real-ip") ??
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     "unknown";
 
@@ -70,14 +75,23 @@ async function consume(keyHash: string, limit: number, windowSeconds: number): P
 
 export async function checkContactRateLimit(request: Request): Promise<RateLimitResult> {
   const config = getRateLimitConfig();
-  const ipKey = await hmac(`ip:${getClientAddress(request)}`, config.secret);
-  const ipAllowed = await consume(ipKey, config.perIp, config.windowSeconds);
+  return checkScopedRateLimit(request, { scope: "contact", ...config });
+}
+
+export async function checkScopedRateLimit(
+  request: Request,
+  options: ScopedRateLimitOptions,
+): Promise<RateLimitResult> {
+  if (!options.secret || options.secret.length < 32) throw new RateLimitError();
+
+  const ipKey = await hmac(`${options.scope}:ip:${getClientAddress(request)}`, options.secret);
+  const ipAllowed = await consume(ipKey, options.perIp, options.windowSeconds);
 
   if (!ipAllowed) {
-    return { allowed: false, retryAfterSeconds: config.windowSeconds };
+    return { allowed: false, retryAfterSeconds: options.windowSeconds };
   }
 
-  const globalKey = await hmac("global:v1", config.secret);
-  const globalAllowed = await consume(globalKey, config.global, config.windowSeconds);
-  return { allowed: globalAllowed, retryAfterSeconds: config.windowSeconds };
+  const globalKey = await hmac(`${options.scope}:global:v1`, options.secret);
+  const globalAllowed = await consume(globalKey, options.global, options.windowSeconds);
+  return { allowed: globalAllowed, retryAfterSeconds: options.windowSeconds };
 }

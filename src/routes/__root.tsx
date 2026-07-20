@@ -1,14 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  Outlet,
-  createRootRouteWithContext,
-  useRouter,
-  HeadContent,
-  Scripts,
-} from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { HeadContent, Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 
-import appCss from "../styles.css?url";
 import { ThemeProvider } from "@/lib/theme";
 import { AppProvider, useApp } from "@/i18n/AppContext";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
@@ -110,48 +102,30 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "Guilherme Ferreira" },
       { property: "og:site_name", content: "Guilherme Ferreira" },
       { property: "og:locale", content: "pt_BR" },
-    ],
-    links: [{ rel: "stylesheet", href: appCss }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify(PERSON_JSONLD),
-      },
+      { "script:ld+json": PERSON_JSONLD },
     ],
   }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
 
-function RootShell({ children }: { children: ReactNode }) {
-  return (
-    <html lang="pt-BR" className="light">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AppProvider>
-          <GlobalSkipLink />
-          <Outlet />
-          <AccessibilityWidget />
-        </AppProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <>
+      <HeadContent />
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <AppProvider>
+            <GlobalSkipLink />
+            <Outlet />
+            <AccessibilityWidget />
+          </AppProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </>
   );
 }
 

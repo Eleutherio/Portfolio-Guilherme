@@ -10,20 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SobreRouteImport } from './routes/sobre'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AcessibilidadeRouteImport } from './routes/acessibilidade'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjetosSlugRouteImport } from './routes/projetos.$slug'
-import { Route as ApiContactRouteImport } from './routes/api.contact'
 
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AcessibilidadeRoute = AcessibilidadeRouteImport.update({
@@ -41,70 +34,38 @@ const ProjetosSlugRoute = ProjetosSlugRouteImport.update({
   path: '/projetos/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiContactRoute = ApiContactRouteImport.update({
-  id: '/api/contact',
-  path: '/api/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/acessibilidade': typeof AcessibilidadeRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
-  '/api/contact': typeof ApiContactRoute
   '/projetos/$slug': typeof ProjetosSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/acessibilidade': typeof AcessibilidadeRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
-  '/api/contact': typeof ApiContactRoute
   '/projetos/$slug': typeof ProjetosSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/acessibilidade': typeof AcessibilidadeRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
-  '/api/contact': typeof ApiContactRoute
   '/projetos/$slug': typeof ProjetosSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/acessibilidade'
-    | '/sitemap.xml'
-    | '/sobre'
-    | '/api/contact'
-    | '/projetos/$slug'
+  fullPaths: '/' | '/acessibilidade' | '/sobre' | '/projetos/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/acessibilidade'
-    | '/sitemap.xml'
-    | '/sobre'
-    | '/api/contact'
-    | '/projetos/$slug'
-  id:
-    | '__root__'
-    | '/'
-    | '/acessibilidade'
-    | '/sitemap.xml'
-    | '/sobre'
-    | '/api/contact'
-    | '/projetos/$slug'
+  to: '/' | '/acessibilidade' | '/sobre' | '/projetos/$slug'
+  id: '__root__' | '/' | '/acessibilidade' | '/sobre' | '/projetos/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AcessibilidadeRoute: typeof AcessibilidadeRoute
-  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SobreRoute: typeof SobreRoute
-  ApiContactRoute: typeof ApiContactRoute
   ProjetosSlugRoute: typeof ProjetosSlugRoute
 }
 
@@ -115,13 +76,6 @@ declare module '@tanstack/react-router' {
       path: '/sobre'
       fullPath: '/sobre'
       preLoaderRoute: typeof SobreRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/acessibilidade': {
@@ -145,34 +99,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjetosSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/contact': {
-      id: '/api/contact'
-      path: '/api/contact'
-      fullPath: '/api/contact'
-      preLoaderRoute: typeof ApiContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AcessibilidadeRoute: AcessibilidadeRoute,
-  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SobreRoute: SobreRoute,
-  ApiContactRoute: ApiContactRoute,
   ProjetosSlugRoute: ProjetosSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

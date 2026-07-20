@@ -1,5 +1,3 @@
-import "@tanstack/react-start/server-only";
-
 import nodemailer, { type Transporter } from "nodemailer";
 import { z } from "zod";
 import type { ContactPayload } from "@/lib/contact-contract";
@@ -42,7 +40,7 @@ export class EmailDeliveryError extends Error {
 function getEmailConfig() {
   const result = emailConfigSchema.safeParse({
     host: process.env.BREVO_SMTP_HOST ?? "smtp-relay.brevo.com",
-    port: Number.parseInt(process.env.BREVO_SMTP_PORT ?? "587", 10),
+    port: Number.parseInt(process.env.BREVO_SMTP_PORT ?? "2525", 10),
     user: process.env.BREVO_SMTP_USER,
     key: process.env.BREVO_SMTP_KEY,
     from: process.env.CONTACT_EMAIL_FROM,

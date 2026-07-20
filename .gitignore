@@ -6,6 +6,7 @@ node_modules/
 # Production and framework build output
 dist/
 dist-ssr/
+dist-api/
 build/
 out/
 .output/

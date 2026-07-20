@@ -52,6 +52,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      app_healthcheck: { Args: never; Returns: string };
       consume_contact_rate_limit: {
         Args: { p_key_hash: string; p_limit: number; p_window_seconds: number };
         Returns: boolean;

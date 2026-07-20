@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { GitCommit } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { getGithubYearStats } from "@/lib/github.functions";
-import { getCoffeeCount, tapCoffee } from "@/lib/coffee.functions";
+import { fetchCoffeeCount, fetchGithubYearStats, submitCoffeeTap } from "@/lib/api-client";
 import { useApp } from "@/i18n/AppContext";
 import { CoffeeIcon, type CoffeeState } from "@/components/hero/CoffeeIcon";
 
@@ -40,24 +38,20 @@ export function HeroStats() {
     };
   }, []);
 
-  const github = useServerFn(getGithubYearStats);
-  const coffeeCount = useServerFn(getCoffeeCount);
-  const tap = useServerFn(tapCoffee);
-
   const gh = useQuery({
     queryKey: ["gh-year"],
-    queryFn: () => github(),
+    queryFn: fetchGithubYearStats,
     staleTime: 10 * 60_000,
   });
 
   const coffee = useQuery({
     queryKey: ["coffee-count"],
-    queryFn: () => coffeeCount(),
+    queryFn: fetchCoffeeCount,
     staleTime: 30_000,
   });
 
   const tapMutation = useMutation({
-    mutationFn: async () => tap({ data: { visitorId } }),
+    mutationFn: async () => submitCoffeeTap(visitorId),
     onSuccess: (res) => {
       qc.setQueryData(["coffee-count"], res);
       window.localStorage.setItem(TAPPED_KEY, "1");

@@ -1,4 +1,3 @@
-import { createClientOnlyFn } from "@tanstack/react-start";
 import { RECAPTCHA_ACTION } from "@/lib/contact-contract";
 
 type RecaptchaApi = {
@@ -66,7 +65,7 @@ function loadRecaptcha(siteKey: string): Promise<void> {
   return scriptPromise;
 }
 
-export const executeContactRecaptcha = createClientOnlyFn(async (): Promise<string> => {
+export async function executeContactRecaptcha(): Promise<string> {
   const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
   if (!siteKey) throw new Error("Missing reCAPTCHA site key");
 
@@ -74,4 +73,4 @@ export const executeContactRecaptcha = createClientOnlyFn(async (): Promise<stri
   const token = await window.grecaptcha?.execute(siteKey, { action: RECAPTCHA_ACTION });
   if (!token) throw new Error("reCAPTCHA did not return a token");
   return token;
-});
+}

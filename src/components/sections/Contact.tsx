@@ -10,6 +10,7 @@ import {
   type ContactApiResponse,
 } from "@/lib/contact-contract";
 import { executeContactRecaptcha } from "@/lib/recaptcha";
+import { apiUrl } from "@/lib/api-client";
 import { SectionShell } from "./SectionShell";
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -89,7 +90,7 @@ export function Contact() {
         return;
       }
 
-      const response = await fetch("/api/contact", {
+      const response = await fetch(apiUrl("/api/contact"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload.data),
