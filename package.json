@@ -9,7 +9,9 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:a11y": "playwright test e2e/accessibility.spec.ts",
+    "test:a11y:headed": "playwright test e2e/accessibility.spec.ts --headed"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.2.8",
