@@ -62,8 +62,7 @@ export function ImageCover({
         height={image.height}
         loading={eager ? "eager" : "lazy"}
         decoding="async"
-        // @ts-expect-error React types lag behind DOM attribute
-        fetchpriority={fetchPriority}
+        fetchPriority={fetchPriority}
         className={imgClassName}
         style={style}
       />

@@ -38,7 +38,7 @@ export function CaseTemplate() {
           </Link>
         </div>
 
-        <div className="section-container grid grid-cols-1 gap-10 pb-16 pt-10 md:grid-cols-12 md:gap-8 md:pb-24 md:pt-16">
+        <div className="section-container grid grid-cols-1 gap-8 pb-14 pt-8 md:grid-cols-12 md:gap-8 md:pb-24 md:pt-16">
           <div className="md:col-span-7">
             <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
               {data.id} · {data.category}
@@ -47,11 +47,11 @@ export function CaseTemplate() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
-              className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-foreground md:text-6xl"
+              className="mt-5 font-display text-3xl font-semibold leading-[1.05] tracking-[-0.03em] text-foreground sm:text-4xl md:text-6xl"
             >
               {data.title}
             </motion.h1>
-            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+            <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               {data.cardSummary}
             </p>
 
@@ -61,7 +61,7 @@ export function CaseTemplate() {
                   href={data.demoUrl}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 font-display text-sm font-medium text-background"
+                  className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 py-3 font-display text-sm font-medium text-background sm:w-auto"
                 >
                   <ExternalLink className="h-4 w-4" />
                   {t.projects.demo}
@@ -72,7 +72,7 @@ export function CaseTemplate() {
                   href={data.repoUrl}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="inline-flex items-center gap-2 rounded-full border border-foreground px-5 py-3 font-display text-sm font-medium text-foreground transition-colors hover:bg-foreground hover:text-background"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-foreground px-5 py-3 font-display text-sm font-medium text-foreground transition-colors hover:bg-foreground hover:text-background sm:w-auto"
                 >
                   <GithubIcon className="h-4 w-4" />
                   {t.projects.repo}
@@ -113,7 +113,7 @@ export function CaseTemplate() {
               height={1000}
               loading="lazy"
               decoding="async"
-              className={`h-full w-full object-cover ${data.imageFocus ?? "object-center"}`}
+              className={`h-full w-full object-cover ${data.imageFocus ?? "object-center"} ${slug === "grengame" ? "max-md:scale-[1.35]" : ""}`}
             />
           </motion.div>
         </div>
@@ -178,7 +178,7 @@ function CaseBlock({
 }) {
   return (
     <section className="border-b border-hairline">
-      <div className="section-container grid grid-cols-1 gap-10 py-16 md:grid-cols-12 md:gap-8 md:py-24">
+      <div className="section-container grid grid-cols-1 gap-8 py-12 md:grid-cols-12 md:gap-8 md:py-24">
         <div className="md:col-span-3">
           <p className="section-number text-5xl text-muted-foreground md:text-6xl">{number}</p>
           <h2 className="mt-4 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
@@ -197,7 +197,7 @@ function CaseItem({ label, children }: { label: string; children: React.ReactNod
       <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
         {label}
       </p>
-      <p className="mt-3 text-lg leading-relaxed text-foreground">{children}</p>
+      <p className="mt-3 text-base leading-relaxed text-foreground sm:text-lg">{children}</p>
     </div>
   );
 }

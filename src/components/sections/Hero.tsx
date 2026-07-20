@@ -59,7 +59,8 @@ export function Hero() {
     <HeroCarouselProvider>
       <section
         id="home"
-        className="relative isolate flex h-full min-h-[720px] flex-col overflow-hidden bg-background md:min-h-[680px] lg:min-h-[640px]"
+        aria-labelledby="home-heading"
+        className="relative isolate flex min-h-[calc(100svh-64px)] flex-col overflow-x-clip overflow-y-visible bg-background md:min-h-[680px] md:overflow-hidden lg:min-h-[640px]"
       >
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           <div
@@ -79,12 +80,14 @@ export function Hero() {
           />
         </div>
 
-        <div className="section-container relative z-10 flex flex-1 flex-col justify-center py-14 md:py-16 lg:py-14">
+        <div className="section-container relative z-10 flex flex-1 flex-col justify-center py-10 md:py-16 lg:py-14">
           <div className="grid w-full grid-cols-1 items-center lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] lg:gap-14 xl:gap-20">
             <div className="min-w-0 lg:pr-2">
               <div className="max-w-[36rem]">
                 <h1
-                  className="font-display font-semibold leading-[1.05] tracking-[-0.03em] text-foreground text-balance"
+                  id="home-heading"
+                  tabIndex={-1}
+                  className="font-display font-semibold leading-[1.05] tracking-[-0.03em] text-foreground text-balance outline-none"
                   style={{ fontSize: "clamp(1.75rem, 3.2vw, 2.75rem)" }}
                 >
                   <HighlightHeadline text={t.hero.headline} grad={t.hero.headlineHighlight} />
@@ -95,11 +98,11 @@ export function Hero() {
                 </div>
 
                 <div className="mt-7 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                  <a href="#projetos" className="btn-primary whitespace-nowrap px-5">
+                  <a href="#projetos" className="btn-primary px-5 text-center sm:whitespace-nowrap">
                     <span>{t.hero.cta1}</span>
                     <ArrowDown className="h-4 w-4 shrink-0" aria-hidden="true" />
                   </a>
-                  <a href="#contato" className="btn-outline whitespace-nowrap px-5">
+                  <a href="#contato" className="btn-outline px-5 text-center sm:whitespace-nowrap">
                     <span>{t.hero.cta3}</span>
                     <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden="true" />
                   </a>
@@ -107,7 +110,8 @@ export function Hero() {
 
                 <a
                   href={t.hero.resumeUrl}
-                  download
+                  download="Guilherme-Eleutherio-Curriculo.pdf"
+                  type="application/pdf"
                   className="group mt-4 inline-flex w-fit items-center gap-2 rounded-sm py-2 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-accent"
                 >
                   <Download

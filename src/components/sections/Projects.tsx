@@ -1,10 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion, type PanInfo } from "motion/react";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import {
+  ArrowUpRight,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ExternalLink,
+} from "lucide-react";
 import { GithubIcon } from "@/components/icons/Brand";
 import { ImageCover } from "@/components/ImageCover";
 import { useApp } from "@/i18n/AppContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   getLocalizedProjectSummaries,
   type LocalizedProjectSummary,
@@ -34,6 +42,8 @@ function ProjectRow({ p, eager }: { p: LocalizedProjectSummary; eager: boolean }
               fetchPriority={eager ? "high" : undefined}
               className="absolute inset-0 block h-full w-full"
               imgClassName={`h-full w-full object-cover ${p.imageFocus ?? "object-center"} ${
+                p.slug === "grengame" ? "max-md:scale-[1.35]" : ""
+              } ${
                 reducedMotion
                   ? ""
                   : "transition-[filter,transform] duration-500 ease-out group-hover:scale-[1.02] group-hover:blur-md group-hover:brightness-75"
@@ -54,7 +64,7 @@ function ProjectRow({ p, eager }: { p: LocalizedProjectSummary; eager: boolean }
         {/* Content */}
         <div className="md:pl-2">
           <div className="flex items-start justify-between gap-4">
-            <p className="min-w-0 truncate font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+            <p className="min-w-0 font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground md:truncate">
               {p.id} · {p.projectType}
             </p>
             <div className="flex shrink-0 items-center gap-1">
@@ -166,8 +176,12 @@ export function Projects() {
   const { t, lang } = useApp();
   const projects = getLocalizedProjectSummaries(lang);
   const reducedMotion = useReducedMotion();
+  const isMobile = useIsMobile();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => setHydrated(true), []);
 
   const total = projects.length;
   const current = projects[index];
@@ -183,8 +197,8 @@ export function Projects() {
   const next = () => go(index + 1);
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
-    const offset = info.offset.y;
-    const velocity = info.velocity.y;
+    const offset = isMobile ? info.offset.x : info.offset.y;
+    const velocity = isMobile ? info.velocity.x : info.velocity.y;
     if (offset < -60 || velocity < -500) next();
     else if (offset > 60 || velocity > 500) prev();
   };
@@ -195,24 +209,27 @@ export function Projects() {
       : "Interested in any of these cases or have a question?";
   const ctaLabel = lang === "pt" ? "Entrar em contato" : "Get in touch";
 
-  const enterY = direction === 1 ? 40 : -40;
-  const exitY = direction === 1 ? -40 : 40;
+  const enterOffset = direction === 1 ? 40 : -40;
+  const exitOffset = direction === 1 ? -40 : 40;
+  const enterMotion = isMobile ? { x: enterOffset } : { y: enterOffset };
+  const activeMotion = isMobile ? { x: 0 } : { y: 0 };
+  const exitMotion = isMobile ? { x: exitOffset } : { y: exitOffset };
 
   return (
     <SectionShell id="projetos" number="03" label={t.projects.title} sublabel={t.projects.subtitle}>
-      <div className="md:col-span-12">
+      <div className="md:col-span-12" data-projects-hydrated={hydrated}>
         {/* Card + paginação lateral */}
         <div className="relative border-t border-hairline">
-          <div className="relative overflow-hidden pr-10 md:pr-12">
+          <div className="relative overflow-hidden md:pr-12">
             <AnimatePresence mode="wait" custom={direction} initial={false}>
               <motion.div
                 key={current.slug}
-                initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: enterY }}
-                animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
-                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: exitY }}
+                initial={reducedMotion ? { opacity: 0 } : { opacity: 0, ...enterMotion }}
+                animate={reducedMotion ? { opacity: 1 } : { opacity: 1, ...activeMotion }}
+                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, ...exitMotion }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
-                drag={reducedMotion ? false : "y"}
-                dragConstraints={{ top: 0, bottom: 0 }}
+                drag={reducedMotion ? false : isMobile ? "x" : "y"}
+                dragConstraints={isMobile ? { left: 0, right: 0 } : { top: 0, bottom: 0 }}
                 dragElastic={0.2}
                 onDragEnd={onDragEnd}
                 className="touch-pan-y"
@@ -222,23 +239,27 @@ export function Projects() {
             </AnimatePresence>
           </div>
 
-          {/* Paginação vertical: anterior, total em bolinhas e próximo */}
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center">
-            <div className="pointer-events-auto flex flex-col items-center gap-3">
+          {/* Paginação horizontal no mobile e vertical no desktop */}
+          <div className="pointer-events-none flex justify-center pt-2 md:absolute md:inset-y-0 md:right-0 md:items-center md:pt-0">
+            <div className="pointer-events-auto flex items-center gap-3 md:flex-col">
               <button
                 type="button"
                 onClick={prev}
                 disabled={index === 0}
                 aria-label={t.projects.paginationPrev}
-                className="group grid h-8 w-8 shrink-0 place-items-center text-muted-foreground transition-colors hover:text-accent disabled:pointer-events-none disabled:opacity-30"
+                className="group grid h-11 w-11 shrink-0 place-items-center text-muted-foreground transition-colors hover:text-accent disabled:pointer-events-none disabled:opacity-30 md:h-8 md:w-8"
               >
+                <ChevronLeft
+                  className="h-5 w-5 transition-transform group-hover:-translate-x-0.5 md:hidden"
+                  aria-hidden="true"
+                />
                 <ChevronUp
-                  className="h-5 w-5 transition-transform group-hover:-translate-y-0.5"
+                  className="hidden h-5 w-5 transition-transform group-hover:-translate-y-0.5 md:block"
                   aria-hidden="true"
                 />
               </button>
 
-              <ul className="flex flex-col items-center" aria-label={t.projects.title}>
+              <ul className="flex items-center md:flex-col" aria-label={t.projects.title}>
                 {projects.map((p, i) => (
                   <li key={p.slug} className="flex">
                     <button
@@ -246,7 +267,7 @@ export function Projects() {
                       onClick={() => go(i)}
                       aria-label={goToLabel(i)}
                       aria-current={i === index ? "true" : undefined}
-                      className="group grid h-8 w-8 place-items-center rounded-full"
+                      className="group grid h-11 w-11 place-items-center rounded-full md:h-8 md:w-8"
                     >
                       <span
                         aria-hidden="true"
@@ -266,10 +287,14 @@ export function Projects() {
                 onClick={next}
                 disabled={index === total - 1}
                 aria-label={t.projects.paginationNext}
-                className="group grid h-8 w-8 shrink-0 place-items-center text-muted-foreground transition-colors hover:text-accent disabled:pointer-events-none disabled:opacity-30"
+                className="group grid h-11 w-11 shrink-0 place-items-center text-muted-foreground transition-colors hover:text-accent disabled:pointer-events-none disabled:opacity-30 md:h-8 md:w-8"
               >
+                <ChevronRight
+                  className="h-5 w-5 transition-transform group-hover:translate-x-0.5 md:hidden"
+                  aria-hidden="true"
+                />
                 <ChevronDown
-                  className="h-5 w-5 transition-transform group-hover:translate-y-0.5"
+                  className="hidden h-5 w-5 transition-transform group-hover:translate-y-0.5 md:block"
                   aria-hidden="true"
                 />
               </button>
@@ -279,7 +304,7 @@ export function Projects() {
 
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-hairline pt-8 sm:flex-row">
           <p className="prose-measure text-sm text-muted-foreground md:text-base">{ctaText}</p>
-          <a href="#contato" className="btn-primary group !py-2.5 !text-[13px]">
+          <a href="#contato" className="btn-primary group w-full !py-2.5 !text-[13px] sm:w-auto">
             <span>{ctaLabel}</span>
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </a>

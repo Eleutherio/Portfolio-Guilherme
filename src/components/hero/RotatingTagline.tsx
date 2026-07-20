@@ -27,14 +27,14 @@ function TypewriterBadge({
           <span
             key={item}
             aria-hidden="true"
-            className="invisible col-start-1 row-start-1 break-words"
+            className="invisible col-start-1 row-start-1 break-normal md:break-words"
           >
             {item}
             {!prefersReduced && "_"}
           </span>
         ))}
         <span
-          className={`col-start-1 row-start-1 min-w-0 break-words ${
+          className={`col-start-1 row-start-1 min-w-0 break-normal md:break-words ${
             accent ? "text-gradient" : "text-foreground"
           }`}
         >
