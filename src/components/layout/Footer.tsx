@@ -5,6 +5,7 @@ import { ThanksTypewriter } from "@/components/layout/ThanksTypewriter";
 import { useApp } from "@/i18n/AppContext";
 import { useLiveMetrics } from "@/lib/useLiveMetrics";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Link } from "@tanstack/react-router";
 
 function useClock(locale: string) {
   const [time, setTime] = useState<string>("");
@@ -55,22 +56,19 @@ export function Footer() {
           <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
             <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
               Porto Alegre — BRT ·{" "}
-              <span
-                className="text-foreground tabular-nums"
-                aria-label={t.footer.localTimeAria}
-                suppressHydrationWarning
-              >
+              <span className="text-foreground tabular-nums" suppressHydrationWarning>
+                <span className="sr-only">{t.footer.localTimeAria}: </span>
                 {time || "--:--"}
               </span>
             </div>
 
-            <nav aria-label="social" className="flex items-center gap-1.5">
+            <nav aria-label={t.a11y.socialNavigation} className="flex items-center gap-1.5">
               <a
                 href="https://github.com/Eleutherio"
                 aria-label="GitHub"
                 target="_blank"
                 rel="noreferrer noopener"
-                className="grid h-8 w-8 place-items-center rounded-full border border-border text-foreground transition-colors hover:border-accent hover:text-accent"
+                className="grid h-11 w-11 place-items-center rounded-full border border-border text-foreground transition-colors hover:border-accent hover:text-accent md:h-8 md:w-8"
               >
                 <GithubIcon className="h-3.5 w-3.5" />
               </a>
@@ -79,28 +77,37 @@ export function Footer() {
                 aria-label="LinkedIn"
                 target="_blank"
                 rel="noreferrer noopener"
-                className="grid h-8 w-8 place-items-center rounded-full border border-border text-foreground transition-colors hover:border-accent hover:text-accent"
+                className="grid h-11 w-11 place-items-center rounded-full border border-border text-foreground transition-colors hover:border-accent hover:text-accent md:h-8 md:w-8"
               >
                 <LinkedinIcon className="h-3.5 w-3.5" />
               </a>
               <a
                 href="mailto:contato@guifer.tech"
                 aria-label="Email"
-                className="grid h-8 w-8 place-items-center rounded-full border border-border text-foreground transition-colors hover:border-accent hover:text-accent"
+                className="grid h-11 w-11 place-items-center rounded-full border border-border text-foreground transition-colors hover:border-accent hover:text-accent md:h-8 md:w-8"
               >
                 <Mail className="h-3.5 w-3.5" />
               </a>
             </nav>
           </div>
 
-          <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-            {t.footer.rights} · © {year}
+          <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+            <span>
+              {t.footer.rights} · © {year}
+            </span>
+            <span aria-hidden="true">·</span>
+            <Link
+              to="/acessibilidade"
+              className="rounded-sm underline decoration-transparent underline-offset-4 transition-colors hover:text-foreground hover:decoration-current focus-visible:text-foreground focus-visible:decoration-current"
+            >
+              {t.footer.accessibility}
+            </Link>
           </p>
         </div>
 
         {/* Infra column */}
         <div className="font-mono text-[10px] leading-[1.9] text-muted-foreground">
-          <p className="mb-2 uppercase tracking-[0.3em] text-muted-foreground/70">
+          <p className="mb-2 uppercase tracking-[0.3em] text-muted-foreground/80">
             {t.footer.infraLabel}
           </p>
           <ul className="space-y-1">
@@ -114,7 +121,7 @@ export function Footer() {
         {/* Vitals column */}
         <div className="font-mono text-[10px] leading-[1.9] text-muted-foreground lg:min-w-[180px]">
           <div className="mb-2 flex items-center justify-between gap-3">
-            <span className="inline-flex items-center gap-2 uppercase tracking-[0.3em] text-muted-foreground/70">
+            <span className="inline-flex items-center gap-2 uppercase tracking-[0.3em] text-muted-foreground/80">
               {t.footer.vitalsLabel}
               <Popover>
                 <PopoverTrigger
@@ -126,7 +133,7 @@ export function Footer() {
                 <PopoverContent
                   side="top"
                   align="end"
-                  className="w-72 border border-hairline bg-surface text-xs"
+                  className="w-[min(18rem,calc(100vw-2rem))] border border-hairline bg-surface text-xs"
                 >
                   <p className="mb-2 font-display text-sm font-medium tracking-tight text-foreground">
                     {t.footer.vitalsExplainTitle}
@@ -164,16 +171,16 @@ export function Footer() {
           <ul className="space-y-1">
             {metrics.map((m) => (
               <li key={m.k} className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground/70">{m.k}</span>
+                <span className="text-muted-foreground/80">{m.k}</span>
                 <span className="tabular-nums text-foreground/85">{m.v}</span>
               </li>
             ))}
             <li className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground/70">{t.footer.pingLabel}</span>
+              <span className="text-muted-foreground/80">{t.footer.pingLabel}</span>
               <span className="tabular-nums text-foreground/85">{status.ping}</span>
             </li>
             <li className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground/70">{t.footer.uptimeLabel}</span>
+              <span className="text-muted-foreground/80">{t.footer.uptimeLabel}</span>
               <span className="tabular-nums text-foreground/85">{status.uptime}</span>
             </li>
           </ul>

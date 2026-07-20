@@ -18,12 +18,16 @@ export function Header() {
   const { theme, toggle: toggleTheme } = useTheme();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const locationHash = useRouterState({ select: (s) => s.location.hash });
   const [open, setOpen] = useState(false);
   const [activeId, setActiveId] = useState<string>("home");
   const [hidden, setHidden] = useState(false);
   const [hoverReveal, setHoverReveal] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const lastYRef = useRef(0);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const themeActionLabel = theme === "dark" ? t.toggles.themeToLight : t.toggles.themeToDark;
+  const ThemeActionIcon = theme === "dark" ? Sun : Moon;
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -73,6 +77,38 @@ export function Header() {
     return () => window.removeEventListener("pointermove", revealNearTop);
   }, [hidden]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setOpen(false);
+      menuButtonRef.current?.focus();
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [open]);
+
+  useEffect(() => {
+    const id = locationHash.replace(/^#/, "");
+    if (pathname !== "/" || !id) return;
+
+    let frame = 0;
+    let attempts = 0;
+    const focusDestination = () => {
+      const heading = document.getElementById(`${id}-heading`);
+      if (heading) {
+        heading.focus({ preventScroll: true });
+        return;
+      }
+      if (attempts++ < 60) frame = window.requestAnimationFrame(focusDestination);
+    };
+
+    frame = window.requestAnimationFrame(focusDestination);
+    return () => window.cancelAnimationFrame(frame);
+  }, [locationHash, pathname]);
+
   const goToSection = (id: string) => {
     if (pathname !== "/") {
       navigate({ to: "/", hash: id });
@@ -82,6 +118,9 @@ export function Header() {
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
       history.replaceState(null, "", `#${id}`);
+      window.requestAnimationFrame(() => {
+        document.getElementById(`${id}-heading`)?.focus({ preventScroll: true });
+      });
     }
   };
 
@@ -106,15 +145,19 @@ export function Header() {
 
   return (
     <header
+      onFocusCapture={() => {
+        setHidden(false);
+        setHoverReveal(false);
+      }}
       onMouseLeave={() => {
         if (hidden) setHoverReveal(false);
       }}
-      className={`fixed inset-x-0 top-0 z-40 border-b border-hairline/70 bg-background/80 backdrop-blur-md transition-transform duration-300 ease-out ${hidden && !hoverReveal ? "-translate-y-full" : "translate-y-0"}`}
+      className={`fixed inset-x-0 top-0 z-40 border-b border-hairline/70 bg-background/80 backdrop-blur-md transition-transform duration-300 ease-out focus-within:translate-y-0 focus-within:duration-0 ${hidden && !hoverReveal ? "-translate-y-full" : "translate-y-0"}`}
     >
       <div className="section-container flex items-center justify-between gap-3 py-3.5 lg:gap-5">
         <Link
           to="/"
-          aria-label="Guilherme Ferreira — início"
+          aria-label={t.a11y.homeLink}
           className="group flex shrink-0 items-center gap-2.5 text-foreground"
         >
           <span className="font-mono text-[13px] font-medium tracking-tight text-foreground">
@@ -128,7 +171,7 @@ export function Header() {
         </Link>
 
         <nav
-          aria-label="primary"
+          aria-label={t.a11y.primaryNavigation}
           className="hidden min-w-0 flex-1 items-center justify-center gap-[clamp(0.25rem,1vw,0.75rem)] md:flex"
         >
           {sections.map((s) => {
@@ -153,14 +196,11 @@ export function Header() {
           <button
             type="button"
             onClick={toggleTheme}
-            aria-label={theme === "dark" ? t.toggles.themeToLight : t.toggles.themeToDark}
+            aria-label={themeActionLabel}
+            title={themeActionLabel}
             className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-md text-foreground transition-colors hover:bg-surface hover:text-accent"
           >
-            {theme === "dark" ? (
-              <Moon className="h-4 w-4" aria-hidden="true" />
-            ) : (
-              <Sun className="h-4 w-4" aria-hidden="true" />
-            )}
+            <ThemeActionIcon className="h-4 w-4" aria-hidden="true" />
           </button>
           <LanguageToggle
             lang={lang}
@@ -171,19 +211,29 @@ export function Header() {
         </div>
 
         <button
+          ref={menuButtonRef}
           type="button"
           onClick={() => setOpen((v) => !v)}
-          aria-label={t.nav.menu}
+          aria-label={open ? t.a11y.closeMenu : t.a11y.openMenu}
           aria-expanded={open}
+          aria-controls="mobile-navigation"
           className="grid h-11 w-11 place-items-center rounded-md text-foreground md:hidden"
         >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {open ? (
+            <X className="h-5 w-5" aria-hidden="true" />
+          ) : (
+            <Menu className="h-5 w-5" aria-hidden="true" />
+          )}
         </button>
       </div>
 
       {open && (
         <div className="border-t border-hairline bg-background md:hidden">
-          <nav aria-label="mobile" className="section-container flex flex-col gap-1 py-4">
+          <nav
+            id="mobile-navigation"
+            aria-label={t.a11y.mobileNavigation}
+            className="section-container flex flex-col gap-1 py-4"
+          >
             {sections.map((s) => (
               <button
                 key={s.id}
@@ -208,14 +258,11 @@ export function Header() {
               <button
                 type="button"
                 onClick={toggleTheme}
-                aria-label={theme === "dark" ? t.toggles.themeToLight : t.toggles.themeToDark}
+                aria-label={themeActionLabel}
+                title={themeActionLabel}
                 className="grid h-11 w-11 min-h-11 min-w-11 place-items-center rounded-md border border-border text-foreground"
               >
-                {theme === "dark" ? (
-                  <Sun className="h-4 w-4" aria-hidden="true" />
-                ) : (
-                  <Moon className="h-4 w-4" aria-hidden="true" />
-                )}
+                <ThemeActionIcon className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </nav>

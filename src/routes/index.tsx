@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import { Header } from "@/components/layout/Header";
-import { useApp } from "@/i18n/AppContext";
 
 import { Hero } from "@/components/sections/Hero";
 
@@ -48,21 +47,16 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { t } = useApp();
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-foreground focus:px-4 focus:py-2 focus:text-background"
-      >
-        {t.a11y.skipToContent}
-      </a>
       <Header />
       <div className="h-[64px] shrink-0" aria-hidden="true" />
-      <main id="main" className="flex-1 overflow-x-clip [&_section]:scroll-mt-20">
-        <div id="home">
-          <Hero />
-        </div>
+      <main
+        id="main"
+        tabIndex={-1}
+        className="flex-1 overflow-x-clip outline-none [&_section]:scroll-mt-20"
+      >
+        <Hero />
         <Suspense fallback={null}>
           <About />
           <Timeline />

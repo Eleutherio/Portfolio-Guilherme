@@ -1,23 +1,30 @@
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { useApp } from "@/i18n/AppContext";
 import profileImg from "@/assets/guilherme-profile.jpg";
 import { ImageCover } from "@/components/ImageCover";
 import { SectionShell } from "./SectionShell";
 
-export function About() {
+export function About({ headingLevel = 2 }: { headingLevel?: 1 | 2 }) {
   const { t } = useApp();
+  const reducedMotion = useReducedMotion();
 
   return (
-    <SectionShell id="sobre" number="01" label={t.about.title} sublabel={t.about.subtitle}>
+    <SectionShell
+      id="sobre"
+      number="01"
+      label={t.about.title}
+      sublabel={t.about.subtitle}
+      headingLevel={headingLevel}
+    >
       {/* Wrapper to vertically center image and text on desktop */}
       <div className="contents md:col-span-12 md:grid md:grid-cols-12 md:items-center md:gap-8">
         {/* Portrait */}
         <div className="md:col-span-5">
           <motion.figure
-            initial={{ opacity: 0, y: 16 }}
+            initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: reducedMotion ? 0 : 0.8 }}
             className="relative"
           >
             {/* gradient corner accent */}
@@ -65,10 +72,10 @@ export function About() {
         {/* Narrative */}
         <div className="mt-10 md:col-span-7 md:mt-0 md:pl-2">
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.7, delay: 0.05 }}
+            transition={{ duration: reducedMotion ? 0 : 0.7, delay: reducedMotion ? 0 : 0.05 }}
             className="prose-measure space-y-5 text-[16px] leading-relaxed text-foreground md:text-[18px]"
           >
             <p className="first-letter:float-left first-letter:mr-2 first-letter:font-display first-letter:text-[3.25rem] first-letter:font-medium first-letter:leading-[0.85] first-letter:text-gradient">
@@ -80,10 +87,10 @@ export function About() {
 
           {t.about.currentFocus && t.about.currentFocus.length > 0 && (
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
+              initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.6, delay: 0.15 }}
+              transition={{ duration: reducedMotion ? 0 : 0.6, delay: reducedMotion ? 0 : 0.15 }}
               className="mt-8 border-t border-hairline pt-5"
             >
               <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">

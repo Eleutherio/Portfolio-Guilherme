@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, useInView, useReducedMotion, type PanInfo } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion, type PanInfo } from "motion/react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -21,7 +21,6 @@ import { Link } from "@tanstack/react-router";
 import { useApp } from "@/i18n/AppContext";
 import { projectSummaries } from "@/content/project-summaries";
 
-const AUTOPLAY_MS = 4500;
 const DRAG_THRESHOLD = 60;
 
 // Ícones por índice do item — a ordem casa com dictionary.pt/en.timeline.items
@@ -41,7 +40,7 @@ const ITEM_TAGS: string[][] = [
   ["Python", "JavaScript", "SQL", "Git", "POO"],
   ["Suporte", "Troubleshooting", "Docs"],
   ["React", "Django", "DRF", "PostgreSQL", "PWA"],
-  ["TanStack Start", "TypeScript", "SEO", "Resend"],
+  ["TanStack Start", "TypeScript", "SEO", "Brevo"],
 ];
 
 function parseStartYear(period: string): number | null {
@@ -61,10 +60,13 @@ export function Timeline() {
   const reduced = useReducedMotion();
 
   const [active, setActive] = useState(items.length > 2 ? 2 : 0);
-  const [userTook, setUserTook] = useState(false);
   const [direction, setDirection] = useState<1 | -1>(1);
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(sectionRef, { margin: "-20% 0px -20% 0px", once: false });
+  const [hydrated, setHydrated] = useState(false);
+  const trackRef = useRef<HTMLOListElement>(null);
+  const previousLabel = t.a11y.timelinePrevious;
+  const nextLabel = t.a11y.timelineNext;
+
+  useEffect(() => setHydrated(true), []);
 
   const stats = useMemo(() => {
     const years = items.map((i) => parseStartYear(i.period)).filter((n): n is number => n != null);
@@ -87,37 +89,47 @@ export function Timeline() {
     [items.length],
   );
 
-  const takeControl = useCallback(() => setUserTook(true), []);
-
   useEffect(() => {
-    if (reduced || userTook || !inView) return;
-    const id = window.setInterval(() => {
-      setDirection(1);
-      setActive((i) => (i + 1) % items.length);
-    }, AUTOPLAY_MS);
-    return () => window.clearInterval(id);
-  }, [reduced, userTook, inView, items.length]);
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
+    const track = trackRef.current;
+    const tab = document.getElementById(`timeline-tab-${active}`);
+    const item = tab?.parentElement;
+    if (!track || !item) return;
+
+    const left = item.offsetLeft - (track.clientWidth - item.clientWidth) / 2;
+    track.scrollTo({ left: Math.max(0, left), behavior: reduced ? "auto" : "smooth" });
+  }, [active, reduced]);
+
+  const focusTab = (next: number) => {
+    window.requestAnimationFrame(() => {
+      document.getElementById(`timeline-tab-${next}`)?.focus();
+    });
+  };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowRight") {
       e.preventDefault();
-      takeControl();
-      go(active + 1, 1);
+      const next = Math.min(items.length - 1, active + 1);
+      go(next, 1);
+      focusTab(next);
     } else if (e.key === "ArrowLeft") {
       e.preventDefault();
-      takeControl();
-      go(active - 1, -1);
+      const next = Math.max(0, active - 1);
+      go(next, -1);
+      focusTab(next);
     } else if (e.key === "Home") {
-      takeControl();
+      e.preventDefault();
       go(0, -1);
+      focusTab(0);
     } else if (e.key === "End") {
-      takeControl();
-      go(items.length - 1, 1);
+      e.preventDefault();
+      const next = items.length - 1;
+      go(next, 1);
+      focusTab(next);
     }
   };
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
-    takeControl();
     if (info.offset.x < -DRAG_THRESHOLD) go(active + 1, 1);
     else if (info.offset.x > DRAG_THRESHOLD) go(active - 1, -1);
   };
@@ -128,7 +140,12 @@ export function Timeline() {
   const badgeLabel = isCurrent ? t.timeline.currentLabel : current.type.split("·")[0].trim();
 
   return (
-    <section id="trajetoria" className="relative">
+    <section
+      id="trajetoria"
+      aria-labelledby="trajetoria-heading"
+      className="relative"
+      data-timeline-hydrated={hydrated}
+    >
       <motion.div
         initial={{ scaleX: 0 }}
         whileInView={{ scaleX: 1 }}
@@ -139,7 +156,7 @@ export function Timeline() {
         aria-hidden="true"
       />
 
-      <div className="section-container relative py-16 md:py-24">
+      <div className="section-container relative py-14 md:py-24">
         {/* Header centralizado — padrão MIV */}
         <motion.header
           initial={{ opacity: 0, y: 16 }}
@@ -151,30 +168,28 @@ export function Timeline() {
           <p className="section-number font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
             00:02<span className="text-muted-foreground"> · {t.timeline.subtitle}</span>
           </p>
-          <h2 className="mt-3 font-display text-2xl font-medium leading-[1.05] tracking-[-0.035em] text-foreground md:text-3xl lg:text-4xl">
+          <h2
+            id="trajetoria-heading"
+            tabIndex={-1}
+            className="mt-3 font-display text-2xl font-medium leading-[1.05] tracking-[-0.035em] text-foreground outline-none md:text-3xl lg:text-4xl"
+          >
             {t.timeline.title}
           </h2>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground">{t.timeline.lead}</p>
         </motion.header>
 
         {/* Trilho horizontal */}
-        <div
-          ref={sectionRef}
-          className="relative mt-10 md:mt-14"
-          onMouseEnter={takeControl}
-          onFocusCapture={takeControl}
-        >
+        <div className="relative mt-10 md:mt-14">
           <div className="relative flex items-center gap-3 md:gap-4">
             {/* seta esquerda */}
             <button
               type="button"
               onClick={() => {
-                takeControl();
                 go(active - 1, -1);
               }}
               disabled={active === 0}
-              aria-label="anterior"
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-hairline bg-surface text-muted-foreground shadow-sm transition-colors hover:border-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label={previousLabel}
+              className="hidden h-10 w-10 shrink-0 place-items-center rounded-full border border-hairline bg-surface text-muted-foreground shadow-sm transition-colors hover:border-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40 md:grid"
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
@@ -194,9 +209,9 @@ export function Timeline() {
               />
 
               <ol
+                ref={trackRef}
                 role="tablist"
                 aria-label={t.timeline.title}
-                tabIndex={0}
                 onKeyDown={onKeyDown}
                 className="relative z-10 flex items-start justify-between gap-2 overflow-x-auto scroll-smooth outline-none [scrollbar-width:none] focus-visible:ring-2 focus-visible:ring-accent/60 md:overflow-visible [&::-webkit-scrollbar]:hidden"
               >
@@ -206,7 +221,8 @@ export function Timeline() {
                   return (
                     <li
                       key={`${item.period}-${item.title}`}
-                      className="flex min-w-[110px] flex-1 shrink-0 flex-col items-center gap-2 md:min-w-0"
+                      role="presentation"
+                      className="flex min-w-[96px] flex-1 shrink-0 flex-col items-center gap-2 md:min-w-0"
                     >
                       <button
                         type="button"
@@ -216,12 +232,11 @@ export function Timeline() {
                         id={`timeline-tab-${i}`}
                         tabIndex={isActive ? 0 : -1}
                         onClick={() => {
-                          takeControl();
                           go(i, i > active ? 1 : -1);
                         }}
                         aria-label={`${item.period} — ${item.title}`}
                         className={`group relative grid place-items-center rounded-full outline-none transition-all focus-visible:ring-2 focus-visible:ring-accent/70 ${
-                          isActive ? "h-12 w-12 md:h-14 md:w-14" : "h-10 w-10 md:h-11 md:w-11"
+                          isActive ? "h-12 w-12 md:h-14 md:w-14" : "h-11 w-11"
                         }`}
                         style={
                           isActive
@@ -282,14 +297,45 @@ export function Timeline() {
             <button
               type="button"
               onClick={() => {
-                takeControl();
                 go(active + 1, 1);
               }}
               disabled={active === items.length - 1}
-              aria-label="próximo"
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-hairline bg-surface text-muted-foreground shadow-sm transition-colors hover:border-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label={nextLabel}
+              className="hidden h-10 w-10 shrink-0 place-items-center rounded-full border border-hairline bg-surface text-muted-foreground shadow-sm transition-colors hover:border-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40 md:grid"
             >
               <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div
+            role="group"
+            className="mt-4 flex items-center justify-center gap-4 md:hidden"
+            aria-label={t.a11y.timelinePosition(active + 1, items.length)}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                go(active - 1, -1);
+              }}
+              disabled={active === 0}
+              aria-label={previousLabel}
+              className="grid h-11 w-11 place-items-center rounded-full border border-hairline bg-surface text-muted-foreground shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <span className="min-w-12 text-center font-mono text-xs tabular-nums text-muted-foreground">
+              <span className="text-foreground">{active + 1}</span> / {items.length}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                go(active + 1, 1);
+              }}
+              disabled={active === items.length - 1}
+              aria-label={nextLabel}
+              className="grid h-11 w-11 place-items-center rounded-full border border-hairline bg-surface text-muted-foreground shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
 
@@ -301,7 +347,6 @@ export function Timeline() {
                 id={`timeline-panel-${active}`}
                 role="tabpanel"
                 aria-labelledby={`timeline-tab-${active}`}
-                aria-live="polite"
                 custom={direction}
                 initial={reduced ? { opacity: 0 } : { opacity: 0, x: direction * 40 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -311,7 +356,7 @@ export function Timeline() {
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.2}
                 onDragEnd={onDragEnd}
-                className="card-surface card-surface--accent cursor-grab rounded-2xl p-6 active:cursor-grabbing md:p-8"
+                className="card-surface card-surface--accent max-md:touch-pan-y cursor-grab rounded-2xl p-5 active:cursor-grabbing md:p-8"
               >
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_auto] md:items-start md:gap-8">
                   <div className="min-w-0">
@@ -383,7 +428,7 @@ export function Timeline() {
 
         {/* CTA Sobre mim + stats no rodapé com linha tracejada */}
         <div className="mt-10 flex justify-center md:mt-14">
-          <Link to="/sobre" className="btn-outline group">
+          <Link to="/sobre" className="btn-outline group w-full sm:w-auto">
             <span>{t.whyHire.aboutCta}</span>
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </Link>

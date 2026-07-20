@@ -55,7 +55,7 @@ html {
   --color-primary-foreground: var(--accent-foreground);
   --color-secondary: var(--surface);
   --color-secondary-foreground: var(--foreground);
-  --color-destructive: oklch(0.62 0.22 27);
+  --color-destructive: var(--destructive);
   --color-destructive-foreground: oklch(0.985 0 0);
   --color-success: var(--success);
   --color-input: var(--border);
@@ -69,15 +69,17 @@ html {
   --surface-2: oklch(0.95 0.01 262);
   --foreground: oklch(0.18 0.02 265);
   --muted: oklch(0.96 0.008 262);
-  --muted-foreground: oklch(0.42 0.025 265);
+  --muted-foreground: oklch(0.39 0.025 265);
   --border: oklch(0.88 0.015 268);
   --hairline: oklch(0.86 0.02 268);
-  --accent: oklch(0.55 0.19 258);
+  --control-border: oklch(0.58 0.025 265);
+  --accent: oklch(0.5 0.19 258);
   --accent-2: oklch(0.55 0.22 295);
   --accent-soft: oklch(0.94 0.03 265);
   --accent-foreground: oklch(0.99 0.002 260);
-  --ring: oklch(0.55 0.19 258);
+  --ring: oklch(0.5 0.19 258);
   --success: oklch(0.62 0.16 152);
+  --destructive: oklch(0.48 0.18 27);
   --gradient-brand: linear-gradient(135deg, oklch(0.55 0.19 258), oklch(0.55 0.22 295));
   --gradient-brand-soft: linear-gradient(
     135deg,
@@ -105,12 +107,14 @@ html {
   --muted-foreground: oklch(0.72 0.03 265);
   --border: oklch(0.3 0.035 265);
   --hairline: oklch(0.28 0.035 265);
+  --control-border: oklch(0.55 0.03 265);
   --accent: oklch(0.72 0.16 258);
   --accent-2: oklch(0.72 0.18 295);
   --accent-soft: oklch(0.3 0.1 265);
   --accent-foreground: oklch(0.14 0.02 265);
   --ring: oklch(0.72 0.16 258);
   --success: oklch(0.75 0.16 152);
+  --destructive: oklch(0.75 0.15 27);
   --gradient-brand: linear-gradient(135deg, oklch(0.72 0.16 258), oklch(0.72 0.18 295));
   --gradient-brand-soft: linear-gradient(
     135deg,
@@ -190,6 +194,12 @@ html {
 @media (min-width: 768px) {
   .section-container {
     width: min(100% - 4rem, 1080px);
+  }
+}
+
+@media (max-width: 359px) {
+  .section-container {
+    width: min(100% - 1.5rem, 1080px);
   }
 }
 
@@ -331,6 +341,30 @@ html {
   color: transparent;
 }
 
+@media (forced-colors: active) {
+  .text-gradient {
+    background-image: none;
+    color: CanvasText;
+    -webkit-text-fill-color: CanvasText;
+  }
+
+  footer[data-scroll-lock] {
+    --footer-bg: Canvas;
+    --footer-foreground: CanvasText;
+    --footer-muted: CanvasText;
+    --footer-hairline: CanvasText;
+  }
+
+  footer[data-scroll-lock] .text-emerald-500 {
+    color: CanvasText !important;
+  }
+}
+
+/* The required reCAPTCHA disclosure remains visible beside the contact form. */
+.grecaptcha-badge {
+  visibility: hidden !important;
+}
+
 /* Buttons — unified typography, inverse-color hover */
 @utility btn-primary {
   display: inline-flex;
@@ -437,4 +471,22 @@ html {
   font-weight: 400;
   color: currentColor;
   animation: tw-blink 1s step-end infinite;
+}
+
+@media (max-width: 767px) {
+  .font-mono.text-\[10px\],
+  .font-mono.text-\[11px\] {
+    font-size: 0.75rem;
+  }
+
+  .btn-primary,
+  .btn-outline {
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+  }
+
+  .chip {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+  }
 }

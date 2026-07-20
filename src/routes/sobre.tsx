@@ -23,7 +23,7 @@ export const Route = createFileRoute("/sobre")({
     ],
     links: [
       { rel: "canonical", href: "/sobre" },
-      { rel: "preload", as: "image", href: profileImg, fetchpriority: "high" },
+      { rel: "preload", as: "image", href: profileImg, fetchPriority: "high" },
     ],
   }),
   component: SobrePage,
@@ -35,7 +35,7 @@ function SobrePage() {
     <div className="flex min-h-dvh flex-col bg-background">
       <Header />
       <div className="h-[64px] shrink-0" aria-hidden="true" />
-      <main id="main" className="flex-1 overflow-x-clip">
+      <main id="main" tabIndex={-1} className="flex-1 overflow-x-clip outline-none">
         <div className="section-container pt-10 md:pt-14">
           <Link
             to="/"
@@ -45,7 +45,7 @@ function SobrePage() {
             {t.about.backHome}
           </Link>
         </div>
-        <About />
+        <About headingLevel={1} />
         <NextSteps />
       </main>
       <Footer />

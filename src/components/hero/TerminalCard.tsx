@@ -150,7 +150,7 @@ export function TerminalCard() {
   const lines = TEMPLATE.split("\n");
 
   return (
-    <div className="font-mono text-[clamp(8px,1vw,12.5px)] leading-[1.65]">
+    <div aria-hidden="true" className="font-mono text-[clamp(8px,1vw,12.5px)] leading-[1.65]">
       <div className="grid grid-cols-[2.2rem_minmax(0,1fr)] gap-x-3">
         <div className="select-none text-right text-muted-foreground/60 tabular-nums">
           {lines.map((_, i) => (

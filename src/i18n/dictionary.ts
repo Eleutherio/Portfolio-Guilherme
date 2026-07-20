@@ -360,6 +360,7 @@ export const dictionary = {
     },
     footer: {
       rights: "guifer.tech",
+      accessibility: "Acessibilidade",
       availableLead: "frase a definir",
       availableHighlight: "",
       thanksMessage: "Obrigado pela visita! :)",
@@ -384,6 +385,50 @@ export const dictionary = {
 
     a11y: {
       skipToContent: "Pular para o conteúdo",
+      homeLink: "Guilherme Ferreira — início",
+      primaryNavigation: "Navegação principal",
+      mobileNavigation: "Navegação mobile",
+      socialNavigation: "Redes sociais",
+      openMenu: "Abrir menu",
+      closeMenu: "Fechar menu",
+      timelinePrevious: "Marco anterior",
+      timelineNext: "Próximo marco",
+      timelinePosition: (current: number, total: number) => `Marco ${current} de ${total}`,
+    },
+    accessibility: {
+      kicker: "// acessibilidade",
+      title: "Acessibilidade",
+      statusLabel: "Status da avaliação",
+      status: "Avaliação WCAG 2.2 AA em andamento",
+      intro:
+        "Este portfólio está passando por uma avaliação formal de acessibilidade. A conformidade ainda não é declarada enquanto existirem testes manuais ou automatizados pendentes.",
+      commitmentTitle: "Compromisso",
+      commitmentBody:
+        "A interface deve funcionar por padrão com teclado, leitores de tela, ampliação, alto contraste e diferentes dispositivos. O menu de acessibilidade é complementar e não substitui esses requisitos.",
+      scopeTitle: "Escopo avaliado",
+      scopeItems: [
+        "Página inicial e página sobre",
+        "Cases GrenGame, Abriu Chaveiro e Martha Izabel",
+        "Formulário de contato e seus estados",
+        "Currículo disponibilizado em PDF",
+        "Menu de acessibilidade e variações responsivas",
+      ],
+      methodsTitle: "Métodos de avaliação",
+      methodsItems: [
+        "axe-core e ASES",
+        "Navegação completa por teclado",
+        "NVDA, TalkBack ou VoiceOver",
+        "Zoom de 200%, reflow e espaçamento textual",
+        "Forced Colors, temas e redução de movimento",
+      ],
+      limitationsTitle: "Pendências atuais",
+      limitationsBody:
+        "ASES na URL publicada, validação em leitores de tela e dispositivos reais, auditoria do PDF e revisão manual de todos os critérios A e AA.",
+      feedbackTitle: "Encontrou uma barreira?",
+      feedbackBody:
+        "Descreva a página, o dispositivo e a dificuldade encontrada. Isso ajuda a reproduzir e corrigir o problema.",
+      feedbackCta: "Relatar barreira por e-mail",
+      updatedLabel: "Última atualização",
     },
     errors: {
       notFoundKicker: "404",
@@ -765,6 +810,7 @@ export const dictionary = {
     },
     footer: {
       rights: "guifer.tech",
+      accessibility: "Accessibility",
       availableLead: "phrase to be defined",
       availableHighlight: "",
       thanksMessage: "Thanks for stopping by! :)",
@@ -789,6 +835,50 @@ export const dictionary = {
 
     a11y: {
       skipToContent: "Skip to content",
+      homeLink: "Guilherme Ferreira — home",
+      primaryNavigation: "Primary navigation",
+      mobileNavigation: "Mobile navigation",
+      socialNavigation: "Social media",
+      openMenu: "Open menu",
+      closeMenu: "Close menu",
+      timelinePrevious: "Previous milestone",
+      timelineNext: "Next milestone",
+      timelinePosition: (current: number, total: number) => `Milestone ${current} of ${total}`,
+    },
+    accessibility: {
+      kicker: "// accessibility",
+      title: "Accessibility",
+      statusLabel: "Evaluation status",
+      status: "WCAG 2.2 AA evaluation in progress",
+      intro:
+        "This portfolio is undergoing a formal accessibility evaluation. Conformance is not claimed while automated or manual tests remain pending.",
+      commitmentTitle: "Commitment",
+      commitmentBody:
+        "The interface must work by default with keyboards, screen readers, magnification, high contrast and different devices. The accessibility menu is complementary and does not replace these requirements.",
+      scopeTitle: "Evaluation scope",
+      scopeItems: [
+        "Home and about pages",
+        "GrenGame, Abriu Chaveiro and Martha Izabel case studies",
+        "Contact form and its states",
+        "Resume provided as a PDF",
+        "Accessibility menu and responsive variations",
+      ],
+      methodsTitle: "Evaluation methods",
+      methodsItems: [
+        "axe-core and ASES",
+        "Complete keyboard navigation",
+        "NVDA, TalkBack or VoiceOver",
+        "200% zoom, reflow and text spacing",
+        "Forced Colors, themes and reduced motion",
+      ],
+      limitationsTitle: "Current pending checks",
+      limitationsBody:
+        "ASES against the published URL, validation with screen readers and real devices, the PDF audit and manual review of every Level A and AA criterion.",
+      feedbackTitle: "Found a barrier?",
+      feedbackBody:
+        "Describe the page, device and difficulty you encountered. This helps reproduce and fix the problem.",
+      feedbackCta: "Report a barrier by email",
+      updatedLabel: "Last updated",
     },
     errors: {
       notFoundKicker: "404",

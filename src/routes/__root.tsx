@@ -11,11 +11,16 @@ import type { ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { ThemeProvider } from "@/lib/theme";
 import { AppProvider, useApp } from "@/i18n/AppContext";
+import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
 
 function NotFoundComponent() {
   const { t } = useApp();
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
+    <main
+      id="main"
+      tabIndex={-1}
+      className="flex min-h-dvh items-center justify-center bg-background px-4 outline-none"
+    >
       <div className="max-w-md text-center">
         <p className="font-mono text-xs uppercase tracking-[0.3em] text-muted-foreground">
           {t.errors.notFoundKicker}
@@ -31,7 +36,7 @@ function NotFoundComponent() {
           {t.errors.notFoundCta}
         </a>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -41,7 +46,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const { t } = useApp();
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
+    <main
+      id="main"
+      tabIndex={-1}
+      className="flex min-h-dvh items-center justify-center bg-background px-4 outline-none"
+    >
       <div className="max-w-md text-center">
         <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
           {t.errors.boundaryTitle}
@@ -65,7 +74,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           </a>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -94,6 +103,7 @@ const PERSON_JSONLD = {
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
+      { title: "Guilherme Ferreira Eleutherio — Full-stack Developer" },
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "theme-color", content: "#0a0a14" },
@@ -117,7 +127,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR" className="light">
       <head>
         <HeadContent />
       </head>
@@ -136,9 +146,24 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AppProvider>
+          <GlobalSkipLink />
           <Outlet />
+          <AccessibilityWidget />
         </AppProvider>
       </ThemeProvider>
     </QueryClientProvider>
+  );
+}
+
+function GlobalSkipLink() {
+  const { t } = useApp();
+
+  return (
+    <a
+      href="#main"
+      className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-foreground focus:px-4 focus:py-2 focus:text-background"
+    >
+      {t.a11y.skipToContent}
+    </a>
   );
 }

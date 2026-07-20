@@ -12,13 +12,25 @@ type Props = {
   children: ReactNode;
   /** Replace the default header with custom markup. */
   headerSlot?: ReactNode;
+  /** Semantic heading level without changing the visual style. */
+  headingLevel?: 1 | 2;
 };
 
-export function SectionShell({ id, number, label, sublabel, lead, children, headerSlot }: Props) {
+export function SectionShell({
+  id,
+  number,
+  label,
+  sublabel,
+  lead,
+  children,
+  headerSlot,
+  headingLevel = 2,
+}: Props) {
   const kicker = sublabel?.replace(/^\/\/\s*/, "");
+  const Heading = headingLevel === 1 ? "h1" : "h2";
 
   return (
-    <section id={id} className="relative">
+    <section id={id} aria-labelledby={`${id}-heading`} className="relative">
       <motion.div
         initial={{ scaleX: 0 }}
         whileInView={{ scaleX: 1 }}
@@ -29,7 +41,7 @@ export function SectionShell({ id, number, label, sublabel, lead, children, head
         aria-hidden="true"
       />
 
-      <div className="section-container py-16 md:py-24">
+      <div className="section-container py-14 md:py-24">
         {headerSlot ? (
           <motion.header
             initial={{ opacity: 0, y: 16 }}
@@ -52,9 +64,13 @@ export function SectionShell({ id, number, label, sublabel, lead, children, head
               00:{number}
               {kicker ? <span className="text-muted-foreground"> · {kicker}</span> : null}
             </p>
-            <h2 className="mt-3 font-display text-2xl font-medium leading-[1.05] tracking-[-0.035em] text-foreground md:text-3xl lg:text-4xl">
+            <Heading
+              id={`${id}-heading`}
+              tabIndex={-1}
+              className="mt-3 font-display text-2xl font-medium leading-[1.05] tracking-[-0.035em] text-foreground outline-none md:text-3xl lg:text-4xl"
+            >
               {label}
-            </h2>
+            </Heading>
             {lead ? (
               <p className="mt-4 text-base leading-relaxed text-muted-foreground">{lead}</p>
             ) : null}

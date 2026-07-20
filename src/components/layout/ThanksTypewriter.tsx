@@ -79,17 +79,21 @@ export function ThanksTypewriter() {
     };
   }, [allowed, phase, displayed, message]);
 
-  if (!allowed || phase === "done") return null;
+  if (!message) return null;
+
+  if (!allowed || phase === "done") {
+    return <p className="sr-only">{message}</p>;
+  }
 
   return (
     <p
       className="font-display text-xl font-medium tracking-[-0.02em] md:text-2xl"
       style={{ color: "var(--footer-foreground)" }}
-      aria-live="polite"
     >
-      <span>{displayed}</span>
-      <span className="tw-caret" aria-hidden="true">
-        _
+      <span className="sr-only">{message}</span>
+      <span aria-hidden="true">
+        {displayed}
+        <span className="tw-caret">_</span>
       </span>
     </p>
   );
