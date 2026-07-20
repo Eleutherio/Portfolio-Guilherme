@@ -1,41 +1,42 @@
 import { useState, type FormEvent } from "react";
 import { motion } from "motion/react";
 import { ArrowUpRight, Loader2, Mail } from "lucide-react";
-import { z } from "zod";
 import { GithubIcon, LinkedinIcon } from "@/components/icons/Brand";
 import { useApp } from "@/i18n/AppContext";
+import {
+  CONTACT_LIMITS,
+  contactPayloadSchema,
+  createContactPayloadSchema,
+  type ContactApiResponse,
+} from "@/lib/contact-contract";
+import { executeContactRecaptcha } from "@/lib/recaptcha";
 import { SectionShell } from "./SectionShell";
 
 type Status = "idle" | "submitting" | "success" | "error";
-type FieldErrors = Partial<Record<"name" | "email" | "message", string>>;
+type FieldErrors = Partial<Record<"name" | "email" | "subject" | "message", string>>;
 
 const buildSchema = (lang: "pt" | "en") => {
   const msg = (pt: string, en: string) => (lang === "pt" ? pt : en);
-  return z.object({
-    name: z
-      .string()
-      .trim()
-      .min(
-        2,
-        msg("Informe seu nome (mín. 2 caracteres).", "Please enter your name (min. 2 chars)."),
-      )
-      .max(100, msg("Nome muito longo.", "Name is too long.")),
-    email: z
-      .string()
-      .trim()
-      .email(msg("E-mail inválido.", "Invalid email."))
-      .max(255, msg("E-mail muito longo.", "Email is too long.")),
-    message: z
-      .string()
-      .trim()
-      .min(
-        10,
-        msg("Mensagem muito curta (mín. 10 caracteres).", "Message too short (min. 10 chars)."),
-      )
-      .max(
-        1000,
-        msg("Mensagem muito longa (máx. 1000 caracteres).", "Message too long (max 1000 chars)."),
-      ),
+  return createContactPayloadSchema({
+    nameRequired: msg(
+      "Informe seu nome (mín. 2 caracteres).",
+      "Please enter your name (min. 2 chars).",
+    ),
+    nameTooLong: msg("Nome muito longo.", "Name is too long."),
+    nameInvalid: msg("Nome inválido.", "Invalid name."),
+    emailInvalid: msg("E-mail inválido.", "Invalid email."),
+    emailTooLong: msg("E-mail muito longo.", "Email is too long."),
+    subjectTooLong: msg("Assunto muito longo.", "Subject is too long."),
+    subjectInvalid: msg("Assunto inválido.", "Invalid subject."),
+    messageTooShort: msg(
+      "Mensagem muito curta (mín. 10 caracteres).",
+      "Message too short (min. 10 chars).",
+    ),
+    messageTooLong: msg(
+      "Mensagem muito longa (máx. 1000 caracteres).",
+      "Message too long (max 1000 chars).",
+    ),
+    messageInvalid: msg("Mensagem inválida.", "Invalid message."),
   });
 };
 
@@ -44,30 +45,33 @@ export function Contact() {
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<FieldErrors>({});
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (status === "submitting") return;
+
     const form = e.currentTarget;
     const data = new FormData(form);
-
-    // Honeypot — bots often fill hidden fields. Fail silently.
-    if ((data.get("website") as string)?.trim()) {
-      setStatus("success");
-      form.reset();
-      return;
-    }
 
     const schema = buildSchema(lang);
     const result = schema.safeParse({
       name: data.get("name"),
       email: data.get("email"),
+      subject: data.get("subject"),
       message: data.get("message"),
+      website: data.get("website"),
+      locale: lang,
     });
 
     if (!result.success) {
       const fieldErrors: FieldErrors = {};
       for (const issue of result.error.issues) {
-        const key = issue.path[0] as keyof FieldErrors;
-        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+        const key = issue.path[0];
+        if (
+          (key === "name" || key === "email" || key === "subject" || key === "message") &&
+          !fieldErrors[key]
+        ) {
+          fieldErrors[key] = issue.message;
+        }
       }
       setErrors(fieldErrors);
       setStatus("error");
@@ -76,14 +80,37 @@ export function Contact() {
 
     setErrors({});
     setStatus("submitting");
-    setTimeout(() => {
+
+    try {
+      const antiBotToken = await executeContactRecaptcha();
+      const payload = contactPayloadSchema.safeParse({ ...result.data, antiBotToken });
+      if (!payload.success) {
+        setStatus("error");
+        return;
+      }
+
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload.data),
+        signal: AbortSignal.timeout(30_000),
+      });
+      const apiResult = (await response.json().catch(() => null)) as ContactApiResponse | null;
+
+      if (!response.ok || !apiResult?.ok) {
+        setStatus("error");
+        return;
+      }
+
       setStatus("success");
       form.reset();
-    }, 700);
+    } catch {
+      setStatus("error");
+    }
   };
 
   const inputCls =
-    "w-full border-0 border-b border-border bg-transparent px-0 py-3 text-base text-foreground placeholder:text-muted-foreground transition-colors focus:border-accent focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-[invalid=true]:border-destructive";
+    "w-full border-0 border-b border-[var(--control-border)] bg-transparent px-0 py-3 text-base text-foreground placeholder:text-muted-foreground transition-colors focus:border-accent focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-[invalid=true]:border-destructive";
   const labelCls = "block font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground";
   const errorCls = "mt-1.5 font-mono text-[11px] text-destructive";
 
@@ -139,7 +166,7 @@ export function Contact() {
                 <a
                   href={href}
                   {...(external ? { target: "_blank", rel: "noreferrer noopener" } : {})}
-                  className="group inline-flex items-center gap-3 text-foreground"
+                  className="group inline-flex max-w-full min-w-0 items-center gap-3 text-foreground"
                   aria-label={label}
                 >
                   <span
@@ -148,7 +175,7 @@ export function Contact() {
                   >
                     <Icon className="h-4 w-4" />
                   </span>
-                  <span className="link-ink font-mono text-sm">{label}</span>
+                  <span className="link-ink min-w-0 break-all font-mono text-sm">{label}</span>
                   <ArrowUpRight
                     className="h-3.5 w-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
                     aria-hidden="true"
@@ -170,6 +197,7 @@ export function Contact() {
         className="mt-12 space-y-7 md:col-span-7 md:mt-0"
         noValidate
         aria-label={formLabel}
+        aria-busy={status === "submitting"}
       >
         <p className={labelCls}>{formLabel}</p>
 
@@ -190,7 +218,7 @@ export function Contact() {
             name="name"
             type="text"
             required
-            maxLength={100}
+            maxLength={CONTACT_LIMITS.name}
             autoComplete="name"
             placeholder={t.contact.form.namePh}
             aria-label={t.contact.form.name.replace(/^\/\/\s*/, "")}
@@ -214,7 +242,7 @@ export function Contact() {
             name="email"
             type="email"
             required
-            maxLength={255}
+            maxLength={CONTACT_LIMITS.email}
             autoComplete="email"
             placeholder={t.contact.form.emailPh}
             aria-label={t.contact.form.email.replace(/^\/\/\s*/, "")}
@@ -230,6 +258,29 @@ export function Contact() {
         </div>
 
         <div>
+          <label htmlFor="contact-subject" className={labelCls}>
+            {t.contact.form.subject}
+          </label>
+          <input
+            id="contact-subject"
+            name="subject"
+            type="text"
+            maxLength={CONTACT_LIMITS.subject}
+            autoComplete="off"
+            placeholder={t.contact.form.subjectPh}
+            aria-label={t.contact.form.subject.replace(/^\/\/\s*/, "")}
+            aria-invalid={errors.subject ? true : undefined}
+            aria-describedby={errors.subject ? "err-subject" : undefined}
+            className={inputCls}
+          />
+          {errors.subject && (
+            <p id="err-subject" role="alert" className={errorCls}>
+              {errors.subject}
+            </p>
+          )}
+        </div>
+
+        <div>
           <label htmlFor="contact-message" className={labelCls}>
             {t.contact.form.message}
           </label>
@@ -237,7 +288,7 @@ export function Contact() {
             id="contact-message"
             name="message"
             required
-            maxLength={1000}
+            maxLength={CONTACT_LIMITS.message}
             rows={5}
             placeholder={t.contact.form.messagePh}
             aria-label={t.contact.form.message.replace(/^\/\/\s*/, "")}
@@ -256,7 +307,7 @@ export function Contact() {
           <button
             type="submit"
             disabled={status === "submitting"}
-            className="btn-primary group disabled:opacity-60"
+            className="btn-primary group w-full disabled:opacity-60 sm:w-auto"
           >
             {status === "submitting" ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -271,7 +322,29 @@ export function Contact() {
           <p aria-live="polite" role="status" className="font-mono text-xs text-muted-foreground">
             {status === "success" && t.contact.form.success}
             {status === "error" && Object.keys(errors).length === 0 && t.contact.form.error}
-            {status === "idle" && t.contact.form.recaptchaNotice}
+            {status === "idle" && (
+              <>
+                {t.contact.form.recaptchaNotice}{" "}
+                <a
+                  href="https://policies.google.com/privacy"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="link-ink text-foreground"
+                >
+                  {t.contact.form.recaptchaPrivacy}
+                </a>{" "}
+                {t.contact.form.recaptchaJoin}{" "}
+                <a
+                  href="https://policies.google.com/terms"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="link-ink text-foreground"
+                >
+                  {t.contact.form.recaptchaTerms}
+                </a>
+                .
+              </>
+            )}
           </p>
         </div>
 
