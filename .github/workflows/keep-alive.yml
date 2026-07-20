@@ -1,0 +1,32 @@
+name: Keep services active
+
+on:
+  schedule:
+    - cron: "7,17,27,37,47,57 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: keep-services-active
+  cancel-in-progress: false
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check Render and Supabase
+        env:
+          KEEP_ALIVE_API_URL: ${{ vars.KEEP_ALIVE_API_URL }}
+          KEEP_ALIVE_SECRET: ${{ secrets.KEEP_ALIVE_SECRET }}
+        run: node scripts/keep-alive.mjs
