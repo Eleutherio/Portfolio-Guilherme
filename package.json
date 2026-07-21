@@ -1,5 +1,6 @@
 {
   "name": "guifer-portfolio",
+  "version": "0.0.0",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -15,6 +16,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:api": "tsx --test server/app.test.ts",
+    "security:audit": "npm audit --audit-level=high",
+    "security:sbom": "npm sbom --package-lock-only --sbom-format cyclonedx --sbom-type application",
+    "security:ip-spoof": "node scripts/verify-render-ip-spoofing.mjs",
     "format": "prettier --write .",
     "test:a11y": "playwright test e2e/accessibility.spec.ts",
     "test:a11y:headed": "playwright test e2e/accessibility.spec.ts --headed"

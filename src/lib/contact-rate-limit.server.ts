@@ -1,4 +1,9 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import {
+  ClientAddressError,
+  resolveClientAddress,
+  type RequestContext,
+} from "../../server/request-context";
 
 type RateLimitResult = {
   allowed: boolean;
@@ -38,15 +43,6 @@ type ScopedRateLimitOptions = {
   global: number;
 };
 
-function getClientAddress(request: Request): string {
-  const address =
-    request.headers.get("cf-connecting-ip") ??
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    "unknown";
-
-  return address.slice(0, 128);
-}
-
 async function hmac(value: string, secret: string): Promise<string> {
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
@@ -73,18 +69,30 @@ async function consume(keyHash: string, limit: number, windowSeconds: number): P
   return data;
 }
 
-export async function checkContactRateLimit(request: Request): Promise<RateLimitResult> {
+export async function checkContactRateLimit(
+  request: Request,
+  context: RequestContext,
+): Promise<RateLimitResult> {
   const config = getRateLimitConfig();
-  return checkScopedRateLimit(request, { scope: "contact", ...config });
+  return checkScopedRateLimit(request, { scope: "contact", ...config }, context);
 }
 
 export async function checkScopedRateLimit(
   request: Request,
   options: ScopedRateLimitOptions,
+  context: RequestContext,
 ): Promise<RateLimitResult> {
   if (!options.secret || options.secret.length < 32) throw new RateLimitError();
 
-  const ipKey = await hmac(`${options.scope}:ip:${getClientAddress(request)}`, options.secret);
+  let clientAddress: string;
+  try {
+    clientAddress = resolveClientAddress(request, context);
+  } catch (error) {
+    if (error instanceof ClientAddressError) throw new RateLimitError();
+    throw error;
+  }
+
+  const ipKey = await hmac(`${options.scope}:ip:${clientAddress}`, options.secret);
   const ipAllowed = await consume(ipKey, options.perIp, options.windowSeconds);
 
   if (!ipAllowed) {

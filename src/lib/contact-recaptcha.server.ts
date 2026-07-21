@@ -49,37 +49,65 @@ function isRecentChallenge(timestamp: string | undefined): boolean {
   return age >= -30_000 && age <= TOKEN_MAX_AGE_MS;
 }
 
-export async function verifyContactRecaptcha(token: string, request: Request): Promise<void> {
-  const secret = process.env.RECAPTCHA_SECRET_KEY;
-  if (!secret) throw new RecaptchaUnavailableError();
+function configuredSecrets(): string[] {
+  const primary = process.env.RECAPTCHA_SECRET_KEY?.trim();
+  if (!primary) return [];
 
-  const body = new URLSearchParams({ secret, response: token });
-  let response: Response;
-  try {
-    response = await fetch(VERIFY_ENDPOINT, {
-      method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded" },
-      body,
-      signal: AbortSignal.timeout(VERIFY_TIMEOUT_MS),
-    });
-  } catch {
-    throw new RecaptchaUnavailableError();
-  }
+  const previous = process.env.RECAPTCHA_SECRET_KEY_PREVIOUS?.trim();
+  return previous && previous !== primary ? [primary, previous] : [primary];
+}
 
-  if (!response.ok) throw new RecaptchaUnavailableError();
-
-  const result = verifyResponseSchema.safeParse(await response.json().catch(() => null));
-  if (!result.success) throw new RecaptchaUnavailableError();
-
-  const hostname = result.data.hostname?.toLowerCase();
-  const accepted =
-    result.data.success &&
-    result.data.action === RECAPTCHA_ACTION &&
-    typeof result.data.score === "number" &&
-    result.data.score >= readMinimumScore() &&
+function isAcceptedAssessment(
+  data: z.infer<typeof verifyResponseSchema>,
+  request: Request,
+): boolean {
+  const hostname = data.hostname?.toLowerCase();
+  return (
+    data.success &&
+    data.action === RECAPTCHA_ACTION &&
+    typeof data.score === "number" &&
+    data.score >= readMinimumScore() &&
     typeof hostname === "string" &&
     getAllowedHostnames(request).has(hostname) &&
-    isRecentChallenge(result.data.challenge_ts);
+    isRecentChallenge(data.challenge_ts)
+  );
+}
 
-  if (!accepted) throw new RecaptchaRejectedError();
+export async function verifyContactRecaptchaWithSecrets(
+  token: string,
+  request: Request,
+  secrets: string[],
+  fetcher: typeof fetch = fetch,
+): Promise<void> {
+  if (secrets.length === 0) throw new RecaptchaUnavailableError();
+
+  let receivedValidAssessment = false;
+  for (const secret of [...new Set(secrets.map((value) => value.trim()).filter(Boolean))]) {
+    let response: Response;
+    try {
+      response = await fetcher(VERIFY_ENDPOINT, {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ secret, response: token }),
+        signal: AbortSignal.timeout(VERIFY_TIMEOUT_MS),
+      });
+    } catch {
+      continue;
+    }
+
+    if (!response.ok) continue;
+
+    const result = verifyResponseSchema.safeParse(await response.json().catch(() => null));
+    if (!result.success) continue;
+    receivedValidAssessment = true;
+
+    if (isAcceptedAssessment(result.data, request)) return;
+  }
+
+  if (receivedValidAssessment) throw new RecaptchaRejectedError();
+  throw new RecaptchaUnavailableError();
+}
+
+export async function verifyContactRecaptcha(token: string, request: Request): Promise<void> {
+  return verifyContactRecaptchaWithSecrets(token, request, configuredSecrets());
 }

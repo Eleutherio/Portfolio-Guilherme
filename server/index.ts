@@ -23,7 +23,7 @@ const server = createServer(async (incoming, outgoing) => {
       duplex: "half",
     } as RequestInit & { duplex: "half" });
 
-    const response = await app(request);
+    const response = await app(request, { peerAddress: incoming.socket.remoteAddress });
     outgoing.statusCode = response.status;
     response.headers.forEach((value, key) => outgoing.setHeader(key, value));
 

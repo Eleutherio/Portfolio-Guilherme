@@ -10,6 +10,7 @@ import {
   RecaptchaUnavailableError,
   verifyContactRecaptcha,
 } from "@/lib/contact-recaptcha.server";
+import type { RequestContext } from "../../server/request-context";
 
 class InvalidRequestError extends Error {
   constructor() {
@@ -90,7 +91,10 @@ function logFailure(requestId: string, error: unknown) {
   console.error("[contact] request failed", { requestId, category });
 }
 
-export async function handleContactRequest(request: Request): Promise<Response> {
+export async function handleContactRequest(
+  request: Request,
+  context: RequestContext,
+): Promise<Response> {
   const requestId = crypto.randomUUID();
 
   try {
@@ -99,7 +103,7 @@ export async function handleContactRequest(request: Request): Promise<Response> 
       throw new InvalidRequestError();
     }
 
-    const rateLimit = await checkContactRateLimit(request);
+    const rateLimit = await checkContactRateLimit(request, context);
     if (!rateLimit.allowed) {
       return jsonResponse({ ok: false, code: "rate_limited" }, 429, {
         "retry-after": String(rateLimit.retryAfterSeconds),

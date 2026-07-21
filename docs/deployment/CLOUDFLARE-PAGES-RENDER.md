@@ -19,6 +19,8 @@
 6. Configurar domínio, origens e hostnames finais.
 7. Configurar e testar o keep-alive no GitHub Actions.
 
+Os controles de IP, headers, e-mail, rotação anual e SBOM estão detalhados em [SECURITY-OPERATIONS.md](./SECURITY-OPERATIONS.md).
+
 ## 1. Supabase
 
 Crie um projeto Free e aplique, na ordem, todos os arquivos de `supabase/migrations/`. A última migration remove a gravação pública em `coffee_taps` e cria `app_healthcheck()`, acessível somente pelo backend com a service role.
@@ -72,6 +74,8 @@ Além dos valores já declarados no Blueprint, preencha os campos marcados como 
 
 Revise `API_ALLOWED_ORIGINS`, `CONTACT_ALLOWED_ORIGINS` e `RECAPTCHA_ALLOWED_HOSTNAMES` quando os domínios finais forem conhecidos.
 
+Mantenha `CLIENT_IP_SOURCE=render`. Esse valor fixa o primeiro IP válido de `X-Forwarded-For` como a única fonte do rate limit; não substitua por um header controlado pelo cliente. `RECAPTCHA_SECRET_KEY_PREVIOUS` não faz parte do Blueprint permanente: crie a variável manualmente apenas durante a janela de rotação descrita no guia de segurança e remova-a ao final.
+
 O Render usa `GET /health/live` como health check. Essa rota não consulta serviços externos, portanto uma indisponibilidade do Supabase não provoca reinício do processo Node.
 
 ## 5. Cloudflare Pages
@@ -115,7 +119,9 @@ Após cada deploy:
 4. envie um contato real e confirme entrega, Reply-To e ausência de dados pessoais nos logs;
 5. valide café e métricas do GitHub;
 6. confirme `robots.txt`, `sitemap.xml`, currículo e headers HTTP;
-7. rode novamente lint, typecheck, build e testes automatizados.
+7. rode novamente lint, typecheck, build e testes automatizados;
+8. confirme CSP, HSTS, COOP e CORP no frontend e na API;
+9. execute `npm run security:ip-spoof` conforme o guia de segurança.
 
 ## Limitações conhecidas do plano gratuito
 

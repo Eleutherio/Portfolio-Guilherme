@@ -2,6 +2,7 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { checkScopedRateLimit, RateLimitError } from "@/lib/contact-rate-limit.server";
 import { json, readJsonBody } from "../http";
+import type { RequestContext } from "../request-context";
 
 const coffeePayloadSchema = z.object({ visitorId: z.string().uuid() }).strict();
 
@@ -11,7 +12,10 @@ async function readCount(): Promise<number> {
   return Number(data ?? 0);
 }
 
-export async function handleCoffeeRequest(request: Request): Promise<Response> {
+export async function handleCoffeeRequest(
+  request: Request,
+  context: RequestContext,
+): Promise<Response> {
   try {
     if (request.method === "GET") return json({ count: await readCount() });
     if (request.method !== "POST") return json({ ok: false }, 405, { allow: "GET, POST" });
@@ -24,13 +28,17 @@ export async function handleCoffeeRequest(request: Request): Promise<Response> {
 
     const secret = process.env.COFFEE_RATE_LIMIT_SECRET ?? process.env.CONTACT_RATE_LIMIT_SECRET;
     if (!secret) throw new RateLimitError();
-    const rateLimit = await checkScopedRateLimit(request, {
-      scope: "coffee",
-      secret,
-      windowSeconds: 86_400,
-      perIp: 20,
-      global: 1_000,
-    });
+    const rateLimit = await checkScopedRateLimit(
+      request,
+      {
+        scope: "coffee",
+        secret,
+        windowSeconds: 86_400,
+        perIp: 20,
+        global: 1_000,
+      },
+      context,
+    );
     if (!rateLimit.allowed) {
       return json({ ok: false }, 429, { "retry-after": String(rateLimit.retryAfterSeconds) });
     }

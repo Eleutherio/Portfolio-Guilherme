@@ -12,6 +12,8 @@ services:
         value: 22.16.0
       - key: API_ALLOWED_ORIGINS
         value: https://portfolio-guilherme-et1.pages.dev,https://guifer.tech,https://www.guifer.tech
+      - key: CLIENT_IP_SOURCE
+        value: render
       - key: CONTACT_ALLOWED_ORIGINS
         value: https://portfolio-guilherme-et1.pages.dev,https://guifer.tech,https://www.guifer.tech
       - key: BREVO_SMTP_HOST

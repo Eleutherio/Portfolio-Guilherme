@@ -1,6 +1,6 @@
-import nodemailer, { type Transporter } from "nodemailer";
+import nodemailer, { type SendMailOptions, type Transporter } from "nodemailer";
 import { z } from "zod";
-import type { ContactPayload } from "@/lib/contact-contract";
+import { contactPayloadSchema, type ContactPayload } from "@/lib/contact-contract";
 
 function hasControlCharacters(value: string): boolean {
   return Array.from(value).some((character) => {
@@ -130,24 +130,40 @@ function buildHtml(payload: ContactPayload): string {
   `.trim();
 }
 
+export function buildContactEmail(
+  payload: ContactPayload,
+  requestId: string,
+  sender: Pick<EmailConfig, "from" | "to">,
+): SendMailOptions {
+  const parsedPayload = contactPayloadSchema.safeParse(payload);
+  const parsedSender = emailConfigSchema.pick({ from: true, to: true }).safeParse(sender);
+  const parsedRequestId = z.string().uuid().safeParse(requestId);
+
+  if (!parsedPayload.success || !parsedSender.success || !parsedRequestId.success) {
+    throw new EmailDeliveryError();
+  }
+
+  return {
+    from: parsedSender.data.from,
+    to: parsedSender.data.to,
+    replyTo: {
+      address: parsedPayload.data.email,
+      name: parsedPayload.data.name,
+    },
+    subject: buildSubject(parsedPayload.data),
+    text: buildText(parsedPayload.data),
+    html: buildHtml(parsedPayload.data),
+    headers: {
+      "X-Contact-Request-ID": parsedRequestId.data,
+    },
+  };
+}
+
 export async function sendContactEmail(payload: ContactPayload, requestId: string): Promise<void> {
   const config = getEmailConfig();
 
   try {
-    await getTransporter(config).sendMail({
-      from: config.from,
-      to: config.to,
-      replyTo: {
-        address: payload.email,
-        name: payload.name,
-      },
-      subject: buildSubject(payload),
-      text: buildText(payload),
-      html: buildHtml(payload),
-      headers: {
-        "X-Contact-Request-ID": requestId,
-      },
-    });
+    await getTransporter(config).sendMail(buildContactEmail(payload, requestId, config));
   } catch {
     throw new EmailDeliveryError();
   }
