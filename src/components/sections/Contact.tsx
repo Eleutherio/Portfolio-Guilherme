@@ -11,6 +11,7 @@ import {
 } from "@/lib/contact-contract";
 import { executeContactRecaptcha } from "@/lib/recaptcha";
 import { apiUrl } from "@/lib/api-client";
+import { PrivacyNoticeDialog } from "@/components/privacy/PrivacyNoticeDialog";
 import { SectionShell } from "./SectionShell";
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -343,6 +344,10 @@ export function Contact() {
                 >
                   {t.contact.form.recaptchaTerms}
                 </a>
+                . {t.contact.form.sitePrivacyPrefix}{" "}
+                <PrivacyNoticeDialog triggerClassName="link-ink text-left text-foreground">
+                  {t.contact.form.sitePrivacy}
+                </PrivacyNoticeDialog>
                 .
               </>
             )}

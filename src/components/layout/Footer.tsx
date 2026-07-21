@@ -6,6 +6,7 @@ import { useApp } from "@/i18n/AppContext";
 import { useLiveMetrics } from "@/lib/useLiveMetrics";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Link } from "@tanstack/react-router";
+import { PrivacyNoticeDialog } from "@/components/privacy/PrivacyNoticeDialog";
 
 function useClock(locale: string) {
   const [time, setTime] = useState<string>("");
@@ -102,6 +103,10 @@ export function Footer() {
             >
               {t.footer.accessibility}
             </Link>
+            <span aria-hidden="true">·</span>
+            <PrivacyNoticeDialog triggerClassName="rounded-sm underline decoration-transparent underline-offset-4 transition-colors hover:text-foreground hover:decoration-current focus-visible:text-foreground focus-visible:decoration-current">
+              {t.footer.privacy}
+            </PrivacyNoticeDialog>
           </p>
         </div>
 
