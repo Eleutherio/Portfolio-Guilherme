@@ -13,6 +13,11 @@ const verifyResponseSchema = z.object({
   hostname: z.string().optional(),
 });
 
+const healthResponseSchema = z.object({
+  success: z.boolean(),
+  "error-codes": z.array(z.string()).optional(),
+});
+
 export class RecaptchaRejectedError extends Error {
   constructor() {
     super("reCAPTCHA rejected");
@@ -110,4 +115,32 @@ export async function verifyContactRecaptchaWithSecrets(
 
 export async function verifyContactRecaptcha(token: string, request: Request): Promise<void> {
   return verifyContactRecaptchaWithSecrets(token, request, configuredSecrets());
+}
+
+export async function isRecaptchaServiceAvailable(): Promise<boolean> {
+  const secret = process.env.RECAPTCHA_SECRET_KEY;
+  if (!secret) return false;
+
+  try {
+    const response = await fetch(VERIFY_ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ secret, response: "guifer-health-check" }),
+      signal: AbortSignal.timeout(VERIFY_TIMEOUT_MS),
+    });
+    if (!response.ok) return false;
+
+    const result = healthResponseSchema.safeParse(await response.json().catch(() => null));
+    if (!result.success) return false;
+
+    const errorCodes = result.data["error-codes"] ?? [];
+    return (
+      result.data.success ||
+      (errorCodes.length > 0 &&
+        !errorCodes.includes("missing-input-secret") &&
+        !errorCodes.includes("invalid-input-secret"))
+    );
+  } catch {
+    return false;
+  }
 }

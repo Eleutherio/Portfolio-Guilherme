@@ -133,7 +133,6 @@ export function BenchmarksPanel() {
         <dl className="space-y-1">
           {[
             { k: "status", v: status.status, dot: true },
-            { k: "ping", v: status.ping },
             { k: "uptime", v: status.uptime },
             { k: "fps", v: status.fps },
           ].map((row) => (

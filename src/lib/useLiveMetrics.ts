@@ -10,7 +10,6 @@ export type LiveMetric = {
 export type LiveStatus = {
   status: string;
   uptime: string;
-  ping: string;
   fps: string;
   region: string;
 };
@@ -33,7 +32,6 @@ export function useLiveMetrics() {
   const [lcp, setLcp] = useState<number | null>(null);
   const [inp, setInp] = useState<number | null>(null);
   const [cls, setCls] = useState<number>(0);
-  const [ping, setPing] = useState<number | null>(null);
   const [fps, setFps] = useState<number | null>(null);
   const [uptime, setUptime] = useState<string>("0s");
 
@@ -134,28 +132,6 @@ export function useLiveMetrics() {
     };
   }, []);
 
-  // Ping (HEAD favicon every 4s) — paused while the tab is hidden.
-  useEffect(() => {
-    let stop = false;
-    const measure = async () => {
-      if (document.hidden) return;
-      const url = `/favicon.ico?ts=${Date.now()}`;
-      const t0 = performance.now();
-      try {
-        await fetch(url, { method: "GET", cache: "no-store" });
-        if (!stop) setPing(performance.now() - t0);
-      } catch {
-        if (!stop) setPing(null);
-      }
-    };
-    measure();
-    const id = window.setInterval(measure, 4000);
-    return () => {
-      stop = true;
-      window.clearInterval(id);
-    };
-  }, []);
-
   // Uptime
   useEffect(() => {
     const tick = () => {
@@ -188,7 +164,6 @@ export function useLiveMetrics() {
   const status: LiveStatus = {
     status: "operational",
     uptime,
-    ping: ping != null ? `${Math.round(ping)} ms` : "—",
     fps: fps != null ? `${fps} fps` : "—",
     region:
       typeof navigator !== "undefined" && navigator.language

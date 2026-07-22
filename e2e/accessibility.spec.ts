@@ -277,6 +277,58 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     ).toBeVisible();
     await runAxe(page, testInfo, "carousels-next");
   });
+
+  test("infraestrutura comunica estados sem depender somente de cor", async ({ page }) => {
+    await page.route("**/health/status", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          ok: false,
+          checkedAt: new Date().toISOString(),
+          services: {
+            backend: "operational",
+            database: "unavailable",
+            smtp: "operational",
+            recaptcha: "operational",
+          },
+        }),
+      });
+    });
+    await openPage(page, "/");
+
+    await expect(page.getByRole("button", { name: /Backend: operacional/ })).toBeVisible();
+    const database = page.getByRole("button", { name: /Database: indisponível/ });
+    await expect(database).toBeVisible();
+    await expect(database.locator(".bg-red-500")).toBeVisible();
+  });
+
+  test("cada serviço de infraestrutura explica sua verificação em hover e foco", async ({
+    page,
+  }) => {
+    await openPage(page, "/");
+
+    const backend = page.getByRole("button", { name: /Backend:.*endpoint público de status/ });
+    await backend.hover();
+    await expect(page.getByRole("tooltip", { name: /endpoint público de status/ })).toBeVisible();
+
+    const smtp = page.getByRole("button", { name: /SMTP service:.*TLS e autenticação/ });
+    await smtp.focus();
+    await expect(page.getByRole("tooltip", { name: /TLS e autenticação/ })).toBeVisible();
+  });
+
+  test("cada métrica vital expõe sua explicação em hover e foco", async ({ page }) => {
+    await openPage(page, "/");
+    const lcp = page.getByRole("button", { name: /LCP:.*Largest Contentful Paint/ });
+    await lcp.hover();
+    await expect(page.getByRole("tooltip", { name: /Largest Contentful Paint/ })).toBeVisible();
+
+    const session = page.getByRole("button", { name: /sessão:.*Tempo decorrido/ });
+    await session.focus();
+    await expect(
+      page.getByRole("tooltip", { name: /não representa disponibilidade/ }),
+    ).toBeVisible();
+  });
 });
 
 test.describe("WCAG 2.2 AA — reflow e preferências", () => {

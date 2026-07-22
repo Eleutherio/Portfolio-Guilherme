@@ -82,6 +82,8 @@ Mantenha `CLIENT_IP_SOURCE=render`. Esse valor fixa o primeiro IP válido de `X-
 
 O Render usa `GET /health/live` como health check. Essa rota não consulta serviços externos, portanto uma indisponibilidade do Supabase não provoca reinício do processo Node. O endpoint autenticado `/health/dependencies` verifica o banco e se a retenção executou nas últimas 36 horas.
 
+O endpoint público `GET /health/status` alimenta os indicadores do rodapé. Ele verifica Supabase, autenticação SMTP da Brevo e disponibilidade do `siteverify` do reCAPTCHA sem expor segredos. Resultados totalmente operacionais ficam em cache por cinco minutos; falhas são reavaliadas após 30 segundos.
+
 ## 5. Cloudflare Pages
 
 Conecte o repositório e use:
@@ -118,15 +120,16 @@ Execute o workflow manualmente depois do primeiro deploy e confirme as duas mens
 Após cada deploy:
 
 1. confirme `GET /health/live` com status `200`;
-2. execute manualmente o workflow de keep-alive;
-3. abra todas as rotas diretamente e atualize a página para validar o fallback da SPA;
-4. envie um contato real e confirme entrega, Reply-To e ausência de dados pessoais nos logs;
-5. valide café e métricas do GitHub;
-6. confirme `robots.txt`, `sitemap.xml`, currículo e headers HTTP;
-7. rode novamente lint, typecheck, build e testes automatizados;
-8. confirme que `get_privacy_retention_status()` retorna `is_current = true`;
-9. confirme CSP, HSTS, COOP e CORP no frontend e na API;
-10. execute `npm run security:ip-spoof` conforme o guia de segurança.
+2. confirme `GET /health/status` com status `200` e revise os estados individuais;
+3. execute manualmente o workflow de keep-alive;
+4. abra todas as rotas diretamente e atualize a página para validar o fallback da SPA;
+5. envie um contato real e confirme entrega, Reply-To e ausência de dados pessoais nos logs;
+6. valide café e métricas do GitHub;
+7. confirme `robots.txt`, `sitemap.xml`, currículo e headers HTTP;
+8. rode novamente lint, typecheck, build e testes automatizados;
+9. confirme que `get_privacy_retention_status()` retorna `is_current = true`;
+10. confirme CSP, HSTS, COOP e CORP no frontend e na API;
+11. execute `npm run security:ip-spoof` conforme o guia de segurança.
 
 ## Limitações conhecidas do plano gratuito
 

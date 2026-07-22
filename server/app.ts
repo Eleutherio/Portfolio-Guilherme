@@ -1,13 +1,14 @@
 import { handleContactRequest } from "@/lib/contact-handler.server";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { json } from "./http";
-import { dependencies, live } from "./services/health";
+import { dependencies, infrastructureStatus, live } from "./services/health";
 import { getGithubYearStats } from "./services/github";
 import { handleCoffeeRequest } from "./services/coffee";
 import type { RequestContext } from "./request-context";
 
 const API_PATHS = new Set([
   "/health/live",
+  "/health/status",
   "/health/dependencies",
   "/api/contact",
   "/api/github",
@@ -91,6 +92,11 @@ export async function app(request: Request, context: RequestContext = {}): Promi
   let response: Response;
   if (pathname === "/health/live") {
     response = request.method === "GET" ? live() : json({ ok: false }, 405, { allow: "GET" });
+  } else if (pathname === "/health/status") {
+    response =
+      request.method === "GET"
+        ? await infrastructureStatus()
+        : json({ ok: false }, 405, { allow: "GET" });
   } else if (pathname === "/health/dependencies") {
     if (request.method !== "GET") {
       response = json({ ok: false }, 405, { allow: "GET" });

@@ -168,3 +168,12 @@ export async function sendContactEmail(payload: ContactPayload, requestId: strin
     throw new EmailDeliveryError();
   }
 }
+
+export async function isEmailTransportAvailable(): Promise<boolean> {
+  try {
+    const config = getEmailConfig();
+    return await getTransporter(config).verify();
+  } catch {
+    return false;
+  }
+}

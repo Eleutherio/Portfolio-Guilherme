@@ -6,6 +6,7 @@ import { buildContactEmail, EmailDeliveryError } from "@/lib/contact-email.serve
 import { verifyContactRecaptchaWithSecrets } from "@/lib/contact-recaptcha.server";
 import { app } from "./app";
 import { ClientAddressError, resolveClientAddress } from "./request-context";
+import { runInfrastructureChecks } from "./services/health";
 
 const originalAllowedOrigins = process.env.API_ALLOWED_ORIGINS;
 const originalKeepAliveSecret = process.env.KEEP_ALIVE_SECRET;
@@ -27,10 +28,48 @@ test("live health check is public and independent from dependencies", async () =
   assert.deepEqual(await response.json(), { ok: true, service: "guifer-api" });
 });
 
+test("infrastructure status normalizes operational and unavailable services", async () => {
+  const status = await runInfrastructureChecks({
+    database: async () => true,
+    smtp: async () => false,
+    recaptcha: async () => true,
+  });
+
+  assert.equal(status.ok, false);
+  assert.deepEqual(status.services, {
+    backend: "operational",
+    database: "operational",
+    smtp: "unavailable",
+    recaptcha: "operational",
+  });
+  assert.equal(Number.isNaN(Date.parse(status.checkedAt)), false);
+});
+
+test("infrastructure status contains rejected checks", async () => {
+  const status = await runInfrastructureChecks({
+    database: async () => {
+      throw new Error("database unavailable");
+    },
+    smtp: async () => true,
+    recaptcha: async () => true,
+  });
+
+  assert.equal(status.ok, false);
+  assert.equal(status.services.database, "unavailable");
+});
+
 test("dependency health check requires the keep-alive secret", async () => {
   const response = await app(new Request("https://api.example.com/health/dependencies"));
   assert.equal(response.status, 401);
   assert.equal(response.headers.get("www-authenticate"), "Bearer");
+});
+
+test("infrastructure status only accepts GET", async () => {
+  const response = await app(
+    new Request("https://api.example.com/health/status", { method: "POST" }),
+  );
+  assert.equal(response.status, 405);
+  assert.equal(response.headers.get("allow"), "GET");
 });
 
 test("dependency health check rejects an invalid bearer token", async () => {
