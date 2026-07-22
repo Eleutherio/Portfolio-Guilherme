@@ -12,6 +12,7 @@ const ROUTES = [
   "/projetos/abriu-chaveiro",
   "/projetos/martha-izabel",
   "/acessibilidade",
+  "/privacidade",
   "/rota-inexistente",
 ] as const;
 const MODES = [
@@ -57,8 +58,10 @@ async function openPage(
   }
 }
 
-async function runAxe(page: Page, testInfo: TestInfo, label: string) {
-  const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+async function runAxe(page: Page, testInfo: TestInfo, label: string, include?: string) {
+  let builder = new AxeBuilder({ page }).withTags(WCAG_TAGS);
+  if (include) builder = builder.include(include);
+  const results = await builder.analyze();
   await testInfo.attach(`${label}-axe.json`, {
     body: JSON.stringify(
       { violations: results.violations, incomplete: results.incomplete },
@@ -125,6 +128,23 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await expect(page.locator("#mobile-navigation")).toBeVisible();
     await runAxe(page, testInfo, "mobile-menu");
     await page.keyboard.press("Escape");
+    await expect(trigger).toBeFocused();
+  });
+
+  test("modal de privacidade preserva foco, Escape e reflow", async ({ page }, testInfo) => {
+    await openPage(page, "/", { width: 320, height: 900 });
+    const trigger = page.getByRole("button", { name: "Privacidade", exact: true });
+    await trigger.click();
+
+    const dialog = page.getByRole("dialog", { name: "Como seus dados são usados" });
+    await expect(dialog).toBeVisible();
+    const box = await dialog.boundingBox();
+    expect(box?.width ?? 0).toBeLessThanOrEqual(320);
+    await expect(dialog.getByRole("checkbox")).toHaveCount(0);
+    await runAxe(page, testInfo, "privacy-dialog", '[role="dialog"]');
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
     await expect(trigger).toBeFocused();
   });
 
@@ -342,6 +362,15 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
       expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
     });
   }
+
+  test("aviso de privacidade mantém reflow em 320px", async ({ page }) => {
+    await openPage(page, "/privacidade", { width: 320, height: 900 });
+    const dimensions = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      content: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
+  });
 
   test("forced colors mantém estrutura e nomes", async ({ page }, testInfo) => {
     await page.emulateMedia({ forcedColors: "active", reducedMotion: "reduce" });
