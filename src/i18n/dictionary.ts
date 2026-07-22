@@ -362,15 +362,13 @@ export const dictionary = {
     },
     footer: {
       rights: "guifer.tech",
-      accessibility: "Acessibilidade",
-      privacy: "Privacidade",
+      accessibility: "ACESSIBILIDADE",
+      privacy: "PRIVACIDADE",
       availableLead: "frase a definir",
       availableHighlight: "",
-      thanksMessage: "Obrigado pela visita! :)",
 
       localTimeAria: "Hora local",
       vitalsLabel: "vitals",
-      vitalsScope: "local",
       infraLabel: "infra",
       uptimeLabel: "sessão",
       backend: "Backend",
@@ -383,19 +381,18 @@ export const dictionary = {
         unavailable: "indisponível",
       },
       infrastructureExplain: {
-        backend: "Resposta do endpoint público de status da API hospedada no Render.",
-        database: "Consulta real à função de health check do banco Supabase.",
-        smtp: "Conexão, TLS e autenticação com o relay SMTP da Brevo, sem enviar e-mail.",
-        recaptcha:
-          "Disponibilidade do endpoint de verificação do Google e validade da chave secreta do reCAPTCHA.",
+        backend: "Indica se a API do site está respondendo normalmente.",
+        database: "Indica se o armazenamento e a leitura de dados estão disponíveis.",
+        smtp: "Indica se o serviço responsável pelo envio de mensagens está disponível.",
+        recaptcha: "Indica se a proteção contra envios automatizados está disponível.",
       },
       vitalsExplain: {
-        LCP: "Largest Contentful Paint — tempo até o maior elemento visível renderizar. Bom: < 2.5s.",
-        INP: "Interaction to Next Paint — latência da pior interação do usuário. Bom: < 200ms.",
-        CLS: "Cumulative Layout Shift — soma de deslocamentos visuais inesperados. Bom: < 0.1.",
-        FPS: "Frames por segundo — fluidez de renderização. Alvo: 60.",
+        LCP: "Mede quanto tempo leva para o maior elemento visível aparecer. Um bom resultado fica abaixo de 2,5 segundos.",
+        INP: "Mede o tempo de resposta da interface à interação mais lenta. Um bom resultado fica abaixo de 200 milissegundos.",
+        CLS: "Mede mudanças inesperadas de posição dos elementos. Um bom resultado fica abaixo de 0,1.",
+        FPS: "Mede a fluidez da animação em quadros por segundo. O objetivo é 60.",
         session:
-          "Tempo decorrido desde que esta página foi aberta nesta aba; não representa disponibilidade do servidor.",
+          "Mostra há quanto tempo esta página está aberta nesta aba. Não indica disponibilidade do servidor.",
       },
     },
 
@@ -828,15 +825,13 @@ export const dictionary = {
     },
     footer: {
       rights: "guifer.tech",
-      accessibility: "Accessibility",
-      privacy: "Privacy",
+      accessibility: "ACCESSIBILITY",
+      privacy: "PRIVACY",
       availableLead: "phrase to be defined",
       availableHighlight: "",
-      thanksMessage: "Thanks for stopping by! :)",
 
       localTimeAria: "Local time",
       vitalsLabel: "vitals",
-      vitalsScope: "local",
       infraLabel: "infra",
       uptimeLabel: "session",
       backend: "Backend",
@@ -849,19 +844,18 @@ export const dictionary = {
         unavailable: "unavailable",
       },
       infrastructureExplain: {
-        backend: "Response from the public status endpoint of the API hosted on Render.",
-        database: "Real query to the Supabase database health-check function.",
-        smtp: "Connection, TLS and authentication with Brevo's SMTP relay, without sending email.",
-        recaptcha:
-          "Availability of Google's verification endpoint and validity of the reCAPTCHA secret key.",
+        backend: "Indicates whether the website API is responding normally.",
+        database: "Indicates whether data storage and retrieval are available.",
+        smtp: "Indicates whether the service responsible for sending messages is available.",
+        recaptcha: "Indicates whether protection against automated submissions is available.",
       },
       vitalsExplain: {
-        LCP: "Largest Contentful Paint — time until the largest visible element renders. Good: < 2.5s.",
-        INP: "Interaction to Next Paint — latency of the worst user interaction. Good: < 200ms.",
-        CLS: "Cumulative Layout Shift — sum of unexpected visual shifts. Good: < 0.1.",
-        FPS: "Frames per second — render smoothness. Target: 60.",
+        LCP: "Measures how long the largest visible element takes to appear. A good result is below 2.5 seconds.",
+        INP: "Measures how quickly the interface responds to its slowest interaction. A good result is below 200 milliseconds.",
+        CLS: "Measures unexpected changes in the position of page elements. A good result is below 0.1.",
+        FPS: "Measures animation smoothness in frames per second. The target is 60.",
         session:
-          "Time elapsed since this page was opened in this tab; it does not represent server availability.",
+          "Shows how long this page has been open in this tab. It does not indicate server availability.",
       },
     },
 

@@ -1,7 +1,6 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { Mail } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/icons/Brand";
-import { ThanksTypewriter } from "@/components/layout/ThanksTypewriter";
 import { useApp } from "@/i18n/AppContext";
 import { useLiveMetrics } from "@/lib/useLiveMetrics";
 import {
@@ -86,9 +85,7 @@ export function Footer() {
       <div className="section-container grid grid-cols-1 gap-8 py-12 md:py-16 lg:grid-cols-[1.4fr_auto_auto] lg:items-start">
         {/* Headline + clock + social */}
         <div className="min-w-0">
-          <ThanksTypewriter />
-
-          <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
               Porto Alegre — BRT ·{" "}
               <span className="text-foreground tabular-nums" suppressHydrationWarning>
@@ -142,6 +139,17 @@ export function Footer() {
               {t.footer.privacy}
             </PrivacyNoticeDialog>
           </p>
+
+          <img
+            src="https://app.greenweb.org/api/v3/greencheckimage/guifer.tech?nocache=true"
+            alt="This website runs on green hosting - verified by thegreenwebfoundation.org"
+            width={200}
+            height={95}
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            className="mt-4 h-auto w-[200px] max-w-full"
+          />
         </div>
 
         {/* Infra column */}
@@ -166,15 +174,9 @@ export function Footer() {
 
         {/* Vitals column */}
         <div className="font-mono text-[10px] leading-[1.9] text-muted-foreground lg:min-w-[180px]">
-          <div className="mb-2 flex items-center justify-between gap-3">
+          <div className="mb-2">
             <span className="uppercase tracking-[0.3em] text-muted-foreground/80">
               {t.footer.vitalsLabel}
-            </span>
-            <span className="inline-flex items-center gap-1.5 uppercase tracking-[0.25em] text-muted-foreground">
-              <span className="relative inline-flex h-1.5 w-1.5">
-                <span className="relative inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground" />
-              </span>
-              {t.footer.vitalsScope}
             </span>
           </div>
 

@@ -167,6 +167,7 @@ test("Pages headers enforce the CSP and isolation policy required by the fronten
   assert.match(headersFile, /Content-Security-Policy: default-src 'self'/);
   assert.match(headersFile, /frame-ancestors 'none'/);
   assert.match(headersFile, /script-src[^;]+www\.google\.com\/recaptcha\//);
+  assert.match(headersFile, /img-src[^;]+app\.greenweb\.org/);
   assert.match(headersFile, /frame-src[^;]+recaptcha\.google\.com\/recaptcha\//);
   assert.match(headersFile, /connect-src[^;]+guifer-api\.onrender\.com/);
   assert.match(headersFile, /Strict-Transport-Security: max-age=31536000; includeSubDomains/);

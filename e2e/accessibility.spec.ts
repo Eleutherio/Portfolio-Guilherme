@@ -5,6 +5,7 @@ type Language = "pt" | "en";
 type Theme = "light" | "dark";
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"];
+const SIMPLE_TOOLTIP_FORBIDDEN = /Brevo|Supabase|Render|Google|[—–]|\p{Extended_Pictographic}/u;
 const ROUTES = [
   "/",
   "/sobre",
@@ -133,7 +134,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
 
   test("modal de privacidade preserva foco, Escape e reflow", async ({ page }, testInfo) => {
     await openPage(page, "/", { width: 320, height: 900 });
-    const trigger = page.getByRole("button", { name: "Privacidade", exact: true });
+    const trigger = page.getByRole("button", { name: "PRIVACIDADE", exact: true });
     await trigger.click();
 
     const dialog = page.getByRole("dialog", { name: "Como seus dados são usados" });
@@ -298,6 +299,46 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await runAxe(page, testInfo, "carousels-next");
   });
 
+  test("footer exibe selo sustentável e links legais padronizados", async ({ page }, testInfo) => {
+    await openPage(page, "/", { width: 320, height: 900 });
+    const footer = page.locator("footer");
+    const accessibility = footer.getByRole("link", { name: "ACESSIBILIDADE", exact: true });
+    const privacy = footer.getByRole("button", { name: "PRIVACIDADE", exact: true });
+    const badge = footer.getByRole("img", {
+      name: "This website runs on green hosting - verified by thegreenwebfoundation.org",
+    });
+
+    await expect(accessibility).toBeVisible();
+    await expect(privacy).toBeVisible();
+    await expect(badge).toBeVisible();
+    await expect(badge).toHaveAttribute(
+      "src",
+      "https://app.greenweb.org/api/v3/greencheckimage/guifer.tech?nocache=true",
+    );
+    await expect(badge).toHaveAttribute("width", "200");
+    await expect(badge).toHaveAttribute("height", "95");
+    await expect(badge).toHaveAttribute("loading", "lazy");
+    await expect(badge).toHaveAttribute("decoding", "async");
+    await expect(badge).toHaveAttribute("referrerpolicy", "no-referrer");
+
+    const legalBox = await accessibility.locator("xpath=..").boundingBox();
+    const badgeBox = await badge.boundingBox();
+    expect(badgeBox?.y ?? 0).toBeGreaterThan(legalBox?.y ?? 0);
+    const dimensions = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      content: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
+    await expect(footer.getByText("Obrigado pela visita", { exact: false })).toHaveCount(0);
+    await expect(footer.getByText("local", { exact: true })).toHaveCount(0);
+    await runAxe(page, testInfo, "footer-green-badge");
+
+    await openPage(page, "/", { language: "en", width: 320, height: 900 });
+    await expect(footer.getByRole("link", { name: "ACCESSIBILITY", exact: true })).toBeVisible();
+    await expect(footer.getByRole("button", { name: "PRIVACY", exact: true })).toBeVisible();
+    await expect(footer.getByText("Thanks for stopping by", { exact: false })).toHaveCount(0);
+  });
+
   test("infraestrutura comunica estados sem depender somente de cor", async ({ page }) => {
     await page.route("**/health/status", async (route) => {
       await route.fulfill({
@@ -327,27 +368,91 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     page,
   }) => {
     await openPage(page, "/");
+    const scenarios = [
+      [/Backend:/, "Indica se a API do site está respondendo normalmente."],
+      [/Database:/, "Indica se o armazenamento e a leitura de dados estão disponíveis."],
+      [/SMTP service:/, "Indica se o serviço responsável pelo envio de mensagens está disponível."],
+      [/reCAPTCHA v3:/, "Indica se a proteção contra envios automatizados está disponível."],
+    ] as const;
 
-    const backend = page.getByRole("button", { name: /Backend:.*endpoint público de status/ });
-    await backend.hover();
-    await expect(page.getByRole("tooltip", { name: /endpoint público de status/ })).toBeVisible();
+    await page.getByRole("button", { name: scenarios[0][0] }).hover();
+    await expect(page.getByRole("tooltip").filter({ hasText: scenarios[0][1] })).toBeVisible();
+    await page.mouse.move(0, 0);
+    for (const [name, description] of scenarios) {
+      const button = page.getByRole("button", { name });
+      await button.focus();
+      const tooltip = page.getByRole("tooltip").filter({ hasText: description });
+      await expect(tooltip).toBeVisible();
+      expect((await tooltip.textContent()) ?? "").not.toMatch(SIMPLE_TOOLTIP_FORBIDDEN);
+    }
 
-    const smtp = page.getByRole("button", { name: /SMTP service:.*TLS e autenticação/ });
-    await smtp.focus();
-    await expect(page.getByRole("tooltip", { name: /TLS e autenticação/ })).toBeVisible();
+    await openPage(page, "/", { language: "en" });
+    const englishScenarios = [
+      [/Backend:/, "Indicates whether the website API is responding normally."],
+      [/Database:/, "Indicates whether data storage and retrieval are available."],
+      [
+        /SMTP service:/,
+        "Indicates whether the service responsible for sending messages is available.",
+      ],
+      [/reCAPTCHA v3:/, "Indicates whether protection against automated submissions is available."],
+    ] as const;
+
+    await page.getByRole("button", { name: englishScenarios[0][0] }).hover();
+    await expect(
+      page.getByRole("tooltip").filter({ hasText: englishScenarios[0][1] }),
+    ).toBeVisible();
+    await page.mouse.move(0, 0);
+    for (const [name, description] of englishScenarios) {
+      const button = page.getByRole("button", { name });
+      await button.focus();
+      const tooltip = page.getByRole("tooltip").filter({ hasText: description });
+      await expect(tooltip).toBeVisible();
+      expect((await tooltip.textContent()) ?? "").not.toMatch(SIMPLE_TOOLTIP_FORBIDDEN);
+    }
   });
 
   test("cada métrica vital expõe sua explicação em hover e foco", async ({ page }) => {
     await openPage(page, "/");
-    const lcp = page.getByRole("button", { name: /LCP:.*Largest Contentful Paint/ });
-    await lcp.hover();
-    await expect(page.getByRole("tooltip", { name: /Largest Contentful Paint/ })).toBeVisible();
+    const scenarios = [
+      [/LCP:/, "Mede quanto tempo leva para o maior elemento visível aparecer."],
+      [/INP:/, "Mede o tempo de resposta da interface à interação mais lenta."],
+      [/CLS:/, "Mede mudanças inesperadas de posição dos elementos."],
+      [/FPS:/, "Mede a fluidez da animação em quadros por segundo."],
+      [/sessão:/, "Mostra há quanto tempo esta página está aberta nesta aba."],
+    ] as const;
 
-    const session = page.getByRole("button", { name: /sessão:.*Tempo decorrido/ });
-    await session.focus();
+    await page.getByRole("button", { name: scenarios[0][0] }).hover();
+    await expect(page.getByRole("tooltip").filter({ hasText: scenarios[0][1] })).toBeVisible();
+    await page.mouse.move(0, 0);
+    for (const [name, description] of scenarios) {
+      const button = page.getByRole("button", { name });
+      await button.focus();
+      const tooltip = page.getByRole("tooltip").filter({ hasText: description });
+      await expect(tooltip).toBeVisible();
+      expect((await tooltip.textContent()) ?? "").not.toMatch(SIMPLE_TOOLTIP_FORBIDDEN);
+    }
+
+    await openPage(page, "/", { language: "en" });
+    const englishScenarios = [
+      [/LCP:/, "Measures how long the largest visible element takes to appear."],
+      [/INP:/, "Measures how quickly the interface responds to its slowest interaction."],
+      [/CLS:/, "Measures unexpected changes in the position of page elements."],
+      [/FPS:/, "Measures animation smoothness in frames per second."],
+      [/session:/, "Shows how long this page has been open in this tab."],
+    ] as const;
+
+    await page.getByRole("button", { name: englishScenarios[0][0] }).hover();
     await expect(
-      page.getByRole("tooltip", { name: /não representa disponibilidade/ }),
+      page.getByRole("tooltip").filter({ hasText: englishScenarios[0][1] }),
     ).toBeVisible();
+    await page.mouse.move(0, 0);
+    for (const [name, description] of englishScenarios) {
+      const button = page.getByRole("button", { name });
+      await button.focus();
+      const tooltip = page.getByRole("tooltip").filter({ hasText: description });
+      await expect(tooltip).toBeVisible();
+      expect((await tooltip.textContent()) ?? "").not.toMatch(SIMPLE_TOOLTIP_FORBIDDEN);
+    }
   });
 });
 

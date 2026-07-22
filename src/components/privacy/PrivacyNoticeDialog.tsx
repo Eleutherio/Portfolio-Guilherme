@@ -39,7 +39,7 @@ const content = {
       },
     ],
     providers:
-      "Cloudflare, Render, Supabase, Brevo e Google reCAPTCHA participam somente das etapas necessárias para entregar e proteger o serviço.",
+      "Cloudflare, Render, Supabase, Brevo, Google reCAPTCHA e Green Web Foundation participam somente das etapas necessárias para entregar, proteger ou verificar o serviço.",
     rights:
       "Você pode solicitar acesso, correção, informação ou eliminação quando aplicável pelo canal contato@guifer.tech.",
     contact: "Solicitar atendimento",
@@ -71,7 +71,7 @@ const content = {
       },
     ],
     providers:
-      "Cloudflare, Render, Supabase, Brevo and Google reCAPTCHA participate only in the steps required to deliver and protect the service.",
+      "Cloudflare, Render, Supabase, Brevo, Google reCAPTCHA and Green Web Foundation participate only in the steps required to deliver, protect or verify the service.",
     rights:
       "You may request access, correction, information or deletion where applicable through contato@guifer.tech.",
     contact: "Submit a request",

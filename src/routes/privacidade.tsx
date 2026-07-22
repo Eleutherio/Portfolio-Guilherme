@@ -4,7 +4,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { useApp } from "@/i18n/AppContext";
 
-const LAST_UPDATED = "2026-07-20";
+const LAST_UPDATED = "2026-07-22";
 
 const content = {
   pt: {
@@ -72,6 +72,7 @@ const content = {
       "Supabase — banco para rate limits, contador e evidências de retenção.",
       "Brevo — transporte SMTP e eventos transacionais; a janela operacional definida para esses logs é de 30 dias.",
       "Google reCAPTCHA — análise antifraude conforme os termos e o aviso de privacidade do Google.",
+      "Green Web Foundation — carregamento do selo que verifica o uso de hospedagem sustentável; a requisição da imagem transmite dados técnicos de conexão.",
       "Provedor da caixa de e-mail do controlador — recebimento e armazenamento temporário das mensagens.",
       "GitHub — execução do keep-alive e consulta de dados públicos do perfil; o conteúdo do formulário não é enviado ao GitHub.",
     ],
@@ -108,6 +109,10 @@ const content = {
       { label: "Privacidade do Google", href: "https://policies.google.com/privacy" },
       { label: "Privacidade da Brevo", href: "https://www.brevo.com/pt/legal/privacypolicy/" },
       { label: "Privacidade da Cloudflare", href: "https://www.cloudflare.com/privacypolicy/" },
+      {
+        label: "Privacidade da Green Web Foundation",
+        href: "https://www.thegreenwebfoundation.org/privacy-statement/",
+      },
     ],
     updatedLabel: "Última atualização",
   },
@@ -177,6 +182,7 @@ const content = {
       "Supabase — database for rate limits, the counter and retention evidence.",
       "Brevo — SMTP transport and transactional events; the operational window defined for these logs is 30 days.",
       "Google reCAPTCHA — anti-fraud analysis under Google's terms and privacy notice.",
+      "Green Web Foundation — loading the badge that verifies the use of green hosting; the image request transmits technical connection data.",
       "The controller's mailbox provider — receipt and temporary storage of messages.",
       "GitHub — keep-alive execution and public profile data queries; form content is not sent to GitHub.",
     ],
@@ -213,6 +219,10 @@ const content = {
       { label: "Google Privacy Policy", href: "https://policies.google.com/privacy" },
       { label: "Brevo Privacy Policy", href: "https://www.brevo.com/legal/privacypolicy/" },
       { label: "Cloudflare Privacy Policy", href: "https://www.cloudflare.com/privacypolicy/" },
+      {
+        label: "Green Web Foundation Privacy Policy",
+        href: "https://www.thegreenwebfoundation.org/privacy-statement/",
+      },
     ],
     updatedLabel: "Last updated",
   },
