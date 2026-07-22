@@ -11,7 +11,7 @@
 
 ## Ordem recomendada
 
-1. Preparar o Supabase e aplicar as migrations.
+1. Preparar o Supabase e aplicar as migrations, incluindo a rotina de retenção.
 2. Verificar domínio/remetente e criar credencial SMTP no Brevo.
 3. Criar as chaves do reCAPTCHA v3.
 4. Criar e validar o backend no Render.
@@ -23,7 +23,9 @@ Os controles de IP, headers, e-mail, rotação anual e SBOM estão detalhados em
 
 ## 1. Supabase
 
-Crie um projeto Free e aplique, na ordem, todos os arquivos de `supabase/migrations/`. A última migration remove a gravação pública em `coffee_taps` e cria `app_healthcheck()`, acessível somente pelo backend com a service role.
+Crie um projeto Free e aplique, na ordem, todos os arquivos de `supabase/migrations/`. A migration de hardening remove a gravação pública em `coffee_taps` e cria `app_healthcheck()`, acessível somente pelo backend com a service role.
+
+A migration de privacidade agenda uma limpeza diária com Supabase Cron. Ela deve ser aplicada antes da versão da API que consulta `get_privacy_retention_status()`. Verifique o job e os prazos conforme [PRIVACY-RETENTION.md](./PRIVACY-RETENTION.md).
 
 Copie para o Render:
 
@@ -46,6 +48,8 @@ No Render, configure:
 - `CONTACT_EMAIL_TO`.
 
 A porta `2525` é necessária no plano Free do Render porque as portas SMTP `25`, `465` e `587` são bloqueadas.
+
+Configure a retenção de logs e previews transacionais da Brevo para 30 dias. O procedimento e a revisão mensal da caixa de destino estão em [PRIVACY-RETENTION.md](./PRIVACY-RETENTION.md).
 
 ## 3. reCAPTCHA
 
@@ -76,7 +80,7 @@ Revise `API_ALLOWED_ORIGINS`, `CONTACT_ALLOWED_ORIGINS` e `RECAPTCHA_ALLOWED_HOS
 
 Mantenha `CLIENT_IP_SOURCE=render`. Esse valor fixa o primeiro IP válido de `X-Forwarded-For` como a única fonte do rate limit; não substitua por um header controlado pelo cliente. `RECAPTCHA_SECRET_KEY_PREVIOUS` não faz parte do Blueprint permanente: crie a variável manualmente apenas durante a janela de rotação descrita no guia de segurança e remova-a ao final.
 
-O Render usa `GET /health/live` como health check. Essa rota não consulta serviços externos, portanto uma indisponibilidade do Supabase não provoca reinício do processo Node.
+O Render usa `GET /health/live` como health check. Essa rota não consulta serviços externos, portanto uma indisponibilidade do Supabase não provoca reinício do processo Node. O endpoint autenticado `/health/dependencies` verifica o banco e se a retenção executou nas últimas 36 horas.
 
 ## 5. Cloudflare Pages
 
@@ -120,8 +124,9 @@ Após cada deploy:
 5. valide café e métricas do GitHub;
 6. confirme `robots.txt`, `sitemap.xml`, currículo e headers HTTP;
 7. rode novamente lint, typecheck, build e testes automatizados;
-8. confirme CSP, HSTS, COOP e CORP no frontend e na API;
-9. execute `npm run security:ip-spoof` conforme o guia de segurança.
+8. confirme que `get_privacy_retention_status()` retorna `is_current = true`;
+9. confirme CSP, HSTS, COOP e CORP no frontend e na API;
+10. execute `npm run security:ip-spoof` conforme o guia de segurança.
 
 ## Limitações conhecidas do plano gratuito
 

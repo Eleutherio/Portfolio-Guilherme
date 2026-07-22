@@ -31,19 +31,43 @@ export type Database = {
       };
       coffee_taps: {
         Row: {
+          anonymized_at: string | null;
           created_at: string;
           id: string;
-          visitor_id: string;
+          visitor_id: string | null;
         };
         Insert: {
+          anonymized_at?: string | null;
           created_at?: string;
           id?: string;
-          visitor_id: string;
+          visitor_id?: string | null;
         };
         Update: {
+          anonymized_at?: string | null;
           created_at?: string;
           id?: string;
-          visitor_id?: string;
+          visitor_id?: string | null;
+        };
+        Relationships: [];
+      };
+      privacy_retention_runs: {
+        Row: {
+          coffee_identifiers_anonymized: number;
+          id: number;
+          ran_at: string;
+          rate_limit_rows_deleted: number;
+        };
+        Insert: {
+          coffee_identifiers_anonymized?: number;
+          id?: number;
+          ran_at?: string;
+          rate_limit_rows_deleted?: number;
+        };
+        Update: {
+          coffee_identifiers_anonymized?: number;
+          id?: number;
+          ran_at?: string;
+          rate_limit_rows_deleted?: number;
         };
         Relationships: [];
       };
@@ -57,7 +81,21 @@ export type Database = {
         Args: { p_key_hash: string; p_limit: number; p_window_seconds: number };
         Returns: boolean;
       };
+      enforce_privacy_retention: {
+        Args: never;
+        Returns: {
+          coffee_identifiers_anonymized: number;
+          rate_limit_rows_deleted: number;
+        }[];
+      };
       get_coffee_count: { Args: never; Returns: number };
+      get_privacy_retention_status: {
+        Args: never;
+        Returns: {
+          is_current: boolean;
+          last_run_at: string | null;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;
