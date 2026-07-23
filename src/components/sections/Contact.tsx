@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { motion } from "motion/react";
-import { ArrowUpRight, Loader2, Mail } from "lucide-react";
+import { ArrowUpRight, Loader2, Phone } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/icons/Brand";
 import { useApp } from "@/i18n/AppContext";
 import {
@@ -112,20 +112,20 @@ export function Contact() {
   };
 
   const inputCls =
-    "w-full border-0 border-b border-[var(--control-border)] bg-transparent px-0 py-3 text-base text-foreground placeholder:text-muted-foreground transition-colors focus:border-accent focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-[invalid=true]:border-destructive";
-  const labelCls = "block font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground";
+    "w-full border-0 border-b border-[var(--control-border)] bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-accent focus:outline-none focus-visible:border-accent focus-visible:outline-none aria-[invalid=true]:border-destructive md:text-base";
+  const labelCls = "block font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground";
   const errorCls = "mt-1.5 font-mono text-[11px] text-destructive";
 
   const primaryLinks = [
     {
-      href: "mailto:contato@guifer.tech",
-      label: "contato@guifer.tech",
-      Icon: Mail,
-      external: false,
+      href: "https://wa.me/5551994055984",
+      label: "(51) 99405-5984",
+      Icon: Phone,
+      external: true,
     },
     {
       href: "https://www.linkedin.com/in/guifer-dev/",
-      label: "linkedin.com/in/guifer-dev",
+      label: "linkedin.com/in/Eleutherio",
       Icon: LinkedinIcon,
       external: true,
     },
@@ -138,46 +138,39 @@ export function Contact() {
   ];
 
   const primaryLabel = lang === "pt" ? "Contato principal" : "Primary contact";
-  const formLabel = lang === "pt" ? "Ou envie uma mensagem" : "Or send a message";
-  const fallbackLabel = lang === "pt" ? "Preferiu por e-mail? " : "Prefer email instead? ";
+  const formLabel = t.contact.formAriaLabel;
+  const fallbackLabel = lang === "pt" ? "Prefere pelo WhatsApp? " : "Prefer WhatsApp? ";
 
   return (
     <SectionShell
       id="contato"
-      number="05"
-      label={t.contact.subtitle || t.contact.title}
-      sublabel={t.contact.title}
+      label={t.contact.title}
+      sublabel={t.contact.subtitle}
+      lead={t.contact.lead}
+      compact
     >
       {/* Left column — primary conversion path */}
       <div className="md:col-span-5">
-        <motion.p
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="prose-measure text-[16px] leading-relaxed text-foreground md:text-[18px]"
-        >
-          {t.contact.body}
-        </motion.p>
-
-        <div className="mt-10">
+        <div>
           <p className={labelCls}>{primaryLabel}</p>
-          <ul className="mt-4 space-y-3">
+          <ul className="mt-3 space-y-2">
             {primaryLinks.map(({ href, label, Icon, external }) => (
               <li key={href}>
                 <a
                   href={href}
                   {...(external ? { target: "_blank", rel: "noreferrer noopener" } : {})}
-                  className="group inline-flex max-w-full min-w-0 items-center gap-3 text-foreground"
+                  className="group inline-flex max-w-full min-w-0 items-center gap-2.5 text-foreground"
                   aria-label={label}
                 >
                   <span
                     aria-hidden="true"
-                    className="grid h-9 w-9 place-items-center rounded-md border border-hairline text-accent transition-colors group-hover:border-accent group-hover:bg-surface"
+                    className="grid h-8 w-8 place-items-center rounded-md border border-hairline text-accent transition-colors group-hover:border-accent group-hover:bg-surface"
                   >
                     <Icon className="h-4 w-4" />
                   </span>
-                  <span className="link-ink min-w-0 break-all font-mono text-sm">{label}</span>
+                  <span className="link-ink min-w-0 break-all font-mono text-xs md:text-sm">
+                    {label}
+                  </span>
                   <ArrowUpRight
                     className="h-3.5 w-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
                     aria-hidden="true"
@@ -196,13 +189,11 @@ export function Contact() {
         viewport={{ once: true }}
         transition={{ duration: 0.6, delay: 0.1 }}
         onSubmit={onSubmit}
-        className="mt-12 space-y-7 md:col-span-7 md:mt-0"
+        className="mt-10 space-y-4 md:col-span-7 md:mt-0"
         noValidate
         aria-label={formLabel}
         aria-busy={status === "submitting"}
       >
-        <p className={labelCls}>{formLabel}</p>
-
         {/* Honeypot — visually and a11y hidden */}
         <div aria-hidden="true" className="absolute -left-[10000px] h-0 w-0 overflow-hidden">
           <label>
@@ -291,7 +282,7 @@ export function Contact() {
             name="message"
             required
             maxLength={CONTACT_LIMITS.message}
-            rows={5}
+            rows={4}
             placeholder={t.contact.form.messagePh}
             aria-label={t.contact.form.message.replace(/^\/\/\s*/, "")}
             aria-invalid={errors.message ? true : undefined}
@@ -305,7 +296,33 @@ export function Contact() {
           )}
         </div>
 
-        <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
+        <p className="font-mono text-[11px] leading-relaxed text-muted-foreground">
+          {t.contact.form.recaptchaNotice}{" "}
+          <a
+            href="https://policies.google.com/privacy"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="link-ink text-foreground"
+          >
+            {t.contact.form.recaptchaPrivacy}
+          </a>{" "}
+          {t.contact.form.recaptchaJoin}{" "}
+          <a
+            href="https://policies.google.com/terms"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="link-ink text-foreground"
+          >
+            {t.contact.form.recaptchaTerms}
+          </a>
+          . {t.contact.form.sitePrivacyPrefix}{" "}
+          <PrivacyNoticeDialog triggerClassName="link-ink text-left text-foreground">
+            {t.contact.form.sitePrivacy}
+          </PrivacyNoticeDialog>
+          .
+        </p>
+
+        <div className="flex flex-col items-center gap-3 pt-1">
           <button
             type="submit"
             disabled={status === "submitting"}
@@ -321,44 +338,30 @@ export function Contact() {
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             )}
           </button>
-          <p aria-live="polite" role="status" className="font-mono text-xs text-muted-foreground">
-            {status === "success" && t.contact.form.success}
-            {status === "error" && Object.keys(errors).length === 0 && t.contact.form.error}
-            {status === "idle" && (
-              <>
-                {t.contact.form.recaptchaNotice}{" "}
-                <a
-                  href="https://policies.google.com/privacy"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="link-ink text-foreground"
-                >
-                  {t.contact.form.recaptchaPrivacy}
-                </a>{" "}
-                {t.contact.form.recaptchaJoin}{" "}
-                <a
-                  href="https://policies.google.com/terms"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="link-ink text-foreground"
-                >
-                  {t.contact.form.recaptchaTerms}
-                </a>
-                . {t.contact.form.sitePrivacyPrefix}{" "}
-                <PrivacyNoticeDialog triggerClassName="link-ink text-left text-foreground">
-                  {t.contact.form.sitePrivacy}
-                </PrivacyNoticeDialog>
-                .
-              </>
+          <p
+            aria-live="polite"
+            role="status"
+            className="text-center font-mono text-xs text-muted-foreground"
+          >
+            {status === "success" && (
+              <span className="font-semibold text-success">{t.contact.form.success}</span>
+            )}
+            {status === "error" && Object.keys(errors).length === 0 && (
+              <span className="font-semibold text-destructive">{t.contact.form.error}</span>
             )}
           </p>
         </div>
 
         {status === "success" && (
-          <p className="font-mono text-xs text-muted-foreground">
+          <p className="text-center font-mono text-xs text-muted-foreground">
             {fallbackLabel}
-            <a href="mailto:contato@guifer.tech" className="link-ink text-foreground">
-              contato@guifer.tech
+            <a
+              href="https://wa.me/5551994055984"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="link-ink text-foreground"
+            >
+              (51) 99405-5984
             </a>
           </p>
         )}

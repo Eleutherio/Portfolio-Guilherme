@@ -6,8 +6,6 @@ export type SectionHeadingVariant = "split" | "editorial" | "rail" | "centered" 
 
 type Props = {
   id: string;
-  /** Compatibilidade temporária durante a migração dos cabeçalhos. */
-  number?: string;
   label: string;
   titleSegments?: string[];
   sublabel?: string;

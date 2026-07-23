@@ -339,9 +339,10 @@ export const dictionary = {
     },
 
     contact: {
-      title: "Contato",
-      subtitle: "Vamos conversar",
-      body: "Estou aberto a oportunidades de estágio e vagas júnior, especialmente em frontend, full-stack e suporte de TI com exposição a desenvolvimento.",
+      title: "Vamos conversar?",
+      subtitle: "Entre em contato",
+      lead: "Para conversar sobre projetos, oportunidades ou colaboração técnica, comece por aqui.",
+      formAriaLabel: "Formulário de contato",
       form: {
         name: "// seu nome",
         namePh: "Como você se chama?",
@@ -354,7 +355,7 @@ export const dictionary = {
         submit: "enviar mensagem",
         submitting: "enviando…",
         success: "mensagem enviada. respondo em breve.",
-        error: "algo deu errado. tenta de novo ou me chama no e-mail.",
+        error: "algo deu errado. tenta de novo ou me chama no WhatsApp.",
         recaptchaNotice: "Protegido por reCAPTCHA. Aplicam-se a",
         recaptchaPrivacy: "Política de Privacidade",
         recaptchaJoin: "e os",
@@ -806,9 +807,10 @@ export const dictionary = {
     },
 
     contact: {
-      title: "Contact",
-      subtitle: "Let's talk",
-      body: "I'm open to internship and junior developer opportunities, especially in frontend, full-stack and IT support roles with development exposure.",
+      title: "Let's talk?",
+      subtitle: "Get in touch",
+      lead: "To discuss projects, opportunities or technical collaboration, start here.",
+      formAriaLabel: "Contact form",
       form: {
         name: "// your name",
         namePh: "what should I call you?",
@@ -821,7 +823,7 @@ export const dictionary = {
         submit: "send message",
         submitting: "sending…",
         success: "message sent. I'll get back to you soon.",
-        error: "something went wrong. try again or email me.",
+        error: "something went wrong. try again or message me on WhatsApp.",
         recaptchaNotice: "Protected by reCAPTCHA. The Google",
         recaptchaPrivacy: "Privacy Policy",
         recaptchaJoin: "and",
