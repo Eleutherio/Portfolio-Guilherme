@@ -238,6 +238,53 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await runAxe(page, testInfo, "contact-errors");
   });
 
+  test("contato prioriza WhatsApp e mantém foco discreto", async ({ page }, testInfo) => {
+    await openPage(page, "/");
+    const contact = page.locator("#contato");
+    await expect(contact.getByRole("heading", { name: "Vamos conversar?" })).toBeVisible();
+    await expect(contact.getByText("Ou envie uma mensagem", { exact: true })).toHaveCount(0);
+    await expect(
+      contact.getByText(/Estou aberto a oportunidades de estágio e vagas júnior/),
+    ).toHaveCount(0);
+
+    const whatsapp = contact.getByRole("link", { name: "(51) 99405-5984", exact: true }).first();
+    await expect(whatsapp).toHaveAttribute("href", "https://wa.me/5551994055984");
+    await expect(whatsapp).toHaveAttribute("target", "_blank");
+    await expect(
+      contact.getByRole("link", { name: "linkedin.com/in/Eleutherio", exact: true }),
+    ).toHaveAttribute("href", "https://www.linkedin.com/in/guifer-dev/");
+    await expect(contact.getByRole("form", { name: "Formulário de contato" })).toBeVisible();
+
+    const notice = contact.getByText(/^Protegido por reCAPTCHA/);
+    await expect(notice).toHaveCSS("font-size", "11px");
+    expect(
+      await notice.evaluate((element) => {
+        const button = element.closest("form")?.querySelector('button[type="submit"]');
+        return Boolean(
+          button && element.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING,
+        );
+      }),
+    ).toBe(true);
+
+    const name = page.locator("#contact-name");
+    const borderBefore = await name.evaluate(
+      (element) => getComputedStyle(element).borderBottomColor,
+    );
+    await name.focus();
+    const focusStyle = await name.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        borderBottomColor: style.borderBottomColor,
+        boxShadow: style.boxShadow,
+        outlineStyle: style.outlineStyle,
+      };
+    });
+    expect(focusStyle.outlineStyle).toBe("none");
+    expect(focusStyle.boxShadow).toBe("none");
+    expect(focusStyle.borderBottomColor).not.toBe(borderBefore);
+    await runAxe(page, testInfo, "contact-whatsapp-focus", "#contato");
+  });
+
   test("sucesso do formulário é anunciado e limpa os campos", async ({ page }, testInfo) => {
     await installRecaptchaStub(page);
     await page.route("**/api/contact", async (route) => {
@@ -254,6 +301,9 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await expect(page.locator("#contact-name")).toHaveValue("");
     await expect(page.locator("#contact-email")).toHaveValue("");
     await expect(page.locator("#contact-message")).toHaveValue("");
+    await expect(
+      page.locator("#contato").getByRole("link", { name: "(51) 99405-5984", exact: true }).last(),
+    ).toHaveAttribute("href", "https://wa.me/5551994055984");
     await runAxe(page, testInfo, "contact-success");
   });
 
@@ -275,6 +325,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       await page.getByRole("button", { name: "enviar mensagem" }).click();
       await expect(page.getByRole("status")).toContainText("algo deu errado");
       await expect(page.getByRole("button", { name: "enviar mensagem" })).toBeEnabled();
+      await expect(page.locator("#contato form")).toHaveCSS("opacity", "1");
       await runAxe(page, testInfo, `contact-${status}`);
     });
   }
@@ -457,6 +508,62 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
 });
 
 test.describe("WCAG 2.2 AA — reflow e preferências", () => {
+  test("Sobre e cases compartilham a identidade visual do portfólio", async ({ page }) => {
+    await openPage(page, "/sobre", { theme: "light" });
+    const aboutVisual = page.locator(".portfolio-visual");
+    await expect(aboutVisual).toBeVisible();
+    await expect(aboutVisual).toHaveCSS("background-color", "rgb(247, 246, 242)");
+    const spacer = page.locator(".site-header-spacer");
+    const header = page.locator("header").first();
+    expect((await spacer.boundingBox())?.height).toBe((await header.boundingBox())?.height);
+
+    await openPage(page, "/projetos/abriu-chaveiro", { theme: "dark" });
+    const caseVisual = page.locator(".portfolio-visual");
+    await expect(caseVisual).toHaveCSS("background-color", "rgb(14, 19, 27)");
+    await expect(page.locator(".case-study .technology-badge").first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "ver projeto" })).toBeVisible();
+    await expect(page.locator(".case-study .btn-outline").first()).toBeVisible();
+  });
+
+  test("seções usam o viewport útil e o menu móvel respeita o header", async ({ page }) => {
+    await openPage(page, "/", { width: 1440, height: 900 });
+    const desktopMetrics = await page.evaluate(() => {
+      const headerHeight = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+      return {
+        availableHeight: window.innerHeight - headerHeight,
+        contactHeight: document.getElementById("contato")?.getBoundingClientRect().height ?? 0,
+        sectionHeights: [...document.querySelectorAll("main > section")].map(
+          (section) => section.getBoundingClientRect().height,
+        ),
+      };
+    });
+    for (const sectionHeight of desktopMetrics.sectionHeights) {
+      expect(sectionHeight).toBeGreaterThanOrEqual(desktopMetrics.availableHeight - 1);
+    }
+    expect(desktopMetrics.contactHeight).toBeLessThanOrEqual(desktopMetrics.availableHeight + 1);
+
+    await openPage(page, "/", { width: 375, height: 900 });
+    const collapsedHeight = (await page.locator("header").first().boundingBox())?.height ?? 0;
+    await page.getByRole("button", { name: "Abrir menu", exact: true }).click();
+    const expandedHeight = (await page.locator("header").first().boundingBox())?.height ?? 0;
+    expect(expandedHeight).toBeGreaterThan(collapsedHeight);
+
+    await page.locator("#mobile-navigation button").nth(2).click();
+    await expect(page.locator("#mobile-navigation")).toHaveCount(0);
+    await expect
+      .poll(async () => {
+        return page.evaluate(() => {
+          const section = document.getElementById("projetos");
+          const headerHeight = Number.parseFloat(
+            getComputedStyle(document.documentElement).getPropertyValue("--site-header-height"),
+          );
+          if (!section || !headerHeight) return Number.POSITIVE_INFINITY;
+          return Math.abs(section.getBoundingClientRect().top - (headerHeight + 8));
+        });
+      })
+      .toBeLessThanOrEqual(2);
+  });
+
   for (const width of [320, 375, 500, 768, 1024, 1440]) {
     test(`sem overflow horizontal em ${width}px`, async ({ page }) => {
       await openPage(page, "/", { width, height: 900 });
