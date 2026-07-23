@@ -1,8 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HeadContent, Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 
-import { ThemeProvider } from "@/lib/theme";
-import { AppProvider, useApp } from "@/i18n/AppContext";
+import { useApp } from "@/i18n/AppContext";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
 
 function NotFoundComponent() {
@@ -117,13 +116,9 @@ function RootComponent() {
     <>
       <HeadContent />
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <AppProvider>
-            <GlobalSkipLink />
-            <Outlet />
-            <AccessibilityWidget />
-          </AppProvider>
-        </ThemeProvider>
+        <GlobalSkipLink />
+        <Outlet />
+        <AccessibilityWidget />
       </QueryClientProvider>
     </>
   );
