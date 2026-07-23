@@ -8,6 +8,7 @@ import {
 } from "@/content/project-case-details";
 import { getLocalizedProjectSummaries } from "@/content/project-summaries";
 import { GithubIcon } from "@/components/icons/Brand";
+import { TechnologyBadge } from "@/components/TechnologyBadge";
 import { CaseNextSteps } from "@/components/project-case/CaseNextSteps";
 import { CaseContactPrompt } from "@/components/project-case/CaseContactPrompt";
 import { Route } from "@/routes/projetos.$slug";
@@ -24,14 +25,19 @@ export function CaseTemplate() {
   const next = idx < allProjects.length - 1 ? allProjects[idx + 1] : null;
 
   return (
-    <article>
+    <article className="case-study">
       {/* Hero */}
-      <section className="border-b border-hairline">
+      <section className="relative overflow-hidden border-b border-hairline">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full opacity-70 blur-3xl"
+          style={{ background: "var(--gradient-brand-soft)" }}
+        />
         <div className="section-container pt-10 md:pt-14">
           <Link
             to="/"
             hash="projetos"
-            className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-accent"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             {t.caseStudy.back}
@@ -40,7 +46,7 @@ export function CaseTemplate() {
 
         <div className="section-container grid grid-cols-1 gap-8 pb-14 pt-8 md:grid-cols-12 md:gap-8 md:pb-24 md:pt-16">
           <div className="md:col-span-7">
-            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-accent">
               {data.id} · {data.category}
             </p>
             <motion.h1
@@ -61,7 +67,7 @@ export function CaseTemplate() {
                   href={data.demoUrl}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 py-3 font-display text-sm font-medium text-background sm:w-auto"
+                  className="btn-primary group w-full sm:w-auto"
                 >
                   <ExternalLink className="h-4 w-4" />
                   {t.projects.demo}
@@ -72,7 +78,7 @@ export function CaseTemplate() {
                   href={data.repoUrl}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-foreground px-5 py-3 font-display text-sm font-medium text-foreground transition-colors hover:bg-foreground hover:text-background sm:w-auto"
+                  className="btn-outline group w-full sm:w-auto"
                 >
                   <GithubIcon className="h-4 w-4" />
                   {t.projects.repo}
@@ -82,15 +88,12 @@ export function CaseTemplate() {
           </div>
 
           <aside className="md:col-span-4 md:col-start-9">
-            <dl className="space-y-6 border border-hairline bg-surface p-6 md:p-7">
+            <dl className="card-surface card-surface--accent space-y-6 p-6 md:p-7">
               <Meta label={t.caseStudy.stackLabel}>
                 <ul className="mt-3 flex flex-wrap gap-1.5">
-                  {data.stack.map((s) => (
-                    <li
-                      key={s}
-                      className="rounded-md border border-hairline bg-background px-2.5 py-1 text-xs text-foreground"
-                    >
-                      {s}
+                  {data.stack.map((technology) => (
+                    <li key={technology}>
+                      <TechnologyBadge label={technology} />
                     </li>
                   ))}
                 </ul>
@@ -104,7 +107,7 @@ export function CaseTemplate() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.15 }}
-            className="aspect-[16/10] overflow-hidden bg-surface"
+            className="card-surface aspect-[16/10]"
           >
             <img
               src={data.coverSrc}
@@ -180,7 +183,7 @@ function CaseBlock({
     <section className="border-b border-hairline">
       <div className="section-container grid grid-cols-1 gap-8 py-12 md:grid-cols-12 md:gap-8 md:py-24">
         <div className="md:col-span-3">
-          <p className="section-number text-5xl text-muted-foreground md:text-6xl">{number}</p>
+          <p className="section-number text-gradient text-4xl md:text-5xl">{number}</p>
           <h2 className="mt-4 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
             {title}
           </h2>
