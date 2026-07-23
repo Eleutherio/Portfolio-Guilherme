@@ -241,7 +241,9 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
   test("contato prioriza WhatsApp e mantém foco discreto", async ({ page }, testInfo) => {
     await openPage(page, "/");
     const contact = page.locator("#contato");
+    await contact.scrollIntoViewIfNeeded();
     await expect(contact.getByRole("heading", { name: "Vamos conversar?" })).toBeVisible();
+    await expect(contact.locator("header")).toHaveCSS("opacity", "1");
     await expect(contact.getByText("Ou envie uma mensagem", { exact: true })).toHaveCount(0);
     await expect(
       contact.getByText(/Estou aberto a oportunidades de estágio e vagas júnior/),
