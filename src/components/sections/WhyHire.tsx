@@ -8,7 +8,6 @@ export function WhyHire() {
   return (
     <SectionShell
       id="contratar"
-      number="04"
       label={t.whyHire.tag}
       sublabel="diferenciais"
       lead={t.whyHire.titleA}

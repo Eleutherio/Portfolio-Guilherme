@@ -11,7 +11,7 @@ type Props = {
 export function ProcessIllustration({ variant }: Props) {
   const reduced = useReducedMotion() ?? false;
   return (
-    <div className="relative mx-auto w-full max-w-[180px]">
+    <div className={`process-illustration--${variant} relative mx-auto w-full max-w-[180px]`}>
       <svg
         viewBox="0 0 200 200"
         className="relative aspect-square w-full text-accent"

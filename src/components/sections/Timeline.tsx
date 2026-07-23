@@ -3,7 +3,6 @@ import { AnimatePresence, motion, useReducedMotion, type PanInfo } from "motion/
 import {
   ArrowLeft,
   ArrowRight,
-  ArrowUpRight,
   Award,
   Calendar,
   Code2,
@@ -16,10 +15,10 @@ import {
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
 
 import { useApp } from "@/i18n/AppContext";
 import { projectSummaries } from "@/content/project-summaries";
+import { SectionHeading } from "./SectionShell";
 
 const DRAG_THRESHOLD = 60;
 
@@ -157,26 +156,12 @@ export function Timeline() {
       />
 
       <div className="section-container relative py-14 md:py-24">
-        {/* Header centralizado — padrão MIV */}
-        <motion.header
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
-          className="mx-auto mb-10 max-w-3xl text-center md:mb-14"
-        >
-          <p className="section-number font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
-            00:02<span className="text-muted-foreground"> · {t.timeline.subtitle}</span>
-          </p>
-          <h2
-            id="trajetoria-heading"
-            tabIndex={-1}
-            className="mt-3 font-display text-2xl font-medium leading-[1.05] tracking-[-0.035em] text-foreground outline-none md:text-3xl lg:text-4xl"
-          >
-            {t.timeline.title}
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-muted-foreground">{t.timeline.lead}</p>
-        </motion.header>
+        <SectionHeading
+          id="trajetoria"
+          label={t.timeline.title}
+          sublabel={t.timeline.subtitle}
+          variant="rail"
+        />
 
         {/* Trilho horizontal */}
         <div className="relative mt-10 md:mt-14">
@@ -426,15 +411,7 @@ export function Timeline() {
           </div>
         </div>
 
-        {/* CTA Sobre mim + stats no rodapé com linha tracejada */}
-        <div className="mt-10 flex justify-center md:mt-14">
-          <Link to="/sobre" className="btn-outline group w-full sm:w-auto">
-            <span>{t.whyHire.aboutCta}</span>
-            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </Link>
-        </div>
-
-        <div className="mt-8 flex flex-col items-center">
+        <div className="mt-10 flex flex-col items-center md:mt-14">
           <span
             aria-hidden="true"
             className="w-full max-w-md border-t border-dashed border-hairline"

@@ -48,14 +48,10 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
+    <div className="home-visual flex min-h-dvh flex-col bg-background">
       <Header />
-      <div className="h-[64px] shrink-0" aria-hidden="true" />
-      <main
-        id="main"
-        tabIndex={-1}
-        className="flex-1 overflow-x-clip outline-none [&_section]:scroll-mt-20"
-      >
+      <div className="home-header-spacer shrink-0" aria-hidden="true" />
+      <main id="main" tabIndex={-1} className="flex-1 overflow-x-clip outline-none">
         <Hero />
         <Suspense fallback={null}>
           <About />

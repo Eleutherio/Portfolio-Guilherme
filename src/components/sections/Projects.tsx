@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { GithubIcon } from "@/components/icons/Brand";
 import { ImageCover } from "@/components/ImageCover";
+import { TechnologyBadge } from "@/components/TechnologyBadge";
 import { useApp } from "@/i18n/AppContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -130,7 +131,13 @@ function ProjectRow({ p, eager }: { p: LocalizedProjectSummary; eager: boolean }
             <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
               {t.projects.stackLabel}
             </p>
-            <p className="mt-2 font-mono text-xs text-foreground">{p.stack.join("  •  ")}</p>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {p.stack.map((technology) => (
+                <li key={technology}>
+                  <TechnologyBadge label={technology} />
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Links */}
@@ -216,7 +223,14 @@ export function Projects() {
   const exitMotion = isMobile ? { x: exitOffset } : { y: exitOffset };
 
   return (
-    <SectionShell id="projetos" number="03" label={t.projects.title} sublabel={t.projects.subtitle}>
+    <SectionShell
+      id="projetos"
+      label={t.projects.title}
+      titleSegments={t.projects.titleSegments}
+      sublabel={t.projects.subtitle}
+      lead={t.projects.lead}
+      headerVariant="sequence"
+    >
       <div className="md:col-span-12" data-projects-hydrated={hydrated}>
         {/* Card + paginação lateral */}
         <div className="relative border-t border-hairline">

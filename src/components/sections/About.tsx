@@ -1,4 +1,6 @@
 import { motion, useReducedMotion } from "motion/react";
+import { Link } from "@tanstack/react-router";
+import { ArrowUpRight } from "lucide-react";
 import { useApp } from "@/i18n/AppContext";
 import profileImg from "@/assets/guilherme-profile.jpg";
 import { ImageCover } from "@/components/ImageCover";
@@ -11,10 +13,11 @@ export function About({ headingLevel = 2 }: { headingLevel?: 1 | 2 }) {
   return (
     <SectionShell
       id="sobre"
-      number="01"
       label={t.about.title}
       sublabel={t.about.subtitle}
+      lead={headingLevel === 1 ? t.about.lead : undefined}
       headingLevel={headingLevel}
+      headerVariant={headingLevel === 1 ? "split" : "editorial"}
     >
       {/* Wrapper to vertically center image and text on desktop */}
       <div className="contents md:col-span-12 md:grid md:grid-cols-12 md:items-center md:gap-8">
@@ -103,6 +106,15 @@ export function About({ headingLevel = 2 }: { headingLevel?: 1 | 2 }) {
                   </li>
                 ))}
               </ul>
+              {headingLevel === 2 ? (
+                <Link to="/sobre" className="btn-outline group mt-6 w-full sm:w-auto">
+                  <span>{t.about.learnMore}</span>
+                  <ArrowUpRight
+                    className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                    aria-hidden="true"
+                  />
+                </Link>
+              ) : null}
             </motion.div>
           )}
         </div>

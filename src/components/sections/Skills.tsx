@@ -14,13 +14,19 @@ const PILLAR_ICONS: Record<string, LucideIcon> = {
 };
 
 const STEP_VARIANTS = ["discovery", "build", "delivery"] as const;
+const PILLAR_ACCENTS = [
+  "process-pillar-icon--navy",
+  "process-pillar-icon--coral",
+  "process-pillar-icon--petrol",
+  "process-pillar-icon--success",
+] as const;
 
 export function Skills() {
   const { t } = useApp();
-  const { steps, pillars, title, subtitle, lead } = t.skills;
+  const { steps, pillars, title, subtitle } = t.skills;
 
   return (
-    <SectionShell id="processo" number="04" label={title} sublabel={subtitle} lead={lead}>
+    <SectionShell id="processo" label={title} sublabel={subtitle} headerVariant="centered">
       <div className="md:col-span-12">
         {/* Grid de etapas com conectores */}
         <div className="grid grid-cols-1 items-start gap-10 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:gap-4">
@@ -69,11 +75,15 @@ export function Skills() {
           transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }}
           className="card-surface mt-14 grid grid-cols-1 gap-6 p-6 sm:grid-cols-2 md:mt-20 md:p-8 lg:grid-cols-4"
         >
-          {pillars.map((pillar) => {
+          {pillars.map((pillar, index) => {
             const Icon = PILLAR_ICONS[pillar.icon] ?? Users;
             return (
               <div key={pillar.title} className="flex items-start gap-3">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-accent-soft text-accent">
+                <span
+                  className={`grid h-9 w-9 shrink-0 place-items-center rounded-md bg-accent-soft ${
+                    PILLAR_ACCENTS[index % PILLAR_ACCENTS.length]
+                  }`}
+                >
                   <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                 </span>
                 <div className="min-w-0">

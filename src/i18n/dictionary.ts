@@ -18,7 +18,7 @@ export const dictionary = {
       role: "Desenvolvedor Full Stack",
       promptGreeting: "olá — eu sou",
       headline:
-        "Olá, seja bem-vindo(a),\nEu me chamo Guilherme Eleuthério.\nDesenvolvedor de Software e profissional de TI.",
+        "Olá, seja bem-vindo(a),\nEu me chamo Guilherme Eleuthério.\nSou Desenvolvedor de Software e profissional de TI.",
       headlineHighlight: "Guilherme Eleuthério",
       tagline:
         "Construo aplicações full-stack com React, TypeScript, Django e PostgreSQL, unindo pensamento de produto, arquitetura limpa e entrega prática.",
@@ -52,8 +52,9 @@ export const dictionary = {
     },
 
     about: {
-      title: "Sobre",
-      subtitle: "Quem está por trás do código",
+      title: "Quem sou, o que faço e porquê",
+      subtitle: "Perfil",
+      lead: "Minha base em tecnologia e a experiência com projetos reais orientam soluções legíveis, acessíveis e preparadas para evoluir.",
       photoAlt: "Retrato de Guilherme Ferreira.",
       kicker: "perfil",
       idLabel: "ID · GF-01 / Porto Alegre",
@@ -97,12 +98,15 @@ export const dictionary = {
         "Performance em PostgreSQL",
         "React + TanStack Start",
       ],
+      learnMore: "Saber mais",
       backHome: "voltar para o início",
     },
 
     projects: {
-      title: "Projetos",
-      subtitle: "Trabalhos selecionados",
+      title: "Do projeto ao produto e à produção",
+      titleSegments: ["Projeto", "Produto", "Produção"],
+      subtitle: "Cases selecionados",
+      lead: "Trabalhos de destaque da minha trajetória, apresentados com contexto profissional e decisões técnicas.",
       stacksLabel: "stacks",
       highlightsLabel: "Destaques",
       descLabel: "descrição geral",
@@ -165,9 +169,9 @@ export const dictionary = {
       },
     },
     skills: {
-      title: "Como conduzo um projeto",
-      subtitle: "processo",
-      lead: "Um processo claro e colaborativo para transformar ideias em soluções digitais de verdade.",
+      title: "Clareza do início ao deploy",
+      subtitle: "Processo",
+      lead: "Entender, validar, construir e acompanhar.",
       steps: [
         {
           kicker: "descoberta",
@@ -215,9 +219,9 @@ export const dictionary = {
     },
 
     timeline: {
-      title: "Trajetória",
-      subtitle: "Formação e experiência",
-      lead: "Reuni um breve resumo da minha trajetória profissional.",
+      title: "Roadmap de experiências",
+      subtitle: "Trajetória",
+      lead: "Formação e prática em evolução contínua.",
       evidenceLabel: "Evidência técnica",
       currentLabel: "Atual",
       stats: {
@@ -526,8 +530,9 @@ export const dictionary = {
     },
 
     about: {
-      title: "About",
-      subtitle: "The person behind the code",
+      title: "Who I am, what I do and why",
+      subtitle: "Profile",
+      lead: "My technology background and experience with real projects guide readable, accessible solutions built to evolve.",
       photoAlt: "Portrait of Guilherme Ferreira.",
       kicker: "profile",
       idLabel: "ID · GF-01 / Porto Alegre",
@@ -564,12 +569,15 @@ export const dictionary = {
       p3: "Today, I am looking for internship or junior opportunities where I can contribute with frontend/full-stack development, documentation and problem-solving.",
       currentFocusLabel: "current focus",
       currentFocus: ["Django + DRF APIs", "PostgreSQL performance", "React + TanStack Start"],
+      learnMore: "Learn more",
       backHome: "back to home",
     },
 
     projects: {
-      title: "Projects",
-      subtitle: "Selected work",
+      title: "From project to product and production",
+      titleSegments: ["Project", "Product", "Production"],
+      subtitle: "Selected case studies",
+      lead: "Standout work from my journey, presented with professional context and technical decisions.",
       stacksLabel: "stacks",
       highlightsLabel: "Highlights",
       descLabel: "overview",
@@ -632,9 +640,9 @@ export const dictionary = {
       },
     },
     skills: {
-      title: "How I run a project",
-      subtitle: "process",
-      lead: "A clear, collaborative process to turn ideas into real digital solutions.",
+      title: "Clarity from discovery to deployment",
+      subtitle: "Process",
+      lead: "Understand, validate, build and follow through.",
       steps: [
         {
           kicker: "discovery",
@@ -682,9 +690,9 @@ export const dictionary = {
     },
 
     timeline: {
-      title: "Journey",
-      subtitle: "Education and experience",
-      lead: "A short overview of my professional journey.",
+      title: "Experience roadmap",
+      subtitle: "Journey",
+      lead: "Education and hands-on practice in continuous evolution.",
       evidenceLabel: "Technical evidence",
       currentLabel: "Current",
       stats: {

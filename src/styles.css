@@ -8,6 +8,17 @@
 html {
   scroll-behavior: smooth;
 }
+
+:root {
+  --site-header-height: 69px;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --site-header-height: 73px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -130,6 +141,220 @@ html {
   --footer-foreground: oklch(0.94 0.008 265);
   --footer-muted: oklch(0.68 0.025 265);
   --footer-hairline: oklch(0.24 0.03 265);
+}
+
+/* ============================================================
+   PORTFÓLIO — PALETA PROFISSIONAL
+   Compartilhada pela home, Sobre e cases. As regras de viewport
+   abaixo permanecem exclusivas de .home-visual.
+   ============================================================ */
+
+:root .home-visual,
+.light .home-visual,
+:root .portfolio-visual,
+.light .portfolio-visual {
+  --background: #f7f6f2;
+  --surface: #fcfbf8;
+  --surface-2: #ffffff;
+  --foreground: #172033;
+  --muted: #f2f1ed;
+  --muted-foreground: #626a75;
+  --border: #dddad3;
+  --hairline: #dddad3;
+  --control-border: #7a7f87;
+  --accent: #244a73;
+  --accent-2: #3c6a96;
+  --accent-3: #3c6a96;
+  --accent-soft: #e8eef4;
+  --accent-foreground: #ffffff;
+  --ring: #244a73;
+  --success: #187a55;
+  --warning: #9a5a00;
+  --info: #244a73;
+  --destructive: #b93843;
+  --home-alternate: #f2f1ed;
+  --home-card: #ffffff;
+  --process-cobalt: #315bd6;
+  --process-coral: #d9533f;
+  --process-petrol: #0b786f;
+  --gradient-brand: linear-gradient(135deg, #244a73, #3c6a96);
+  --gradient-brand-soft: linear-gradient(135deg, #244a7317, #3c6a961f);
+  --shadow-card: 0 1px 2px #1720330a, 0 8px 24px -18px #17203338;
+  --shadow-card-hover: 0 2px 4px #1720330f, 0 16px 32px -20px #244a7352;
+  --code-syntax-1: #244a73;
+  --code-syntax-2: #3c6a96;
+  --code-comment: #626a75;
+  --footer-bg: #172033;
+  --footer-foreground: #f2efe8;
+  --footer-muted: #a4acb7;
+  --footer-hairline: #2a3542;
+}
+
+.dark .home-visual,
+.dark .portfolio-visual {
+  --background: #0e131b;
+  --surface: #171f2a;
+  --surface-2: #1b2531;
+  --foreground: #f2efe8;
+  --muted: #121923;
+  --muted-foreground: #a4acb7;
+  --border: #2a3542;
+  --hairline: #2a3542;
+  --control-border: #66717e;
+  --accent: #78a5ce;
+  --accent-2: #a3c2dd;
+  --accent-3: #a3c2dd;
+  --accent-soft: #1c3348;
+  --accent-foreground: #0e131b;
+  --ring: #78a5ce;
+  --success: #4fc38c;
+  --warning: #f2b84b;
+  --info: #78a5ce;
+  --destructive: #ff7a84;
+  --home-alternate: #121923;
+  --home-card: #1b2531;
+  --process-cobalt: #86a4ff;
+  --process-coral: #ff8a70;
+  --process-petrol: #52c7b8;
+  --gradient-brand: linear-gradient(135deg, #78a5ce, #a3c2dd);
+  --gradient-brand-soft: linear-gradient(135deg, #78a5ce1f, #a3c2dd1a);
+  --shadow-card: 0 1px 2px #0000004d, 0 8px 24px -18px #000000d9;
+  --shadow-card-hover: 0 2px 6px #00000059, 0 18px 36px -20px #78a5ce59;
+  --code-syntax-1: #78a5ce;
+  --code-syntax-2: #a3c2dd;
+  --code-comment: #a4acb7;
+  --footer-bg: #0e131b;
+  --footer-foreground: #f2efe8;
+  --footer-muted: #a4acb7;
+  --footer-hairline: #2a3542;
+}
+
+.home-visual,
+.portfolio-visual {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-hairline: var(--hairline);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-ring: var(--ring);
+  --color-card: var(--home-card);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-foreground);
+  --color-secondary: var(--surface);
+  --color-secondary-foreground: var(--foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-input: var(--border);
+  background-color: var(--color-background);
+}
+
+.home-visual .home-header-spacer,
+.site-header-spacer {
+  block-size: var(--site-header-height);
+}
+
+.home-visual main,
+.portfolio-visual main {
+  scroll-padding-block-start: calc(var(--site-header-height) + 0.5rem);
+}
+
+.home-visual main > section {
+  display: flex;
+  min-block-size: calc(100svh - var(--site-header-height));
+  flex-direction: column;
+  scroll-margin-block-start: calc(var(--site-header-height) + 0.5rem);
+}
+
+.home-visual main > section > .section-container {
+  margin-block: auto;
+}
+
+.home-visual main > section:nth-of-type(even) {
+  background-color: var(--home-alternate);
+}
+
+.home-visual .card-surface,
+.portfolio-visual .card-surface {
+  background-color: var(--home-card);
+}
+
+.home-visual .btn-primary,
+.home-visual .btn-outline:hover,
+.portfolio-visual .btn-primary,
+.portfolio-visual .btn-outline:hover {
+  color: var(--color-accent-foreground);
+}
+
+.home-visual .technology-badge,
+.portfolio-visual .technology-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 32px;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-2);
+  color: var(--color-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.home-visual .technology-badge__icon,
+.portfolio-visual .technology-badge__icon {
+  color: var(--tech-color-light, var(--color-foreground));
+}
+
+.dark .home-visual .technology-badge__icon,
+.dark .portfolio-visual .technology-badge__icon {
+  color: var(--tech-color-dark, var(--tech-color-light, var(--color-foreground)));
+}
+
+.portfolio-visual main > section:nth-of-type(even),
+.portfolio-visual .case-study > section:nth-of-type(even) {
+  background-color: var(--home-alternate);
+}
+
+.home-visual .process-illustration--discovery {
+  --accent: var(--process-coral);
+  --accent-2: var(--process-cobalt);
+}
+
+.home-visual .process-illustration--build {
+  --accent: var(--process-cobalt);
+  --accent-2: var(--process-petrol);
+}
+
+.home-visual .process-illustration--delivery {
+  --accent: var(--process-petrol);
+  --accent-2: var(--process-coral);
+}
+
+.home-visual .process-pillar-icon--navy {
+  color: var(--process-cobalt);
+}
+
+.home-visual .process-pillar-icon--coral {
+  color: var(--process-coral);
+}
+
+.home-visual .process-pillar-icon--petrol {
+  color: var(--process-petrol);
+}
+
+.home-visual .process-pillar-icon--success {
+  color: var(--color-success);
 }
 
 /* ============================================================

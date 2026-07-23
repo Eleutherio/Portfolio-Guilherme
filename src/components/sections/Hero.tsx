@@ -1,7 +1,6 @@
 import { lazy, Suspense } from "react";
 import { ArrowDown, ArrowUpRight, Download } from "lucide-react";
 import { useApp } from "@/i18n/AppContext";
-import { RotatingTagline } from "@/components/hero/RotatingTagline";
 import { HeroCarouselProvider } from "@/components/hero/HeroCarouselContext";
 
 const HeroStats = lazy(() =>
@@ -82,8 +81,8 @@ export function Hero() {
 
         <div className="section-container relative z-10 flex flex-1 flex-col justify-center py-10 md:py-16 lg:py-14">
           <div className="grid w-full grid-cols-1 items-center lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] lg:gap-14 xl:gap-20">
-            <div className="min-w-0 lg:pr-2">
-              <div className="max-w-[36rem]">
+            <div className="min-w-0 lg:py-6 lg:pr-2">
+              <div className="max-w-[38rem]">
                 <h1
                   id="home-heading"
                   tabIndex={-1}
@@ -93,33 +92,37 @@ export function Hero() {
                   <HighlightHeadline text={t.hero.headline} grad={t.hero.headlineHighlight} />
                 </h1>
 
-                <div>
-                  <RotatingTagline />
-                </div>
+                <div className="mt-9 md:mt-10">
+                  <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+                    <a
+                      href="#projetos"
+                      className="btn-primary px-5 text-center sm:whitespace-nowrap"
+                    >
+                      <span>{t.hero.cta1}</span>
+                      <ArrowDown className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    </a>
+                    <a
+                      href="#contato"
+                      className="btn-outline px-5 text-center sm:whitespace-nowrap"
+                    >
+                      <span>{t.hero.cta3}</span>
+                      <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    </a>
+                  </div>
 
-                <div className="mt-7 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                  <a href="#projetos" className="btn-primary px-5 text-center sm:whitespace-nowrap">
-                    <span>{t.hero.cta1}</span>
-                    <ArrowDown className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  </a>
-                  <a href="#contato" className="btn-outline px-5 text-center sm:whitespace-nowrap">
-                    <span>{t.hero.cta3}</span>
-                    <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <a
+                    href={t.hero.resumeUrl}
+                    download="Guilherme-Eleutherio-Curriculo.pdf"
+                    type="application/pdf"
+                    className="group mt-3 inline-flex w-fit items-center gap-2 rounded-sm py-2 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-accent"
+                  >
+                    <Download
+                      className="h-4 w-4 shrink-0 transition-transform group-hover:translate-y-0.5"
+                      aria-hidden="true"
+                    />
+                    <span>{t.hero.cta2}</span>
                   </a>
                 </div>
-
-                <a
-                  href={t.hero.resumeUrl}
-                  download="Guilherme-Eleutherio-Curriculo.pdf"
-                  type="application/pdf"
-                  className="group mt-4 inline-flex w-fit items-center gap-2 rounded-sm py-2 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-accent"
-                >
-                  <Download
-                    className="h-4 w-4 shrink-0 transition-transform group-hover:translate-y-0.5"
-                    aria-hidden="true"
-                  />
-                  <span>{t.hero.cta2}</span>
-                </a>
               </div>
             </div>
 
