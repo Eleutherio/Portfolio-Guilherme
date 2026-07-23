@@ -25,6 +25,7 @@ export function Header() {
   const [hoverReveal, setHoverReveal] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const lastYRef = useRef(0);
+  const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const themeActionLabel = theme === "dark" ? t.toggles.themeToLight : t.toggles.themeToDark;
   const ThemeActionIcon = theme === "dark" ? Sun : Moon;
@@ -91,6 +92,26 @@ export function Header() {
   }, [open]);
 
   useEffect(() => {
+    const header = headerRef.current;
+    if (!header || open) return;
+
+    const syncHeaderHeight = () => {
+      const height = Math.ceil(header.getBoundingClientRect().height);
+      document.documentElement.style.setProperty("--site-header-height", `${height}px`);
+    };
+
+    syncHeaderHeight();
+    const observer = new ResizeObserver(syncHeaderHeight);
+    observer.observe(header);
+    window.addEventListener("resize", syncHeaderHeight);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", syncHeaderHeight);
+    };
+  }, [lang, open]);
+
+  useEffect(() => {
     const id = locationHash.replace(/^#/, "");
     if (pathname !== "/" || !id) return;
 
@@ -145,6 +166,7 @@ export function Header() {
 
   return (
     <header
+      ref={headerRef}
       onFocusCapture={() => {
         setHidden(false);
         setHoverReveal(false);
@@ -240,7 +262,9 @@ export function Header() {
                 type="button"
                 onClick={() => {
                   setOpen(false);
-                  goToSection(s.id);
+                  window.requestAnimationFrame(() => {
+                    window.requestAnimationFrame(() => goToSection(s.id));
+                  });
                 }}
                 className="rounded-md px-2 py-3 text-left font-mono text-sm uppercase tracking-[0.2em] text-foreground transition-colors hover:bg-surface"
               >

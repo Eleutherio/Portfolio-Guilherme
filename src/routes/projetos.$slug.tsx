@@ -32,10 +32,10 @@ export const Route = createFileRoute("/projetos/$slug")({
 
 function ProjectCase() {
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="flex min-h-dvh flex-col bg-background">
       <Header />
-      <div className="h-[64px] shrink-0" aria-hidden="true" />
-      <main id="main" tabIndex={-1} className="overflow-x-clip outline-none">
+      <div className="site-header-spacer shrink-0" aria-hidden="true" />
+      <main id="main" tabIndex={-1} className="flex-1 overflow-x-clip outline-none">
         <CaseTemplate />
       </main>
       <Footer />

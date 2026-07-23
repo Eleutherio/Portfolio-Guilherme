@@ -34,7 +34,7 @@ function SobrePage() {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <Header />
-      <div className="h-[64px] shrink-0" aria-hidden="true" />
+      <div className="site-header-spacer shrink-0" aria-hidden="true" />
       <main id="main" tabIndex={-1} className="flex-1 overflow-x-clip outline-none">
         <div className="section-container pt-10 md:pt-14">
           <Link
