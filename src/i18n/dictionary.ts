@@ -89,15 +89,9 @@ export const dictionary = {
         },
       ],
 
-      p1: "Sou desenvolvedor full-stack em formação, unindo experiência prática de suporte de TI, estudos em Análise e Desenvolvimento de Sistemas e projetos web hands-on.",
-      p2: "Meu trabalho foca em arquitetura legível, decisões de produto pragmáticas e interfaces que continuam manuteníveis conforme o projeto cresce.",
-      p3: "Hoje busco oportunidades de estágio ou júnior onde eu possa contribuir com desenvolvimento frontend/full-stack, documentação e resolução de problemas.",
-      currentFocusLabel: "foco atual",
-      currentFocus: [
-        "APIs com Django + DRF",
-        "Performance em PostgreSQL",
-        "React + TanStack Start",
-      ],
+      p1: "Meu interesse por tecnologia começou muito antes da graduação, quando desmontar computadores e tentar resolver o que parecia impossível ainda era apenas curiosidade.",
+      p2: "Com o tempo, essa curiosidade ganhou responsabilidade e passou a orientar a forma como estudo, trabalho e trato as pessoas em cada projeto.",
+      p3: "Entre a escola pública, as oportunidades que precisei conquistar e uma frase ouvida em aula que nunca esqueci, há uma história que explica por que levo tão a sério aquilo que construo.",
       story: {
         albumLabel: "Álbum de fotos",
         selectorLabel: "Selecionar foto",
@@ -573,11 +567,9 @@ export const dictionary = {
         },
       ],
 
-      p1: "I am a full-stack developer in formation, combining IT support experience, Systems Analysis studies and hands-on web development projects.",
-      p2: "My work focuses on readable architecture, practical product decisions and interfaces that remain maintainable as the project grows.",
-      p3: "Today, I am looking for internship or junior opportunities where I can contribute with frontend/full-stack development, documentation and problem-solving.",
-      currentFocusLabel: "current focus",
-      currentFocus: ["Django + DRF APIs", "PostgreSQL performance", "React + TanStack Start"],
+      p1: "My interest in technology began long before college, when taking computers apart and trying to solve what seemed impossible was still just curiosity.",
+      p2: "Over time, that curiosity became a sense of responsibility and began to guide the way I study, work and treat people throughout each project.",
+      p3: "Between public school, the opportunities I had to work for and something I heard in class that I never forgot, there is a story behind why I take what I build so seriously.",
       story: {
         albumLabel: "Photo album",
         selectorLabel: "Select photo",

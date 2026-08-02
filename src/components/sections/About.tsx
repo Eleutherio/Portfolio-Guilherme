@@ -6,7 +6,7 @@ import profileImg from "@/assets/guilherme-profile.jpg";
 import { ImageCover } from "@/components/ImageCover";
 import { SectionShell } from "./SectionShell";
 
-export function About({ headingLevel = 2 }: { headingLevel?: 1 | 2 }) {
+export function About() {
   const { t } = useApp();
   const reducedMotion = useReducedMotion();
 
@@ -15,13 +15,9 @@ export function About({ headingLevel = 2 }: { headingLevel?: 1 | 2 }) {
       id="sobre"
       label={t.about.title}
       sublabel={t.about.subtitle}
-      lead={headingLevel === 1 ? t.about.lead : undefined}
-      headingLevel={headingLevel}
-      headerVariant={headingLevel === 1 ? "split" : "editorial"}
+      headerVariant="editorial"
     >
-      {/* Wrapper to vertically center image and text on desktop */}
       <div className="contents md:col-span-12 md:grid md:grid-cols-12 md:items-center md:gap-8">
-        {/* Portrait */}
         <div className="md:col-span-5">
           <motion.figure
             initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
@@ -30,7 +26,6 @@ export function About({ headingLevel = 2 }: { headingLevel?: 1 | 2 }) {
             transition={{ duration: reducedMotion ? 0 : 0.8 }}
             className="relative"
           >
-            {/* gradient corner accent */}
             <span
               aria-hidden="true"
               className="absolute -left-2 -top-2 z-10 h-10 w-10 rounded-tl-lg border-l-2 border-t-2"
@@ -47,7 +42,7 @@ export function About({ headingLevel = 2 }: { headingLevel?: 1 | 2 }) {
                 borderImageSlice: 1,
               }}
             />
-            <div className="card-surface relative w-full overflow-hidden p-0 max-h-[380px] md:max-h-[440px] aspect-[4/5]">
+            <div className="card-surface relative aspect-[4/5] max-h-[380px] w-full overflow-hidden p-0 md:max-h-[440px]">
               <ImageCover
                 image={{
                   fallback: profileImg,
@@ -72,7 +67,6 @@ export function About({ headingLevel = 2 }: { headingLevel?: 1 | 2 }) {
           </motion.figure>
         </div>
 
-        {/* Narrative */}
         <div className="mt-10 md:col-span-7 md:mt-0 md:pl-2">
           <motion.div
             initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
@@ -88,35 +82,21 @@ export function About({ headingLevel = 2 }: { headingLevel?: 1 | 2 }) {
             <p>{t.about.p3}</p>
           </motion.div>
 
-          {t.about.currentFocus && t.about.currentFocus.length > 0 && (
-            <motion.div
-              initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: reducedMotion ? 0 : 0.6, delay: reducedMotion ? 0 : 0.15 }}
-              className="mt-8 border-t border-hairline pt-5"
-            >
-              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
-                {t.about.currentFocusLabel ?? "current focus"}
-              </p>
-              <ul className="mt-3 flex flex-wrap gap-2">
-                {t.about.currentFocus.map((item) => (
-                  <li key={item} className="chip">
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              {headingLevel === 2 ? (
-                <Link to="/sobre" className="btn-outline group mt-6 w-full sm:w-auto">
-                  <span>{t.about.learnMore}</span>
-                  <ArrowUpRight
-                    className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                    aria-hidden="true"
-                  />
-                </Link>
-              ) : null}
-            </motion.div>
-          )}
+          <motion.div
+            initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: reducedMotion ? 0 : 0.6, delay: reducedMotion ? 0 : 0.15 }}
+            className="mt-8"
+          >
+            <Link to="/sobre" className="btn-outline group w-full sm:w-auto">
+              <span>{t.about.learnMore}</span>
+              <ArrowUpRight
+                className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+            </Link>
+          </motion.div>
         </div>
       </div>
     </SectionShell>
