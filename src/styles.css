@@ -341,22 +341,6 @@ html {
   --accent-2: var(--process-coral);
 }
 
-.home-visual .process-pillar-icon--navy {
-  color: var(--process-cobalt);
-}
-
-.home-visual .process-pillar-icon--coral {
-  color: var(--process-coral);
-}
-
-.home-visual .process-pillar-icon--petrol {
-  color: var(--process-petrol);
-}
-
-.home-visual .process-pillar-icon--success {
-  color: var(--color-success);
-}
-
 /* ============================================================
    UTILITÁRIOS DERIVADOS
    Compõem os tokens acima. Não editar para trocar de MIV.

@@ -1,29 +1,15 @@
 import { Fragment } from "react";
 import { motion } from "motion/react";
-import { RefreshCw, ShieldCheck, Target, Users, type LucideIcon } from "lucide-react";
 import { useApp } from "@/i18n/AppContext";
 import { SectionShell } from "./SectionShell";
 import { ProcessIllustration } from "./process/ProcessIllustration";
 import { ProcessConnector } from "./process/ProcessConnector";
 
-const PILLAR_ICONS: Record<string, LucideIcon> = {
-  users: Users,
-  target: Target,
-  shield: ShieldCheck,
-  refresh: RefreshCw,
-};
-
 const STEP_VARIANTS = ["discovery", "build", "delivery"] as const;
-const PILLAR_ACCENTS = [
-  "process-pillar-icon--navy",
-  "process-pillar-icon--coral",
-  "process-pillar-icon--petrol",
-  "process-pillar-icon--success",
-] as const;
 
 export function Skills() {
   const { t } = useApp();
-  const { steps, pillars, title, subtitle } = t.skills;
+  const { steps, title, subtitle } = t.skills;
 
   return (
     <SectionShell id="processo" label={title} sublabel={subtitle} headerVariant="centered">
@@ -66,36 +52,6 @@ export function Skills() {
             </Fragment>
           ))}
         </div>
-
-        {/* Rodapé de pilares */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }}
-          className="card-surface mt-14 grid grid-cols-1 gap-6 p-6 sm:grid-cols-2 md:mt-20 md:p-8 lg:grid-cols-4"
-        >
-          {pillars.map((pillar, index) => {
-            const Icon = PILLAR_ICONS[pillar.icon] ?? Users;
-            return (
-              <div key={pillar.title} className="flex items-start gap-3">
-                <span
-                  className={`grid h-9 w-9 shrink-0 place-items-center rounded-md bg-accent-soft ${
-                    PILLAR_ACCENTS[index % PILLAR_ACCENTS.length]
-                  }`}
-                >
-                  <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                </span>
-                <div className="min-w-0">
-                  <p className="font-display text-sm font-medium text-foreground">{pillar.title}</p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    {pillar.description}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </motion.div>
       </div>
     </SectionShell>
   );

@@ -169,51 +169,29 @@ export const dictionary = {
       },
     },
     skills: {
-      title: "Clareza do início ao deploy",
+      title: "Minha abordagem, separada em etapas:",
       subtitle: "Processo",
-      lead: "Entender, validar, construir e acompanhar.",
       steps: [
         {
           kicker: "descoberta",
-          title: "Entrevista e levantamento",
+          title: "Primeiro contato",
           description:
-            "Entendo o contexto, objetivos e requisitos para alinhar expectativas e prioridades.",
-          tags: ["Escuta ativa", "Requisitos", "Análise"],
+            "Etapa focada em conversar com o cliente, entender o que ele deseja resolver, alinhar expectativas e trabalhar nos levantamentos iniciais.",
+          tags: ["Escuta ativa", "Análise de projeto", "Levantamento de requisitos"],
         },
         {
           kicker: "construção",
-          title: "Validação e produção",
+          title: "Protótipo, validação e desenvolvimento",
           description:
-            "Prototipo, valido e desenvolvo a solução com foco em qualidade e performance.",
+            "Após o levantamento e o alinhamento inicial, desenvolvo a solução com foco em qualidade e satisfação do cliente.",
           tags: ["Protótipo", "Desenvolvimento", "Testes"],
         },
         {
           kicker: "operação",
-          title: "Entrega e manutenção",
-          description: "Faço o deploy, acompanho resultados e mantenho a solução sempre evoluindo.",
-          tags: ["Deploy", "Monitoramento", "Melhorias"],
-        },
-      ],
-      pillars: [
-        {
-          icon: "users",
-          title: "Comunicação constante",
-          description: "Acompanhamento transparente em todas as etapas.",
-        },
-        {
-          icon: "target",
-          title: "Foco no resultado",
-          description: "Soluções pensadas para gerar impacto real.",
-        },
-        {
-          icon: "shield",
-          title: "Qualidade e segurança",
-          description: "Boas práticas, código limpo e atenção aos detalhes.",
-        },
-        {
-          icon: "refresh",
-          title: "Evolução contínua",
-          description: "Suporte e melhorias para manter o projeto sempre atualizado.",
+          title: "Entregáveis",
+          description:
+            "Na etapa final, configuro os entregáveis e organizo o acompanhamento necessário para manter o produto preparado para evoluir continuamente.",
+          tags: ["Configuração", "Monitoramento", "Melhorias"],
         },
       ],
     },
@@ -641,51 +619,29 @@ export const dictionary = {
       },
     },
     skills: {
-      title: "Clarity from discovery to deployment",
+      title: "My approach, structured in stages:",
       subtitle: "Process",
-      lead: "Understand, validate, build and follow through.",
       steps: [
         {
           kicker: "discovery",
-          title: "Interview & requirements",
+          title: "First contact",
           description:
-            "I map the context, goals and requirements to align expectations and priorities.",
-          tags: ["Active listening", "Requirements", "Analysis"],
+            "A stage focused on talking with the client, understanding the problem they want to solve, aligning expectations and carrying out the initial discovery.",
+          tags: ["Active listening", "Project analysis", "Requirements gathering"],
         },
         {
           kicker: "build",
-          title: "Validation & production",
+          title: "Prototype, validation & development",
           description:
-            "I prototype, validate and build the solution focused on quality and performance.",
+            "After the initial discovery and alignment, I develop the solution with a focus on quality and client satisfaction.",
           tags: ["Prototype", "Development", "Testing"],
         },
         {
           kicker: "operate",
-          title: "Delivery & maintenance",
-          description: "I ship, track results and keep the solution evolving over time.",
-          tags: ["Deploy", "Monitoring", "Improvements"],
-        },
-      ],
-      pillars: [
-        {
-          icon: "users",
-          title: "Constant communication",
-          description: "Transparent follow-up at every stage.",
-        },
-        {
-          icon: "target",
-          title: "Outcome-driven",
-          description: "Solutions designed to create real impact.",
-        },
-        {
-          icon: "shield",
-          title: "Quality & security",
-          description: "Best practices, clean code and attention to detail.",
-        },
-        {
-          icon: "refresh",
-          title: "Continuous evolution",
-          description: "Support and improvements to keep the project up to date.",
+          title: "Deliverables",
+          description:
+            "In the final stage, I configure the deliverables and organize the follow-up needed to keep the product ready to evolve over time.",
+          tags: ["Configuration", "Monitoring", "Improvements"],
         },
       ],
     },
