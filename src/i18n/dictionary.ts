@@ -98,6 +98,36 @@ export const dictionary = {
         "Performance em PostgreSQL",
         "React + TanStack Start",
       ],
+      story: {
+        albumLabel: "Álbum de fotos",
+        selectorLabel: "Selecionar foto",
+        showPhotoLabel: "Exibir foto",
+        photoPosition: "Foto {current} de {total}.",
+        chapterTitles: [
+          "Educação e formação",
+          "Tecnologia desde cedo",
+          "Responsabilidade profissional",
+          "Objetivo profissional",
+          "Curiosidades sobre mim",
+        ],
+        paragraphs: [
+          "Minha trajetória começou na escola pública e sempre foi norteada pela educação e pelo comprometimento, que hoje são os dois pilares da minha vida. Atualmente, curso Análise e Desenvolvimento de Sistemas na Unisinos por meio do ProUni e venho complementando essa formação com projetos práticos, cursos e experiências que consigo conquistar.",
+          "Desde muito novo, eu já gostava de tecnologia. Por volta de 2010, desmontava computadores DDR2, quebrava — muito — a cabeça tentando instalar programas de computador e tentando fazer a internet de modem ficar mais rápida. Desde então, sou a pessoa da minha família que resolve tudo o que tange à tecnologia. Não importa se é um notebook ou uma panela elétrica: aparentemente, é tudo TI, rs.",
+          "Foi assumindo responsabilidades desde cedo que hoje percebo a importância de um olhar mais crítico sobre o trabalho que realizo: analisar por que e como fazemos, entender o contexto antes de produzir, jamais pular etapas e sempre manter o objetivo de produzir qualidade, segurança e valor alinhados às expectativas das pessoas.",
+        ],
+        quoteIntro:
+          "Isso me remete a algo que ouvi de um professor durante uma aula da graduação e nunca mais esqueci:",
+        quote:
+          "O Desenvolvedor de Software tem tanta responsabilidade quanto o Médico, o Juiz ou o Policial: é ele quem trabalha para evitar uma pane em um sistema de ABS, nos aviônicos de uma aeronave ou no marcapasso de alguma pessoa… e é importante vocês entenderem isso.",
+        closing:
+          "Por fim, meu maior objetivo é me tornar um profissional de excelência técnica e interpessoal, assumindo responsabilidades cada vez maiores e realizando um trabalho do qual eu possa me orgulhar, tanto pela qualidade daquilo que entrego quanto pela forma como trato as pessoas durante o caminho.",
+        curiositiesTitle: "Curiosidades sobre mim",
+        curiosities: [
+          "Já fiz trabalho voluntário.",
+          "Nunca viajei de avião, mas sei quase tudo sobre eles.",
+          "Gosto de jogar simuladores e jogos de sobrevivência.",
+        ],
+      },
       learnMore: "Saber mais",
       backHome: "voltar para o início",
     },
@@ -548,6 +578,36 @@ export const dictionary = {
       p3: "Today, I am looking for internship or junior opportunities where I can contribute with frontend/full-stack development, documentation and problem-solving.",
       currentFocusLabel: "current focus",
       currentFocus: ["Django + DRF APIs", "PostgreSQL performance", "React + TanStack Start"],
+      story: {
+        albumLabel: "Photo album",
+        selectorLabel: "Select photo",
+        showPhotoLabel: "Show photo",
+        photoPosition: "Photo {current} of {total}.",
+        chapterTitles: [
+          "Education and learning",
+          "Technology from an early age",
+          "Professional responsibility",
+          "Professional goal",
+          "A few things about me",
+        ],
+        paragraphs: [
+          "My journey began in public school and has always been guided by education and commitment, which are now the two pillars of my life. I am currently studying Systems Analysis and Development at Unisinos through ProUni, while complementing my degree with practical projects, courses and every experience I am able to pursue.",
+          "I have been interested in technology from a very young age. Around 2010, I was taking apart DDR2 computers, spending a lot of time trying to install software and looking for ways to make my modem internet connection faster. Since then, I have been the person in my family who solves anything related to technology. It does not matter whether it is a laptop or an electric cooker: apparently, it is all IT.",
+          "Taking on responsibilities from an early age made me realize the importance of looking critically at the work I do: examining why and how things are done, understanding the context before producing, never skipping steps and always aiming to deliver quality, security and value aligned with people's expectations.",
+        ],
+        quoteIntro:
+          "That reminds me of something one of my university professors said and that I have never forgotten:",
+        quote:
+          "A software developer carries as much responsibility as a doctor, a judge or a police officer. Developers work to prevent failures in an ABS system, an aircraft's avionics or a person's pacemaker… and it is important that you understand that.",
+        closing:
+          "Ultimately, my main goal is to become a professional known for both technical and interpersonal excellence, taking on increasingly greater responsibilities and doing work I can be proud of, both for the quality of what I deliver and for the way I treat people along the way.",
+        curiositiesTitle: "A few things about me",
+        curiosities: [
+          "I have done volunteer work.",
+          "I have never travelled by plane, but I know almost everything about them.",
+          "I enjoy playing simulation and survival games.",
+        ],
+      },
       learnMore: "Learn more",
       backHome: "back to home",
     },

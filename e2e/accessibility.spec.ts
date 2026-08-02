@@ -352,6 +352,129 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await runAxe(page, testInfo, "carousels-next");
   });
 
+  test("álbum narrativo mantém capítulos, imagens e seletor acessíveis", async ({
+    page,
+  }, testInfo) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await openPage(page, "/sobre", { width: 1440, height: 900 });
+
+    const about = page.locator("#sobre");
+    await expect(
+      about.getByRole("heading", { level: 1, name: "Quem sou, o que faço e porquê:" }),
+    ).toBeVisible();
+    await expect(about.locator("[data-about-chapter]")).toHaveCount(5);
+
+    for (const title of [
+      "Educação e formação",
+      "Tecnologia desde cedo",
+      "Responsabilidade profissional",
+      "Objetivo profissional",
+      "Curiosidades sobre mim",
+    ]) {
+      await expect(about.getByRole("heading", { level: 2, name: title })).toBeAttached();
+    }
+
+    await expect(about.locator("[data-about-album]")).toHaveCount(3);
+    await expect(
+      about.locator('[data-about-chapter="3"]').getByRole("region", { name: /Álbum de fotos/ }),
+    ).toHaveCount(0);
+    await expect(
+      about.locator('[data-about-chapter="5"]').getByRole("region", { name: /Álbum de fotos/ }),
+    ).toHaveCount(0);
+
+    const educationSelector = about.getByRole("group", {
+      name: "Selecionar foto: Educação e formação",
+    });
+    const educationAlbum = about.locator('[data-about-album="Educação e formação"]');
+    await expect(educationSelector).toHaveCount(1);
+    const educationThumbnails = educationSelector.getByRole("button");
+    await expect(educationThumbnails).toHaveCount(5);
+    await expect(educationThumbnails.first()).toHaveAttribute("aria-current", "true");
+    const initialCaptionHeight = await educationAlbum
+      .locator("figcaption")
+      .evaluate((caption) => caption.getBoundingClientRect().height);
+
+    const selector = about.getByRole("group", {
+      name: "Selecionar foto: Tecnologia desde cedo",
+    });
+    await expect(selector).toHaveCount(1);
+    await expect(selector.getByRole("button")).toHaveCount(3);
+    const firstThumbnail = selector.getByRole("button", { name: /^Exibir foto 1:/ });
+    const secondThumbnail = selector.getByRole("button", { name: /^Exibir foto 2:/ });
+    const thirdThumbnail = selector.getByRole("button", { name: /^Exibir foto 3:/ });
+    await expect(firstThumbnail).toHaveAttribute("aria-current", "true");
+    await expect(secondThumbnail).not.toHaveAttribute("aria-current");
+    await expect(thirdThumbnail).not.toHaveAttribute("aria-current");
+
+    const firstImage = about.getByRole("img", {
+      name: "Fachada iluminada do Espaço Unisinos durante a noite.",
+    });
+    await expect(firstImage).toHaveAttribute("width", "800");
+    await expect(firstImage).toHaveAttribute("height", "1000");
+    await expect(firstImage).toHaveAttribute("loading", "eager");
+    await expect(firstImage).toHaveAttribute("decoding", "async");
+    await expect(page.locator('link[rel="preload"][as="image"]')).toHaveAttribute(
+      "href",
+      /unisinos-campus/,
+    );
+
+    const fifthEducationThumbnail = educationThumbnails.nth(4);
+    await fifthEducationThumbnail.click();
+    await expect(fifthEducationThumbnail).toHaveAttribute("aria-current", "true");
+    await expect(
+      about.getByRole("img", {
+        name: "Guilherme apresentando o projeto GrenGame com um microfone.",
+      }),
+    ).toBeVisible();
+    const updatedCaptionHeight = await educationAlbum
+      .locator("figcaption")
+      .evaluate((caption) => caption.getBoundingClientRect().height);
+    expect(Math.abs(updatedCaptionHeight - initialCaptionHeight)).toBeLessThan(1);
+
+    await secondThumbnail.click();
+    await expect(secondThumbnail).toHaveAttribute("aria-current", "true");
+    await expect(
+      about.getByRole("img", {
+        name: "Placa-mãe de notebook com grande acúmulo de oxidação após permanecer submersa na enchente.",
+      }),
+    ).toBeVisible();
+
+    await thirdThumbnail.click();
+    await expect(thirdThumbnail).toHaveAttribute("aria-current", "true");
+    await expect(
+      about.getByRole("img", {
+        name: "Notebook Acer inicializando o Windows após a manutenção.",
+      }),
+    ).toBeVisible();
+    await page.waitForTimeout(500);
+    await expect(thirdThumbnail).toHaveAttribute("aria-current", "true");
+
+    await thirdThumbnail.press("ArrowLeft");
+    await expect(secondThumbnail).toBeFocused();
+    await expect(secondThumbnail).toHaveAttribute("aria-current", "true");
+    const thumbnailBox = await secondThumbnail.boundingBox();
+    expect(thumbnailBox?.width ?? 0).toBeGreaterThanOrEqual(44);
+    expect(thumbnailBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await runAxe(page, testInfo, "about-album", "#sobre");
+
+    for (const width of [320, 768, 1440]) {
+      await openPage(page, "/sobre", { width, height: 900 });
+      const dimensions = await page.evaluate(() => ({
+        viewport: document.documentElement.clientWidth,
+        content: document.documentElement.scrollWidth,
+      }));
+      expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
+    }
+
+    await openPage(page, "/sobre", { language: "en", width: 320, height: 900 });
+    await expect(
+      page.locator("#sobre").getByRole("heading", {
+        level: 2,
+        name: "Professional responsibility",
+      }),
+    ).toBeAttached();
+  });
+
   test("footer exibe selo sustentável e links legais padronizados", async ({ page }, testInfo) => {
     await openPage(page, "/", { width: 320, height: 900 });
     const footer = page.locator("footer");

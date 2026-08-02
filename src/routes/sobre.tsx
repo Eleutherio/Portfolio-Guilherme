@@ -2,14 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { About } from "@/components/sections/About";
+import { AboutAlbum } from "@/components/sections/AboutAlbum";
 import { NextSteps } from "@/components/sections/NextSteps";
 import { useApp } from "@/i18n/AppContext";
-import profileImg from "@/assets/guilherme-profile.jpg";
+import { firstAboutAlbumImage } from "@/content/about-album";
 
 const TITLE = "Sobre — Guilherme Ferreira Eleutherio";
 const DESCRIPTION =
-  "A pessoa por trás do código: trajetória, forma de trabalho e o que me move como desenvolvedor full-stack.";
+  "A pessoa por trás do código: trajetória, formação e experiências que orientam meu trabalho como desenvolvedor de software.";
 
 export const Route = createFileRoute("/sobre")({
   head: () => ({
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/sobre")({
     ],
     links: [
       { rel: "canonical", href: "/sobre" },
-      { rel: "preload", as: "image", href: profileImg, fetchPriority: "high" },
+      { rel: "preload", as: "image", href: firstAboutAlbumImage, fetchPriority: "high" },
     ],
   }),
   component: SobrePage,
@@ -45,7 +45,7 @@ function SobrePage() {
             {t.about.backHome}
           </Link>
         </div>
-        <About headingLevel={1} />
+        <AboutAlbum />
         <NextSteps />
       </main>
       <Footer />
