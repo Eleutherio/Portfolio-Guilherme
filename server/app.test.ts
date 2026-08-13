@@ -5,6 +5,7 @@ import type { ContactPayload } from "@/lib/contact-contract";
 import { buildContactEmail, EmailDeliveryError } from "@/lib/contact-email.server";
 import { verifyContactRecaptchaWithSecrets } from "@/lib/contact-recaptcha.server";
 import { app } from "./app";
+import { readJsonBody } from "./http";
 import { ClientAddressError, resolveClientAddress } from "./request-context";
 import { runInfrastructureChecks } from "./services/health";
 
@@ -111,6 +112,80 @@ test("unknown routes return a hardened JSON 404", async () => {
   assert.equal(response.status, 404);
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");
   assert.equal(response.headers.get("x-frame-options"), "DENY");
+});
+
+test("JSON body reader accepts a streamed body at the byte limit", async () => {
+  const encoder = new TextEncoder();
+  const chunks = [encoder.encode('{"ok"'), encoder.encode(":true}")];
+  const maximumBytes = chunks.reduce((total, chunk) => total + chunk.byteLength, 0);
+  const request = new Request("https://api.example.com/api/coffee", {
+    method: "POST",
+    body: new ReadableStream<Uint8Array>({
+      pull(controller) {
+        const chunk = chunks.shift();
+        if (chunk) controller.enqueue(chunk);
+        else controller.close();
+      },
+    }),
+    duplex: "half",
+  } as RequestInit & { duplex: "half" });
+
+  assert.deepEqual(await readJsonBody(request, maximumBytes), { ok: true });
+});
+
+test("JSON body reader rejects a declared oversized body before reading the stream", async () => {
+  let readerRequested = false;
+  let canceled = false;
+  const request = {
+    headers: new Headers({ "content-length": "1025" }),
+    body: {
+      cancel() {
+        canceled = true;
+        return Promise.resolve();
+      },
+      getReader() {
+        readerRequested = true;
+        throw new Error("reader_must_not_be_requested");
+      },
+    },
+  } as unknown as Request;
+
+  await assert.rejects(readJsonBody(request, 1_024), /body_too_large/);
+  assert.equal(readerRequested, false);
+  assert.equal(canceled, true);
+});
+
+test("JSON body reader cancels a stream without Content-Length when it exceeds the limit", async () => {
+  const encoder = new TextEncoder();
+  const chunks = [encoder.encode('{"visitorId":"'), encoder.encode("a".repeat(1_024))];
+  let canceled = false;
+  const request = new Request("https://api.example.com/api/coffee", {
+    method: "POST",
+    body: new ReadableStream<Uint8Array>({
+      pull(controller) {
+        const chunk = chunks.shift();
+        if (chunk) controller.enqueue(chunk);
+        else controller.close();
+      },
+      cancel() {
+        canceled = true;
+      },
+    }),
+    duplex: "half",
+  } as RequestInit & { duplex: "half" });
+
+  assert.equal(request.headers.has("content-length"), false);
+  await assert.rejects(readJsonBody(request, 1_024), /body_too_large/);
+  assert.equal(canceled, true);
+});
+
+test("JSON body reader measures multibyte input in bytes", async () => {
+  const request = new Request("https://api.example.com/api/coffee", {
+    method: "POST",
+    body: '"é"',
+  });
+
+  await assert.rejects(readJsonBody(request, 3), /body_too_large/);
 });
 
 test("direct client address uses the trusted socket peer", () => {
