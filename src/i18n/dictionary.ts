@@ -55,11 +55,15 @@ export const dictionary = {
       title: "Quem sou, o que faço e porquê",
       subtitle: "Perfil",
       lead: "Minha base em tecnologia e a experiência com projetos reais orientam soluções legíveis, acessíveis e preparadas para evoluir.",
-      photoAlt: "Retrato de Guilherme Ferreira.",
+      photos: {
+        label: "Registros da minha trajetória",
+        featuredAlt: "Guilherme apresentando o projeto GrenGame com um microfone.",
+        workbenchAlt: "Notebooks desmontados durante a recuperação após a enchente.",
+        campusAlt: "Fachada iluminada do Espaço Unisinos durante a noite.",
+      },
       kicker: "perfil",
       idLabel: "ID · GF-01 / Porto Alegre",
       availableLabel: "disponível",
-      photoCaption: "Banca final da residência em TIC",
       factsLabel: "panorama",
       processLabel: "como eu trabalho",
       facts: [
@@ -89,9 +93,8 @@ export const dictionary = {
         },
       ],
 
-      p1: "Meu interesse por tecnologia começou muito antes da graduação, quando desmontar computadores e tentar resolver o que parecia impossível ainda era apenas curiosidade.",
-      p2: "Com o tempo, essa curiosidade ganhou responsabilidade e passou a orientar a forma como estudo, trabalho e trato as pessoas em cada projeto.",
-      p3: "Entre a escola pública, as oportunidades que precisei conquistar e uma frase ouvida em aula que nunca esqueci, há uma história que explica por que levo tão a sério aquilo que construo.",
+      p1: "Minha relação com a tecnologia começou antes de eu imaginar que ela se tornaria profissão, entre computadores desmontados, tentativas e problemas que eu ainda não sabia resolver.",
+      p2: "Entre aquela curiosidade e o profissional que busco me tornar, há experiências que mudaram a forma como estudo, trabalho e assumo responsabilidades.",
       story: {
         albumLabel: "Álbum de fotos",
         selectorLabel: "Selecionar foto",
@@ -122,7 +125,7 @@ export const dictionary = {
           "Gosto de jogar simuladores e jogos de sobrevivência.",
         ],
       },
-      learnMore: "Saber mais",
+      learnMore: "Conheça minha trajetória",
       backHome: "voltar para o início",
     },
 
@@ -536,11 +539,15 @@ export const dictionary = {
       title: "Who I am, what I do and why",
       subtitle: "Profile",
       lead: "My technology background and experience with real projects guide readable, accessible solutions built to evolve.",
-      photoAlt: "Portrait of Guilherme Ferreira.",
+      photos: {
+        label: "Moments from my journey",
+        featuredAlt: "Guilherme presenting the GrenGame project with a microphone.",
+        workbenchAlt: "Disassembled laptops during recovery work after the flood.",
+        campusAlt: "Illuminated facade of Espaço Unisinos at night.",
+      },
       kicker: "profile",
       idLabel: "ID · GF-01 / Porto Alegre",
       availableLabel: "available",
-      photoCaption: "Final panel of the TIC residency",
       factsLabel: "snapshot",
       processLabel: "how i work",
       facts: [
@@ -567,9 +574,8 @@ export const dictionary = {
         },
       ],
 
-      p1: "My interest in technology began long before college, when taking computers apart and trying to solve what seemed impossible was still just curiosity.",
-      p2: "Over time, that curiosity became a sense of responsibility and began to guide the way I study, work and treat people throughout each project.",
-      p3: "Between public school, the opportunities I had to work for and something I heard in class that I never forgot, there is a story behind why I take what I build so seriously.",
+      p1: "My relationship with technology began before I imagined it would become my profession, among disassembled computers, trial and error, and problems I still did not know how to solve.",
+      p2: "Between that curiosity and the professional I am working to become, there are experiences that changed the way I study, work and take responsibility.",
       story: {
         albumLabel: "Photo album",
         selectorLabel: "Select photo",
@@ -600,7 +606,7 @@ export const dictionary = {
           "I enjoy playing simulation and survival games.",
         ],
       },
-      learnMore: "Learn more",
+      learnMore: "Discover my journey",
       backHome: "back to home",
     },
 
