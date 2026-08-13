@@ -689,6 +689,40 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
     await expect(footer).toHaveAttribute("data-runtime-activity", "paused");
   });
 
+  test("imagens adiadas usam prioridade e variantes responsivas corretas", async ({ page }) => {
+    await openPage(page, "/", {
+      width: 1023,
+      height: 720,
+      loadDeferredSections: false,
+    });
+    const about = page.locator("#sobre");
+    await about.scrollIntoViewIfNeeded();
+
+    const featured = about.getByRole("img", {
+      name: "Guilherme apresentando o projeto GrenGame com um microfone.",
+    });
+    await expect(featured).toHaveAttribute("loading", "lazy");
+    await expect(featured).not.toHaveAttribute("fetchpriority", "high");
+    await expect(featured).toHaveAttribute("width", "800");
+    await expect(featured).toHaveAttribute("height", "1000");
+
+    const featuredSources = featured.locator("xpath=..").locator("source");
+    await expect(featuredSources).toHaveCount(2);
+    await expect(featuredSources.nth(0)).toHaveAttribute("type", "image/avif");
+    await expect(featuredSources.nth(1)).toHaveAttribute("type", "image/webp");
+    for (const source of await featuredSources.all()) {
+      await expect(source).toHaveAttribute("srcset", /320w.*,.*640w.*,.*800w/);
+      await expect(source).toHaveAttribute(
+        "sizes",
+        "(max-width: 639px) 142px, (max-width: 767px) 292px, (max-width: 1023px) 35vw, 372px",
+      );
+    }
+    await expect.poll(() => featured.evaluate((image) => image.currentSrc)).toContain("-640w.avif");
+    await expect(
+      page.locator('picture source:not([srcset]), picture source[srcset=""]'),
+    ).toHaveCount(0);
+  });
+
   test("hash direto solicita e focaliza uma seção adiada", async ({ page }) => {
     await page.route("**/src/components/sections/Contact.tsx*", async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 2_500));

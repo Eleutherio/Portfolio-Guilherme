@@ -1,15 +1,13 @@
 import type { CSSProperties, ImgHTMLAttributes } from "react";
 
-type SrcSetEntry = { src: string; w: number };
-
 export type ResponsiveImage = {
-  /** AVIF variants generated at build time by vite-imagetools */
+  /** Optional AVIF srcset, including width or density descriptors. */
   avif?: string;
-  /** WebP variants (or the default srcset) */
+  /** Optional WebP srcset, including width or density descriptors. */
   webp?: string;
-  /** Fallback single URL for width/height dimensions and legacy loaders */
+  /** Fallback URL used when no supported source matches. */
   fallback: string;
-  /** Tiny blurred data URL / URL used as low-quality image placeholder */
+  /** Optional low-quality placeholder URL. */
   lqip?: string;
   /** Intrinsic width */
   width: number;
@@ -28,8 +26,8 @@ type Props = {
 } & Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "srcSet" | "sizes" | "loading">;
 
 /**
- * Responsive image with AVIF/WebP srcsets, blur LQIP placeholder, and explicit
- * intrinsic dimensions to eliminate layout shift.
+ * Image with optional responsive sources and explicit intrinsic dimensions.
+ * Source elements are emitted only when a real srcset is available.
  */
 export function ImageCover({
   image,
@@ -53,7 +51,7 @@ export function ImageCover({
   return (
     <picture className={className} style={bgStyle}>
       {image.avif && <source type="image/avif" srcSet={image.avif} sizes={sizes} />}
-      <source type="image/webp" srcSet={image.webp} sizes={sizes} />
+      {image.webp && <source type="image/webp" srcSet={image.webp} sizes={sizes} />}
       <img
         {...imgProps}
         src={image.fallback}
