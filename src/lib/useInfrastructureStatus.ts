@@ -46,17 +46,26 @@ function isStatusResponse(value: unknown): value is StatusResponse {
   );
 }
 
-export function useInfrastructureStatus(): InfrastructureSnapshot {
+export function useInfrastructureStatus(enabled = true): InfrastructureSnapshot {
   const [snapshot, setSnapshot] = useState<InfrastructureSnapshot>({
     services: INITIAL_STATUS,
   });
+  const [pageVisible, setPageVisible] = useState(
+    () => typeof document === "undefined" || !document.hidden,
+  );
 
   useEffect(() => {
+    const update = () => setPageVisible(!document.hidden);
+    document.addEventListener("visibilitychange", update);
+    return () => document.removeEventListener("visibilitychange", update);
+  }, []);
+
+  useEffect(() => {
+    if (!enabled || !pageVisible) return;
     let active = true;
     let controller: AbortController | undefined;
 
     const check = async () => {
-      if (document.hidden) return;
       controller?.abort();
       controller = new AbortController();
       const timeout = window.setTimeout(() => controller?.abort(), 20_000);
@@ -90,21 +99,15 @@ export function useInfrastructureStatus(): InfrastructureSnapshot {
       }
     };
 
-    const onVisibility = () => {
-      if (!document.hidden) void check();
-    };
-
     void check();
     const interval = window.setInterval(() => void check(), 60_000);
-    document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
       active = false;
       controller?.abort();
       window.clearInterval(interval);
-      document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, []);
+  }, [enabled, pageVisible]);
 
   return snapshot;
 }

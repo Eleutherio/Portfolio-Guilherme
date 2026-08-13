@@ -546,6 +546,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       });
     });
     await openPage(page, "/");
+    await page.locator("footer").scrollIntoViewIfNeeded();
 
     await expect(page.getByRole("button", { name: /Backend: operacional/ })).toBeVisible();
     const database = page.getByRole("button", { name: /Database: indisponível/ });
@@ -646,6 +647,48 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
 });
 
 test.describe("WCAG 2.2 AA — reflow e preferências", () => {
+  test("home carrega seções e atividade do footer somente por proximidade", async ({ page }) => {
+    const requestedModules: string[] = [];
+    let healthRequests = 0;
+    page.on("request", (request) => {
+      const url = request.url();
+      if (url.includes("/src/components/")) requestedModules.push(url);
+      if (url.includes("/health/status")) healthRequests += 1;
+    });
+    await page.route("**/health/status", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          services: {
+            backend: "operational",
+            database: "operational",
+            smtp: "operational",
+            recaptcha: "operational",
+          },
+        }),
+      });
+    });
+
+    await openPage(page, "/", { loadDeferredSections: false });
+    await expect(page.locator('[data-deferred-section="contato"]')).toBeAttached();
+    const footer = page.locator("footer");
+    await expect(footer).toHaveAttribute("data-runtime-activity", "paused");
+    expect(requestedModules.some((url) => url.includes("/sections/Contact.tsx"))).toBe(false);
+    expect(healthRequests).toBe(0);
+
+    await page.locator('[data-deferred-section="contato"]').scrollIntoViewIfNeeded();
+    await expect(page.locator("#contact-name")).toBeAttached();
+    expect(requestedModules.some((url) => url.includes("/sections/Contact.tsx"))).toBe(true);
+
+    await footer.scrollIntoViewIfNeeded();
+    await expect(footer).toHaveAttribute("data-runtime-activity", "active");
+    await expect.poll(() => healthRequests).toBeGreaterThan(0);
+
+    await page.locator("#home").scrollIntoViewIfNeeded();
+    await expect(footer).toHaveAttribute("data-runtime-activity", "paused");
+  });
+
   test("hash direto solicita e focaliza uma seção adiada", async ({ page }) => {
     await page.route("**/src/components/sections/Contact.tsx*", async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 2_500));

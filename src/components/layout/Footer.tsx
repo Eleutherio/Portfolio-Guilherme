@@ -10,10 +10,12 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link } from "@tanstack/react-router";
 import { PrivacyNoticeDialog } from "@/components/privacy/PrivacyNoticeDialog";
+import { useElementActivity } from "@/hooks/use-element-activity";
 
-function useClock(locale: string) {
+function useClock(locale: string, active: boolean) {
   const [time, setTime] = useState<string>("");
   useEffect(() => {
+    if (!active) return;
     const fmt = () =>
       new Date().toLocaleTimeString(locale, {
         timeZone: "America/Sao_Paulo",
@@ -24,16 +26,17 @@ function useClock(locale: string) {
     setTime(fmt());
     const id = window.setInterval(() => setTime(fmt()), 30_000);
     return () => window.clearInterval(id);
-  }, [locale]);
+  }, [active, locale]);
   return time;
 }
 
 export function Footer() {
   const { t, lang } = useApp();
   const year = new Date().getFullYear();
-  const time = useClock(lang === "pt" ? "pt-BR" : "en-US");
-  const { metrics, status } = useLiveMetrics();
-  const infrastructure = useInfrastructureStatus();
+  const { ref, active } = useElementActivity<HTMLElement>();
+  const time = useClock(lang === "pt" ? "pt-BR" : "en-US", active);
+  const { metrics, status } = useLiveMetrics(active);
+  const infrastructure = useInfrastructureStatus(active);
   const infrastructureItems = [
     {
       label: t.footer.backend,
@@ -66,6 +69,8 @@ export function Footer() {
 
   return (
     <footer
+      ref={ref}
+      data-runtime-activity={active ? "active" : "paused"}
       className="border-t"
       style={
         {

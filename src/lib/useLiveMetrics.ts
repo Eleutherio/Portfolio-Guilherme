@@ -28,15 +28,26 @@ function fmtMs(ms: number) {
 
 const SESSION_START = typeof performance !== "undefined" ? performance.now() : 0;
 
-export function useLiveMetrics() {
+export function useLiveMetrics(active = true) {
   const [lcp, setLcp] = useState<number | null>(null);
   const [inp, setInp] = useState<number | null>(null);
   const [cls, setCls] = useState<number>(0);
   const [fps, setFps] = useState<number | null>(null);
   const [uptime, setUptime] = useState<string>("0s");
+  const [pageVisible, setPageVisible] = useState(
+    () => typeof document === "undefined" || !document.hidden,
+  );
+  const collecting = active && pageVisible;
+
+  useEffect(() => {
+    const update = () => setPageVisible(!document.hidden);
+    document.addEventListener("visibilitychange", update);
+    return () => document.removeEventListener("visibilitychange", update);
+  }, []);
 
   // LCP
   useEffect(() => {
+    if (!collecting) return;
     if (typeof PerformanceObserver === "undefined") return;
     try {
       const po = new PerformanceObserver((list) => {
@@ -49,10 +60,11 @@ export function useLiveMetrics() {
     } catch {
       /* unsupported */
     }
-  }, []);
+  }, [collecting]);
 
   // INP / event timing
   useEffect(() => {
+    if (!collecting) return;
     if (typeof PerformanceObserver === "undefined") return;
     let worst = 0;
     try {
@@ -73,10 +85,11 @@ export function useLiveMetrics() {
     } catch {
       /* unsupported */
     }
-  }, []);
+  }, [collecting]);
 
   // CLS
   useEffect(() => {
+    if (!collecting) return;
     if (typeof PerformanceObserver === "undefined") return;
     let total = 0;
     try {
@@ -93,14 +106,14 @@ export function useLiveMetrics() {
     } catch {
       /* unsupported */
     }
-  }, []);
+  }, [collecting]);
 
   // FPS — paused when the tab is hidden to avoid unnecessary rAF work.
   useEffect(() => {
+    if (!collecting) return;
     let raf = 0;
     let frames = 0;
     let last = performance.now();
-    let running = true;
 
     const loop = (now: number) => {
       frames += 1;
@@ -111,29 +124,13 @@ export function useLiveMetrics() {
       }
       raf = requestAnimationFrame(loop);
     };
-    const start = () => {
-      if (!running) return;
-      last = performance.now();
-      frames = 0;
-      raf = requestAnimationFrame(loop);
-    };
-    const stop = () => cancelAnimationFrame(raf);
-    const onVisibility = () => {
-      running = !document.hidden;
-      if (running) start();
-      else stop();
-    };
-
-    document.addEventListener("visibilitychange", onVisibility);
-    start();
-    return () => {
-      stop();
-      document.removeEventListener("visibilitychange", onVisibility);
-    };
-  }, []);
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [collecting]);
 
   // Uptime
   useEffect(() => {
+    if (!collecting) return;
     const tick = () => {
       const s = Math.floor((performance.now() - SESSION_START) / 1000);
       const m = Math.floor(s / 60);
@@ -143,7 +140,7 @@ export function useLiveMetrics() {
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [collecting]);
 
   const lcpRate = lcp != null ? rate(lcp, 2500, 4000) : { tag: "…", pct: 8 };
   const inpRate = inp != null ? rate(inp, 200, 500) : { tag: "…", pct: 8 };
