@@ -157,6 +157,40 @@ export const dictionary = {
       linksLabel: "links",
       previewLabel: "preview",
       stackLabel: "stack",
+      grengame: {
+        directCta: "Acessar demonstração",
+        directMeta: "demonstração pública",
+        navigationLabel: "Navegação do case GrenGame",
+        overview: "Visão geral",
+        problemTitle: "O problema",
+        documentationTitle: "Documentação",
+        documentationLabel: "documentação do projeto",
+        navigation: {
+          overview: "visão geral",
+          context: "contexto",
+          problem: "problema",
+          process: "processo",
+          outcomes: "resultado",
+        },
+        media: {
+          classroom: {
+            alt: "Sala de aula da Residência TIC55 com participantes trabalhando em notebooks.",
+            caption: "Atividade presencial durante a Residência TIC55.",
+          },
+          passwordReset: {
+            alt: "Protótipo do GrenGame exibindo o fluxo de redefinição de senha com código de verificação.",
+            caption: "Protótipo do fluxo de redefinição de senha do GrenGame.",
+          },
+          navigation: {
+            alt: "Interface do GrenGame com o menu de cursos, progresso, ranking, perfil e relatórios.",
+            caption: "Navegação principal do GrenGame durante o desenvolvimento.",
+          },
+          presentation: {
+            alt: "Guilherme apresentando o projeto GrenGame com um microfone.",
+            caption: "Apresentação do GrenGame na etapa final da Residência TIC55. - Março/2026",
+          },
+        },
+      },
       contextTitle: "Contexto",
       contextProblem: "qual era o problema",
       contextAudience: "para quem era",
@@ -638,6 +672,41 @@ export const dictionary = {
       linksLabel: "links",
       previewLabel: "preview",
       stackLabel: "stack",
+      grengame: {
+        directCta: "Open live demo",
+        directMeta: "public demonstration",
+        navigationLabel: "GrenGame case study navigation",
+        overview: "Overview",
+        problemTitle: "The problem",
+        documentationTitle: "Documentation",
+        documentationLabel: "project documentation",
+        navigation: {
+          overview: "overview",
+          context: "context",
+          problem: "problem",
+          process: "process",
+          outcomes: "outcomes",
+        },
+        media: {
+          classroom: {
+            alt: "TIC55 Residency classroom with participants working on laptops.",
+            caption: "In-person activity during the TIC55 Residency.",
+          },
+          passwordReset: {
+            alt: "GrenGame prototype showing the password reset flow with a verification code.",
+            caption: "Prototype of the GrenGame password reset flow.",
+          },
+          navigation: {
+            alt: "GrenGame interface with courses, progress, ranking, profile, and reports navigation.",
+            caption: "GrenGame main navigation during development.",
+          },
+          presentation: {
+            alt: "Guilherme presenting the GrenGame project with a microphone.",
+            caption:
+              "GrenGame presentation in the final stage of the TIC55 Residency. - March/2026",
+          },
+        },
+      },
       contextTitle: "Context",
       contextProblem: "what was the problem",
       contextAudience: "who it was for",

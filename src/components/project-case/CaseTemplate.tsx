@@ -11,6 +11,7 @@ import { GithubIcon } from "@/components/icons/Brand";
 import { TechnologyBadge } from "@/components/TechnologyBadge";
 import { CaseNextSteps } from "@/components/project-case/CaseNextSteps";
 import { CaseContactPrompt } from "@/components/project-case/CaseContactPrompt";
+import { GrengameCaseStudy } from "@/components/project-case/GrengameCaseStudy";
 import { Route } from "@/routes/projetos.$slug";
 
 export function CaseTemplate() {
@@ -23,6 +24,10 @@ export function CaseTemplate() {
   const idx = allProjects.findIndex((p) => p.slug === slug);
   const prev = idx > 0 ? allProjects[idx - 1] : null;
   const next = idx < allProjects.length - 1 ? allProjects[idx + 1] : null;
+
+  if (slug === "grengame") {
+    return <GrengameCaseStudy data={data} prev={prev} next={next} t={t} />;
+  }
 
   return (
     <article className="case-study">
