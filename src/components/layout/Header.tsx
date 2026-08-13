@@ -4,6 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/i18n/AppContext";
 import { useTheme } from "@/lib/theme";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import {
+  DEFERRED_SECTION_LOADED_EVENT,
+  LOAD_DEFERRED_SECTION_EVENT,
+} from "@/components/sections/DeferredSection";
 
 const sections = [
   { id: "sobre", key: "sobre" as const },
@@ -27,6 +31,7 @@ export function Header() {
   const lastYRef = useRef(0);
   const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const pendingSectionFocusCleanupRef = useRef<(() => void) | null>(null);
   const themeActionLabel = theme === "dark" ? t.toggles.themeToLight : t.toggles.themeToDark;
   const ThemeActionIcon = theme === "dark" ? Sun : Moon;
 
@@ -91,6 +96,13 @@ export function Header() {
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [open]);
 
+  useEffect(
+    () => () => {
+      pendingSectionFocusCleanupRef.current?.();
+    },
+    [],
+  );
+
   useEffect(() => {
     const header = headerRef.current;
     if (!header || open) return;
@@ -115,22 +127,29 @@ export function Header() {
     const id = locationHash.replace(/^#/, "");
     if (pathname !== "/" || !id) return;
 
-    let frame = 0;
-    let attempts = 0;
     const focusDestination = () => {
       const heading = document.getElementById(`${id}-heading`);
       if (heading) {
         heading.focus({ preventScroll: true });
-        return;
+        return true;
       }
-      if (attempts++ < 60) frame = window.requestAnimationFrame(focusDestination);
+      return false;
+    };
+    if (focusDestination()) return;
+
+    const onLoaded = (event: Event) => {
+      if ((event as CustomEvent<string>).detail !== id) return;
+      window.requestAnimationFrame(focusDestination);
     };
 
-    frame = window.requestAnimationFrame(focusDestination);
-    return () => window.cancelAnimationFrame(frame);
+    window.addEventListener(DEFERRED_SECTION_LOADED_EVENT, onLoaded);
+    window.dispatchEvent(new CustomEvent(LOAD_DEFERRED_SECTION_EVENT, { detail: id }));
+    return () => window.removeEventListener(DEFERRED_SECTION_LOADED_EVENT, onLoaded);
   }, [locationHash, pathname]);
 
   const goToSection = (id: string) => {
+    pendingSectionFocusCleanupRef.current?.();
+    pendingSectionFocusCleanupRef.current = null;
     if (pathname !== "/") {
       navigate({ to: "/", hash: id });
       return;
@@ -139,10 +158,27 @@ export function Header() {
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
       history.replaceState(null, "", `#${id}`);
+      const heading = document.getElementById(`${id}-heading`);
+      if (heading) {
+        window.requestAnimationFrame(() => heading.focus({ preventScroll: true }));
+        return;
+      }
+    }
+
+    const focusWhenLoaded = (event: Event) => {
+      if ((event as CustomEvent<string>).detail !== id) return;
+      pendingSectionFocusCleanupRef.current?.();
+      pendingSectionFocusCleanupRef.current = null;
       window.requestAnimationFrame(() => {
+        if (window.location.hash !== `#${id}`) return;
         document.getElementById(`${id}-heading`)?.focus({ preventScroll: true });
       });
-    }
+    };
+    const cleanup = () =>
+      window.removeEventListener(DEFERRED_SECTION_LOADED_EVENT, focusWhenLoaded);
+    pendingSectionFocusCleanupRef.current = cleanup;
+    window.addEventListener(DEFERRED_SECTION_LOADED_EVENT, focusWhenLoaded);
+    window.dispatchEvent(new CustomEvent(LOAD_DEFERRED_SECTION_EVENT, { detail: id }));
   };
 
   useEffect(() => {
@@ -157,11 +193,18 @@ export function Header() {
       },
       { rootMargin: "-40% 0px -55% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] },
     );
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
+    const observeSections = () => {
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) observer.observe(el);
+      });
+    };
+    observeSections();
+    window.addEventListener(DEFERRED_SECTION_LOADED_EVENT, observeSections);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener(DEFERRED_SECTION_LOADED_EVENT, observeSections);
+    };
   }, [pathname]);
 
   return (

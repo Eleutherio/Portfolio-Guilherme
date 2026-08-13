@@ -30,7 +30,13 @@ const MODES = [
 async function openPage(
   page: Page,
   route: string,
-  options: { language?: Language; theme?: Theme; width?: number; height?: number } = {},
+  options: {
+    language?: Language;
+    theme?: Theme;
+    width?: number;
+    height?: number;
+    loadDeferredSections?: boolean;
+  } = {},
 ) {
   const language = options.language ?? "pt";
   const theme = options.theme ?? "light";
@@ -53,9 +59,16 @@ async function openPage(
     await page.waitForTimeout(900);
   }
   if (route === "/") {
-    await expect(page.locator('[data-timeline-hydrated="true"]')).toBeAttached();
-    await expect(page.locator('[data-projects-hydrated="true"]')).toBeAttached();
-    await expect(page.locator("footer")).toBeAttached();
+    if (options.loadDeferredSections !== false) {
+      await page.evaluate(() => {
+        for (const id of ["sobre", "trajetoria", "projetos", "processo", "contato"]) {
+          window.dispatchEvent(new CustomEvent("portfolio:load-deferred-section", { detail: id }));
+        }
+      });
+      await expect(page.locator('[data-timeline-hydrated="true"]')).toBeAttached();
+      await expect(page.locator('[data-projects-hydrated="true"]')).toBeAttached();
+      await expect(page.locator("footer")).toBeAttached();
+    }
   }
 }
 
@@ -633,6 +646,51 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
 });
 
 test.describe("WCAG 2.2 AA — reflow e preferências", () => {
+  test("hash direto solicita e focaliza uma seção adiada", async ({ page }) => {
+    await page.route("**/src/components/sections/Contact.tsx*", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 2_500));
+      await route.continue();
+    });
+    await openPage(page, "/#contato", { loadDeferredSections: false });
+    const heading = page.locator("#contato-heading");
+    await expect(heading).toBeAttached();
+    await expect(heading).toBeFocused();
+  });
+
+  test("CTA nativo carrega e focaliza uma seção adiada", async ({ page }) => {
+    await openPage(page, "/", { loadDeferredSections: false });
+    await page.locator('a[href="#contato"]').click();
+    await expect(page.locator("#contato-heading")).toBeFocused();
+  });
+
+  test("menu mantém foco no destino mais recente durante cargas fora de ordem", async ({
+    page,
+  }) => {
+    await page.route("**/src/components/sections/Projects.tsx*", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 2_500));
+      await route.continue();
+    });
+    await openPage(page, "/", {
+      width: 375,
+      height: 900,
+      loadDeferredSections: false,
+    });
+
+    const menuButton = page.getByRole("button", { name: "Abrir menu", exact: true });
+    await menuButton.click();
+    await page.locator("#mobile-navigation button").nth(2).click();
+    await expect(page.locator("#mobile-navigation")).toHaveCount(0);
+    await menuButton.focus();
+    await expect(menuButton).toBeVisible();
+    await menuButton.click();
+    await page.locator("#mobile-navigation button").nth(4).click();
+
+    const contactHeading = page.locator("#contato-heading");
+    await expect(contactHeading).toBeFocused();
+    await page.waitForTimeout(3_000);
+    await expect(contactHeading).toBeFocused();
+  });
+
   test("Sobre e cases compartilham a identidade visual do portfólio", async ({ page }) => {
     await openPage(page, "/sobre", { theme: "light" });
     const aboutVisual = page.locator(".portfolio-visual");

@@ -1,22 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import { Header } from "@/components/layout/Header";
+import { DeferredSection } from "@/components/sections/DeferredSection";
 
 import { Hero } from "@/components/sections/Hero";
 
-const About = lazy(() => import("@/components/sections/About").then((m) => ({ default: m.About })));
-const Skills = lazy(() =>
-  import("@/components/sections/Skills").then((m) => ({ default: m.Skills })),
-);
-const Projects = lazy(() =>
-  import("@/components/sections/Projects").then((m) => ({ default: m.Projects })),
-);
-const Timeline = lazy(() =>
-  import("@/components/sections/Timeline").then((m) => ({ default: m.Timeline })),
-);
-const Contact = lazy(() =>
-  import("@/components/sections/Contact").then((m) => ({ default: m.Contact })),
-);
+const loadAbout = () => import("@/components/sections/About").then((m) => ({ default: m.About }));
+const loadSkills = () =>
+  import("@/components/sections/Skills").then((m) => ({ default: m.Skills }));
+const loadProjects = () =>
+  import("@/components/sections/Projects").then((m) => ({ default: m.Projects }));
+const loadTimeline = () =>
+  import("@/components/sections/Timeline").then((m) => ({ default: m.Timeline }));
+const loadContact = () =>
+  import("@/components/sections/Contact").then((m) => ({ default: m.Contact }));
 const Footer = lazy(() =>
   import("@/components/layout/Footer").then((m) => ({ default: m.Footer })),
 );
@@ -53,13 +50,11 @@ function Index() {
       <div className="home-header-spacer shrink-0" aria-hidden="true" />
       <main id="main" tabIndex={-1} className="flex-1 overflow-x-clip outline-none">
         <Hero />
-        <Suspense fallback={null}>
-          <About />
-          <Timeline />
-          <Projects />
-          <Skills />
-          <Contact />
-        </Suspense>
+        <DeferredSection id="sobre" load={loadAbout} />
+        <DeferredSection id="trajetoria" load={loadTimeline} />
+        <DeferredSection id="projetos" load={loadProjects} />
+        <DeferredSection id="processo" load={loadSkills} />
+        <DeferredSection id="contato" load={loadContact} />
       </main>
       <Suspense fallback={null}>
         <Footer />
