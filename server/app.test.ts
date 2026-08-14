@@ -1,16 +1,51 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { type AddressInfo } from "node:net";
+import { createConnection } from "node:net";
+import { once } from "node:events";
 import { after, before, test } from "node:test";
 import type { ContactPayload } from "@/lib/contact-contract";
 import { buildContactEmail, EmailDeliveryError } from "@/lib/contact-email.server";
 import { verifyContactRecaptchaWithSecrets } from "@/lib/contact-recaptcha.server";
+import { checkScopedRateLimit, rateLimitHeaders } from "@/lib/contact-rate-limit.server";
 import { app } from "./app";
 import { readJsonBody } from "./http";
+import { createApiServer } from "./node-server";
 import { ClientAddressError, resolveClientAddress } from "./request-context";
 import { runInfrastructureChecks } from "./services/health";
 
 const originalAllowedOrigins = process.env.API_ALLOWED_ORIGINS;
 const originalKeepAliveSecret = process.env.KEEP_ALIVE_SECRET;
+
+async function withHttpServer(
+  handler: Parameters<typeof createApiServer>[0],
+  run: (port: number) => Promise<void>,
+) {
+  const server = createApiServer(handler);
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  try {
+    await run((server.address() as AddressInfo).port);
+  } finally {
+    server.close();
+    await once(server, "close");
+  }
+}
+
+async function sendRawHttp(port: number, payload: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const socket = createConnection({ host: "127.0.0.1", port });
+    let response = "";
+    socket.setEncoding("utf8");
+    socket.setTimeout(5_000, () => socket.destroy(new Error("HTTP test timeout")));
+    socket.on("connect", () => socket.end(payload));
+    socket.on("data", (chunk) => {
+      response += chunk;
+    });
+    socket.on("end", () => resolve(response));
+    socket.on("error", reject);
+  });
+}
 
 before(() => {
   process.env.API_ALLOWED_ORIGINS = "https://guifer.tech";
@@ -114,6 +149,74 @@ test("unknown routes return a hardened JSON 404", async () => {
   assert.equal(response.headers.get("x-frame-options"), "DENY");
 });
 
+test("HTTP adapter ignores untrusted authority and forwarded protocol", async () => {
+  await withHttpServer(
+    async (request) => Response.json({ url: request.url }),
+    async (port) => {
+      const response = await sendRawHttp(
+        port,
+        "GET /health/live HTTP/1.1\r\nHost: [invalid\r\nX-Forwarded-Proto: javascript\r\nConnection: close\r\n\r\n",
+      );
+
+      assert.match(response, /^HTTP\/1\.1 200 OK/m);
+      assert.match(response, /"url":"http:\/\/api\.internal\/health\/live"/);
+    },
+  );
+});
+
+test("HTTP adapter rejects absolute and parser-invalid request targets", async () => {
+  await withHttpServer(
+    async () => Response.json({ ok: true }),
+    async (port) => {
+      const absolute = await sendRawHttp(
+        port,
+        "GET https://attacker.example/health/live HTTP/1.1\r\nHost: guifer-api.onrender.com\r\nConnection: close\r\n\r\n",
+      );
+      const parserInvalid = await sendRawHttp(
+        port,
+        "GET /bad path HTTP/1.1\r\nHost: guifer-api.onrender.com\r\nConnection: close\r\n\r\n",
+      );
+      const backslashAuthority = await sendRawHttp(
+        port,
+        "GET /\\attacker.example/health/live HTTP/1.1\r\nHost: guifer-api.onrender.com\r\nConnection: close\r\n\r\n",
+      );
+
+      assert.match(absolute, /^HTTP\/1\.1 400 Bad Request/m);
+      assert.match(absolute, /connection: close/i);
+      assert.match(absolute, /\{"ok":false\}/);
+      assert.match(parserInvalid, /^HTTP\/1\.1 400 Bad Request/m);
+      assert.match(parserInvalid, /\{"ok":false\}/);
+      assert.match(backslashAuthority, /^HTTP\/1\.1 400 Bad Request/m);
+      assert.match(backslashAuthority, /\{"ok":false\}/);
+    },
+  );
+});
+
+test("HTTP adapter returns defensive headers when the handler fails", async () => {
+  const originalConsoleError = console.error;
+  console.error = () => undefined;
+  try {
+    await withHttpServer(
+      async () => {
+        throw new Error("controlled test failure");
+      },
+      async (port) => {
+        const response = await sendRawHttp(
+          port,
+          "GET /health/live HTTP/1.1\r\nHost: guifer-api.onrender.com\r\nConnection: close\r\n\r\n",
+        );
+
+        assert.match(response, /^HTTP\/1\.1 500 Internal Server Error/m);
+        assert.match(response, /content-security-policy:.*frame-ancestors 'none'/i);
+        assert.match(response, /strict-transport-security: max-age=31536000/i);
+        assert.match(response, /\{"ok":false\}/);
+      },
+    );
+  } finally {
+    console.error = originalConsoleError;
+  }
+});
+
 test("JSON body reader accepts a streamed body at the byte limit", async () => {
   const encoder = new TextEncoder();
   const chunks = [encoder.encode('{"ok"'), encoder.encode(":true}")];
@@ -199,11 +302,11 @@ test("direct client address uses the trusted socket peer", () => {
   assert.equal(resolveClientAddress(request, { peerAddress: "::1" }, "direct"), "::1");
 });
 
-test("Render client address uses only the first forwarded IP", () => {
+test("Render client address uses the edge-controlled Cloudflare IP", () => {
   const request = new Request("https://api.example.com/api/contact", {
     headers: {
-      "cf-connecting-ip": "198.51.100.99",
-      "x-forwarded-for": "2001:db8::10, 198.51.100.20, 198.51.100.30",
+      "cf-connecting-ip": "2001:db8::10",
+      "x-forwarded-for": "198.51.100.20, 198.51.100.30",
     },
   });
 
@@ -213,15 +316,129 @@ test("Render client address uses only the first forwarded IP", () => {
   );
 });
 
-test("Render client address fails closed when its trusted header is invalid", () => {
+test("Render client address ignores spoofed forwarding chains", () => {
   const request = new Request("https://api.example.com/api/contact", {
-    headers: { "x-forwarded-for": "spoofed, 198.51.100.30" },
+    headers: {
+      "cf-connecting-ip": "198.51.100.99",
+      "x-forwarded-for": "198.51.100.20, 198.51.100.30",
+    },
+  });
+
+  assert.equal(
+    resolveClientAddress(request, { peerAddress: "10.0.0.4" }, "render"),
+    "198.51.100.99",
+  );
+});
+
+test("Render client address fails closed without a valid edge-controlled header", () => {
+  const request = new Request("https://api.example.com/api/contact", {
+    headers: {
+      "cf-connecting-ip": "spoofed",
+      "x-forwarded-for": "198.51.100.20, 198.51.100.30",
+    },
   });
 
   assert.throws(
     () => resolveClientAddress(request, { peerAddress: "10.0.0.4" }, "render"),
     ClientAddressError,
   );
+});
+
+test("rate limit distinguishes IP and global blocks for operational verification", async () => {
+  const request = new Request("https://api.example.com/api/contact", {
+    headers: { "cf-connecting-ip": "198.51.100.99" },
+  });
+  const options = {
+    scope: "contact-test",
+    secret: "test-rate-limit-secret-with-32-characters",
+    windowSeconds: 900,
+    perIp: 5,
+    global: 100,
+  };
+
+  const ipBlocked = await checkScopedRateLimit(
+    request,
+    options,
+    { peerAddress: "198.51.100.99" },
+    async () => "ip",
+  );
+  const globalBlocked = await checkScopedRateLimit(
+    request,
+    options,
+    { peerAddress: "198.51.100.99" },
+    async () => "global",
+  );
+
+  assert.equal(ipBlocked.blockedScope, "ip");
+  assert.equal(globalBlocked.blockedScope, "global");
+  assert.deepEqual(rateLimitHeaders(ipBlocked), {
+    "retry-after": "900",
+    "x-rate-limit-scope": "ip",
+  });
+  assert.deepEqual(rateLimitHeaders(globalBlocked), {
+    "retry-after": "900",
+    "x-rate-limit-scope": "global",
+  });
+});
+
+test("rate limit uses one atomic scoped decision with distinct HMAC keys", async () => {
+  const request = new Request("https://api.example.com/api/contact");
+  let received:
+    | {
+        globalKeyHash: string;
+        ipKeyHash: string;
+        globalLimit: number;
+        ipLimit: number;
+        windowSeconds: number;
+      }
+    | undefined;
+
+  const result = await checkScopedRateLimit(
+    request,
+    {
+      scope: "atomic-test",
+      secret: "test-rate-limit-secret-with-32-characters",
+      windowSeconds: 900,
+      perIp: 5,
+      global: 100,
+    },
+    { peerAddress: "198.51.100.99" },
+    async (input) => {
+      received = input;
+      return "allowed";
+    },
+  );
+
+  assert.equal(result.allowed, true);
+  assert.equal(received?.globalLimit, 100);
+  assert.equal(received?.ipLimit, 5);
+  assert.equal(received?.windowSeconds, 900);
+  assert.match(received?.globalKeyHash ?? "", /^[a-f0-9]{64}$/);
+  assert.match(received?.ipKeyHash ?? "", /^[a-f0-9]{64}$/);
+  assert.notEqual(received?.globalKeyHash, received?.ipKeyHash);
+});
+
+test("atomic rate-limit migration locks global state before creating an IP bucket", async () => {
+  const migration = await readFile(
+    new URL("../supabase/migrations/20260813150000_atomic_scoped_rate_limits.sql", import.meta.url),
+    "utf8",
+  );
+  const globalLock = migration.indexOf("SET updated_at = global_limits.updated_at");
+  const globalState = migration.indexOf(
+    "RETURNING window_started_at, request_count\n  INTO v_global_window_started_at, v_global_count",
+  );
+  const globalGuard = migration.indexOf("IF v_global_count >= p_global_limit");
+  const ipInsert = migration.indexOf("VALUES (p_ip_key_hash, v_now, 1, v_now)");
+
+  assert.ok(globalLock >= 0 && globalLock < globalState && globalState < globalGuard);
+  assert.ok(globalGuard < ipInsert);
+  assert.doesNotMatch(migration, /ON CONFLICT \(key_hash\) DO NOTHING/);
+  assert.match(
+    migration,
+    /IF NOT v_ip_allowed THEN\s+RETURN 'ip';\s+END IF;\s+UPDATE public\.contact_rate_limits/s,
+  );
+  assert.match(migration, /FOR UPDATE SKIP LOCKED/);
+  assert.doesNotMatch(migration, /DROP FUNCTION public\.consume_contact_rate_limit/);
 });
 
 test("API responses include the defensive header baseline", async () => {
