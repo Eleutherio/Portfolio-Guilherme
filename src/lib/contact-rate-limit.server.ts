@@ -5,10 +5,18 @@ import {
   type RequestContext,
 } from "../../server/request-context";
 
-type RateLimitResult = {
+export type RateLimitResult = {
   allowed: boolean;
   retryAfterSeconds: number;
+  blockedScope?: "ip" | "global";
 };
+
+export function rateLimitHeaders(result: RateLimitResult): HeadersInit {
+  return {
+    "retry-after": String(result.retryAfterSeconds),
+    "x-rate-limit-scope": result.blockedScope ?? "unknown",
+  };
+}
 
 export class RateLimitError extends Error {
   constructor() {
@@ -43,6 +51,16 @@ type ScopedRateLimitOptions = {
   global: number;
 };
 
+type RateLimitDecision = "allowed" | "ip" | "global";
+
+type ConsumeScopedLimit = (input: {
+  globalKeyHash: string;
+  ipKeyHash: string;
+  globalLimit: number;
+  ipLimit: number;
+  windowSeconds: number;
+}) => Promise<RateLimitDecision>;
+
 async function hmac(value: string, secret: string): Promise<string> {
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
@@ -58,16 +76,20 @@ async function hmac(value: string, secret: string): Promise<string> {
   );
 }
 
-async function consume(keyHash: string, limit: number, windowSeconds: number): Promise<boolean> {
-  const { data, error } = await supabaseAdmin.rpc("consume_contact_rate_limit", {
-    p_key_hash: keyHash,
-    p_limit: limit,
-    p_window_seconds: windowSeconds,
+const consumeScopedLimit: ConsumeScopedLimit = async (input) => {
+  const { data, error } = await supabaseAdmin.rpc("consume_scoped_rate_limit", {
+    p_global_key_hash: input.globalKeyHash,
+    p_ip_key_hash: input.ipKeyHash,
+    p_global_limit: input.globalLimit,
+    p_ip_limit: input.ipLimit,
+    p_window_seconds: input.windowSeconds,
   });
 
-  if (error || typeof data !== "boolean") throw new RateLimitError();
+  if (error || (data !== "allowed" && data !== "ip" && data !== "global")) {
+    throw new RateLimitError();
+  }
   return data;
-}
+};
 
 export async function checkContactRateLimit(
   request: Request,
@@ -81,6 +103,7 @@ export async function checkScopedRateLimit(
   request: Request,
   options: ScopedRateLimitOptions,
   context: RequestContext,
+  consumeLimit: ConsumeScopedLimit = consumeScopedLimit,
 ): Promise<RateLimitResult> {
   if (!options.secret || options.secret.length < 32) throw new RateLimitError();
 
@@ -93,13 +116,18 @@ export async function checkScopedRateLimit(
   }
 
   const ipKey = await hmac(`${options.scope}:ip:${clientAddress}`, options.secret);
-  const ipAllowed = await consume(ipKey, options.perIp, options.windowSeconds);
-
-  if (!ipAllowed) {
-    return { allowed: false, retryAfterSeconds: options.windowSeconds };
-  }
-
   const globalKey = await hmac(`${options.scope}:global:v1`, options.secret);
-  const globalAllowed = await consume(globalKey, options.global, options.windowSeconds);
-  return { allowed: globalAllowed, retryAfterSeconds: options.windowSeconds };
+  const decision = await consumeLimit({
+    globalKeyHash: globalKey,
+    ipKeyHash: ipKey,
+    globalLimit: options.global,
+    ipLimit: options.perIp,
+    windowSeconds: options.windowSeconds,
+  });
+
+  return {
+    allowed: decision === "allowed",
+    retryAfterSeconds: options.windowSeconds,
+    blockedScope: decision === "allowed" ? undefined : decision,
+  };
 }

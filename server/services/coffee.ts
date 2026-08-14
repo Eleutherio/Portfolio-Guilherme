@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { checkScopedRateLimit, RateLimitError } from "@/lib/contact-rate-limit.server";
+import {
+  checkScopedRateLimit,
+  RateLimitError,
+  rateLimitHeaders,
+} from "@/lib/contact-rate-limit.server";
 import { json, readJsonBody } from "../http";
 import type { RequestContext } from "../request-context";
 
@@ -40,7 +44,7 @@ export async function handleCoffeeRequest(
       context,
     );
     if (!rateLimit.allowed) {
-      return json({ ok: false }, 429, { "retry-after": String(rateLimit.retryAfterSeconds) });
+      return json({ ok: false }, 429, rateLimitHeaders(rateLimit));
     }
 
     const { error } = await supabaseAdmin

@@ -78,7 +78,7 @@ Além dos valores já declarados no Blueprint, preencha os campos marcados como 
 
 Revise `API_ALLOWED_ORIGINS`, `CONTACT_ALLOWED_ORIGINS` e `RECAPTCHA_ALLOWED_HOSTNAMES` quando os domínios finais forem conhecidos.
 
-Mantenha `CLIENT_IP_SOURCE=render`. Esse valor fixa o primeiro IP válido de `X-Forwarded-For` como a única fonte do rate limit; não substitua por um header controlado pelo cliente. `RECAPTCHA_SECRET_KEY_PREVIOUS` não faz parte do Blueprint permanente: crie a variável manualmente apenas durante a janela de rotação descrita no guia de segurança e remova-a ao final.
+Mantenha `CLIENT_IP_SOURCE=render`. Esse valor usa somente `CF-Connecting-IP`, sobrescrito pela borda Cloudflare do Render, como fonte do rate limit. Não use `X-Forwarded-For`: a borda anexa endereços a um valor que pode ter sido iniciado pelo cliente. `RECAPTCHA_SECRET_KEY_PREVIOUS` não faz parte do Blueprint permanente: crie a variável manualmente apenas durante a janela de rotação descrita no guia de segurança e remova-a ao final.
 
 O Render usa `GET /health/live` como health check. Essa rota não consulta serviços externos, portanto uma indisponibilidade do Supabase não provoca reinício do processo Node. O endpoint autenticado `/health/dependencies` verifica o banco e se a retenção executou nas últimas 36 horas.
 

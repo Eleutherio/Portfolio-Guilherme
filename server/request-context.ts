@@ -36,10 +36,9 @@ export function resolveClientAddress(
     throw new ClientAddressError();
   }
 
-  // Render prepends the real client address. Values after the first entry may
-  // have been supplied by an upstream client and must never select a bucket.
-  const firstForwardedAddress = request.headers.get("x-forwarded-for")?.split(",", 1)[0];
-  const address = validAddress(firstForwardedAddress);
+  // Render's Cloudflare edge overwrites this header. X-Forwarded-For is not
+  // trusted because the edge appends to a value supplied by the client.
+  const address = validAddress(request.headers.get("cf-connecting-ip"));
   if (address) return address;
   throw new ClientAddressError();
 }

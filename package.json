@@ -19,6 +19,8 @@
     "security:audit": "npm audit --audit-level=high",
     "security:sbom": "npm sbom --package-lock-only --sbom-format cyclonedx --sbom-type application",
     "security:ip-spoof": "node scripts/verify-render-ip-spoofing.mjs",
+    "security:production": "node scripts/verify-production-security.mjs",
+    "security:rate-limit-atomic": "node scripts/verify-atomic-rate-limit.mjs",
     "images:generate": "node scripts/generate-responsive-images.mjs",
     "format": "prettier --write .",
     "test:a11y": "playwright test e2e/accessibility.spec.ts",

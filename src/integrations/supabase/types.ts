@@ -77,9 +77,15 @@ export type Database = {
     };
     Functions: {
       app_healthcheck: { Args: never; Returns: string };
-      consume_contact_rate_limit: {
-        Args: { p_key_hash: string; p_limit: number; p_window_seconds: number };
-        Returns: boolean;
+      consume_scoped_rate_limit: {
+        Args: {
+          p_global_key_hash: string;
+          p_global_limit: number;
+          p_ip_key_hash: string;
+          p_ip_limit: number;
+          p_window_seconds: number;
+        };
+        Returns: string;
       };
       enforce_privacy_retention: {
         Args: never;

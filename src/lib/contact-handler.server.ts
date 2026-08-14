@@ -4,7 +4,11 @@ import {
   type ContactApiResponse,
 } from "@/lib/contact-contract";
 import { EmailDeliveryError, sendContactEmail } from "@/lib/contact-email.server";
-import { checkContactRateLimit, RateLimitError } from "@/lib/contact-rate-limit.server";
+import {
+  checkContactRateLimit,
+  RateLimitError,
+  rateLimitHeaders,
+} from "@/lib/contact-rate-limit.server";
 import {
   RecaptchaRejectedError,
   RecaptchaUnavailableError,
@@ -105,9 +109,7 @@ export async function handleContactRequest(
 
     const rateLimit = await checkContactRateLimit(request, context);
     if (!rateLimit.allowed) {
-      return jsonResponse({ ok: false, code: "rate_limited" }, 429, {
-        "retry-after": String(rateLimit.retryAfterSeconds),
-      });
+      return jsonResponse({ ok: false, code: "rate_limited" }, 429, rateLimitHeaders(rateLimit));
     }
 
     const body = await readBodyWithLimit(request);

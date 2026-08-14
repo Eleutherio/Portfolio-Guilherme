@@ -4,7 +4,9 @@ Este documento fecha os controles operacionais de `SEC-01` a `SEC-04`. Ele não 
 
 ## Confiança do endereço do cliente
 
-O serviço Node recebe conexões somente pelo balanceador público do Render. Em produção, `CLIENT_IP_SOURCE=render` fixa o primeiro valor IP válido de `X-Forwarded-For` como fonte do rate limit. `CF-Connecting-IP`, valores posteriores do encadeamento e headers alternativos não selecionam o bucket. Ausência ou valor inválido falha fechado.
+O serviço Node recebe conexões somente pelo balanceador público do Render. Em produção, `CLIENT_IP_SOURCE=render` faz a aplicação usar somente o IP válido de `CF-Connecting-IP`, que a documentação atual do Render informa ser sobrescrito pela borda Cloudflare, como fonte do rate limit. `X-Forwarded-For` e headers alternativos não selecionam o bucket. Ausência ou valor inválido falha fechado. Essa é uma dependência operacional do edge e deve ser revalidada pelo probe depois de cada mudança de infraestrutura ou deploy de segurança.
+
+Em 13 de agosto de 2026, o teste publicado comprovou que rotacionar o primeiro valor de `X-Forwarded-For` contornava o bucket anterior. A correção local passou a usar `CF-Connecting-IP`; a fronteira permanece reprovada no ambiente publicado até implantar essa versão e repetir o teste com `422` seguido de `429`.
 
 No desenvolvimento, `CLIENT_IP_SOURCE=direct` usa somente o endereço do socket. A aplicação transforma o IP em HMAC antes de chamar o Supabase e não registra o endereço bruto.
 
@@ -16,7 +18,17 @@ npm run security:ip-spoof
 Remove-Item Env:IP_SPOOF_TEST_API_URL
 ```
 
-O teste envia apenas JSON inválido, alterna valores reservados de documentação em `X-Forwarded-For` e deve receber `422` antes de `429`. Ele não envia e-mail, mas consome temporariamente o rate limit do IP executor.
+O teste envia apenas JSON inválido, alterna valores reservados de documentação em `CF-Connecting-IP` e `X-Forwarded-For` e deve receber `422` antes de `429`. Antes da rotação, ele repete um valor fixo para comprovar que a origem de execução mantém um bucket estável e evitar falso positivo por egress variável. Ele não envia e-mail, mas consome temporariamente o rate limit do IP executor.
+
+Depois de aplicar a migration atômica no Supabase, carregue `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` somente no processo local e execute:
+
+```powershell
+npm run security:rate-limit-atomic
+```
+
+O teste usa hashes aleatórios isolados e cobre duas disputas concorrentes: IPs distintos com capacidade global 5, exigindo 5 permissões, 15 bloqueios globais e 6 linhas; e uma única chave IP com limite 5, exigindo 5 permissões e 15 bloqueios por IP. Uma chamada posterior com outro IP confirma no banco que os bloqueios por IP não consumiram capacidade global. O `finally` remove exclusivamente as chaves do teste. Nenhum IP ou dado de contato é usado.
+
+Aplique primeiro a migration e depois publique a nova API. A RPC anterior permanece temporariamente disponível apenas para `service_role`, sem uso pelo código novo, para preservar o serviço durante esse intervalo. Depois de confirmar o novo deploy e o teste atômico, remova `consume_contact_rate_limit` em uma migration de limpeza.
 
 ## Headers defensivos
 
@@ -25,6 +37,14 @@ O frontend publica CSP bloqueante, `frame-ancestors 'none'`, HSTS de um ano com 
 A API publica uma CSP sem conteúdo ativo, `frame-ancestors 'none'`, HSTS de um ano, COOP, CORP, Permissions Policy, Referrer Policy, `nosniff` e bloqueio de frames.
 
 `Cross-Origin-Embedder-Policy` não é habilitado: o reCAPTCHA depende de frames e recursos de terceiro que não participam do isolamento exigido por COEP. HSTS não usa `preload`; qualquer inclusão futura nessa lista exige auditoria separada de todos os subdomínios.
+
+Execute a verificação publicada repetível com:
+
+```powershell
+npm run security:production
+```
+
+O comando confirma os headers do frontend e da API em respostas `200`, `403`, `404` e `OPTIONS 204`, abre home, executa o reCAPTCHA do formulário com o POST interceptado localmente, abre o widget em Chromium e falha diante de bloqueios CSP. Ele não envia contato, não inspeciona logs e não fabrica uma resposta `500`; essas evidências permanecem operacionais e separadas.
 
 ## Evidência do canal de contato
 
@@ -91,6 +111,7 @@ Em 21 de julho de 2026, `npm audit` encontrou zero vulnerabilidades conhecidas. 
 ## Referências operacionais
 
 - [Render: Web Services](https://render.com/docs/web-services)
+- [Render: client IP e `CF-Connecting-IP`](https://render.com/articles/host-pocketbase-on-render)
 - [Cloudflare Pages: headers](https://developers.cloudflare.com/pages/configuration/headers/)
 - [Google reCAPTCHA: CSP](https://developers.google.com/recaptcha/docs/faq)
 - [Brevo: chaves SMTP](https://help.brevo.com/hc/en-us/articles/7959631848850-Create-and-manage-your-SMTP-keys)
