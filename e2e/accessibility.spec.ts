@@ -53,7 +53,7 @@ async function openPage(
   await expect(page.locator("main#main")).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", language === "pt" ? "pt-BR" : "en");
   await expect(page.locator("html")).toHaveClass(new RegExp(theme));
-  await expect(page.locator("#acc-widget-host")).toBeAttached();
+  await expect(page.locator("#accessibility-widget-launcher")).toBeAttached();
   if (route === "/sobre") {
     await page.locator("#sobre").scrollIntoViewIfNeeded();
     await page.waitForTimeout(900);
@@ -70,6 +70,14 @@ async function openPage(
       await expect(page.locator("footer")).toBeAttached();
     }
   }
+}
+
+async function openAccessibilityWidget(page: Page) {
+  await page.locator("#accessibility-widget-launcher").click();
+  const host = page.locator("#acc-widget-host");
+  await expect(host).toBeAttached();
+  await expect(host.locator(".acc-menu")).toBeVisible();
+  return host;
 }
 
 async function runAxe(page: Page, testInfo: TestInfo, label: string, include?: string) {
@@ -163,12 +171,22 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
   });
 
   test("widget aberto, foco e fechamento", async ({ page }, testInfo) => {
+    const widgetRequests: string[] = [];
+    page.on("request", (request) => {
+      if (request.url().includes("accessible-web-widget")) widgetRequests.push(request.url());
+    });
     await openPage(page, "/acessibilidade", { width: 375, height: 900 });
+    const launcher = page.locator("#accessibility-widget-launcher");
+    await expect(launcher).toBeVisible();
+    await expect(page.locator("#acc-widget-host")).toHaveCount(0);
+    expect(widgetRequests).toHaveLength(0);
+
+    await launcher.focus();
+    await page.keyboard.press("Enter");
     const host = page.locator("#acc-widget-host");
     const trigger = host.locator("#accessibilityWidget");
-    await trigger.focus();
-    await page.keyboard.press("Enter");
     await expect(host.locator(".acc-menu")).toBeVisible();
+    expect(widgetRequests.length).toBeGreaterThan(0);
     await runAxe(page, testInfo, "widget-open");
     await page.keyboard.press("Escape");
     await expect(trigger).toBeFocused();
@@ -176,8 +194,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
 
   test("widget expõe nomes e alvos para todos os controles", async ({ page }) => {
     await openPage(page, "/acessibilidade", { width: 375, height: 900 });
-    const host = page.locator("#acc-widget-host");
-    await host.locator("#accessibilityWidget").click();
+    const host = await openAccessibilityWidget(page);
 
     const buttons = host.getByRole("button");
     const buttonCount = await buttons.count();
@@ -195,8 +212,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
 
   test("widget persiste preferências, idioma e restauração", async ({ page }) => {
     await openPage(page, "/acessibilidade", { width: 375, height: 900 });
-    const host = page.locator("#acc-widget-host");
-    await host.locator("#accessibilityWidget").click();
+    const host = await openAccessibilityWidget(page);
 
     const bold = host.locator('.acc-btn[data-key="bold-text"]');
     await bold.click();
@@ -210,7 +226,9 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await restoredPage.goto("/acessibilidade", { waitUntil: "domcontentloaded" });
     const restoredHost = restoredPage.locator("#acc-widget-host");
     await expect(restoredHost).toBeAttached();
+    await expect(restoredPage.locator("#accessibility-widget-launcher")).toHaveCount(0);
     await restoredHost.locator("#accessibilityWidget").click();
+    await expect(restoredHost.locator(".acc-menu")).toBeVisible();
     await expect(restoredHost.locator('.acc-btn[data-key="bold-text"]')).toHaveClass(
       /acc-selected/,
     );
@@ -223,6 +241,34 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await restoredPage.close();
   });
 
+  test("widget restaura preferências do cookie sem Web Storage", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 900 });
+    await page.addInitScript(
+      (storedConfig) => {
+        document.cookie = `accweb=${encodeURIComponent(storedConfig)};path=/;SameSite=Strict`;
+        const unavailable = () => {
+          throw new DOMException("Web Storage indisponível", "SecurityError");
+        };
+        Object.defineProperties(Storage.prototype, {
+          getItem: { configurable: true, value: unavailable },
+          setItem: { configurable: true, value: unavailable },
+          removeItem: { configurable: true, value: unavailable },
+        });
+      },
+      JSON.stringify({ states: { "bold-text": true } }),
+    );
+
+    await page.goto("/acessibilidade", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("main#main")).toBeVisible();
+    const host = page.locator("#acc-widget-host");
+    await expect(host).toBeAttached();
+    await expect(page.locator("#accessibility-widget-launcher")).toHaveCount(0);
+
+    await host.locator("#accessibilityWidget").click();
+    await expect(host.locator(".acc-menu")).toBeVisible();
+    await expect(host.locator('.acc-btn[data-key="bold-text"]')).toHaveClass(/acc-selected/);
+  });
+
   for (const profile of [
     "profile-seizure-safe",
     "profile-vision",
@@ -231,8 +277,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
   ]) {
     test(`widget: ${profile}`, async ({ page }, testInfo) => {
       await openPage(page, "/", { width: 375, height: 900 });
-      const host = page.locator("#acc-widget-host");
-      await host.locator("#accessibilityWidget").click();
+      const host = await openAccessibilityWidget(page);
       const control = host.locator(`.acc-btn[data-key="${profile}"]`);
       await control.click();
       await expect(control).toHaveClass(/acc-selected/);
@@ -647,6 +692,24 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
 });
 
 test.describe("WCAG 2.2 AA — reflow e preferências", () => {
+  test("tipografia carrega somente as famílias e subsets adotados", async ({ page }) => {
+    await openPage(page, "/acessibilidade");
+    await page.evaluate(() => document.fonts.ready);
+
+    await expect(page.locator("body")).toHaveCSS("font-family", /Inter Variable/);
+    await expect(page.locator("h1")).toHaveCSS("font-family", /Space Grotesk Variable/);
+
+    const fontResources = await page.evaluate(() =>
+      performance
+        .getEntriesByType("resource")
+        .map((entry) => entry.name)
+        .filter((url) => url.includes("-wght-normal.woff2")),
+    );
+    expect(fontResources).toHaveLength(2);
+    expect(fontResources.some((url) => url.includes("inter-latin-wght-normal"))).toBe(true);
+    expect(fontResources.some((url) => url.includes("space-grotesk-latin-wght-normal"))).toBe(true);
+  });
+
   test("home carrega seções e atividade do footer somente por proximidade", async ({ page }) => {
     const requestedModules: string[] = [];
     let healthRequests = 0;
@@ -695,12 +758,15 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
       height: 720,
       loadDeferredSections: false,
     });
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent("portfolio:load-deferred-section", { detail: "sobre" }));
+    });
     const about = page.locator("#sobre");
-    await about.scrollIntoViewIfNeeded();
-
     const featured = about.getByRole("img", {
       name: "Guilherme apresentando o projeto GrenGame com um microfone.",
     });
+    await expect(featured).toBeAttached();
+    await featured.scrollIntoViewIfNeeded();
     await expect(featured).toHaveAttribute("loading", "lazy");
     await expect(featured).not.toHaveAttribute("fetchpriority", "high");
     await expect(featured).toHaveAttribute("width", "800");
@@ -717,7 +783,13 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
         "(max-width: 639px) 142px, (max-width: 767px) 292px, (max-width: 1023px) 35vw, 372px",
       );
     }
-    await expect.poll(() => featured.evaluate((image) => image.currentSrc)).toContain("-640w.avif");
+    await expect
+      .poll(() =>
+        featured.evaluate((element) =>
+          element instanceof HTMLImageElement ? element.currentSrc : "",
+        ),
+      )
+      .toContain("-640w.avif");
     await expect(
       page.locator('picture source:not([srcset]), picture source[srcset=""]'),
     ).toHaveCount(0);
