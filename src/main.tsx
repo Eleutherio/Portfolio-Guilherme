@@ -1,6 +1,3 @@
-import "@fontsource-variable/dm-sans";
-import "@fontsource-variable/inter";
-import "@fontsource-variable/space-grotesk";
 import "./styles.css";
 
 import { StrictMode } from "react";
