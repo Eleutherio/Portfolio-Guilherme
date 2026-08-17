@@ -21,6 +21,8 @@
 
 Os controles de IP, headers, e-mail, rotação anual e SBOM estão detalhados em [SECURITY-OPERATIONS.md](./SECURITY-OPERATIONS.md).
 
+O procedimento por release, o registro obrigatório, os alertas e os rollbacks estão em [RELEASE-ROLLBACK.md](./RELEASE-ROLLBACK.md).
+
 ## 1. Supabase
 
 Crie um projeto Free e aplique, na ordem, todos os arquivos de `supabase/migrations/`. A migration de hardening remove a gravação pública em `coffee_taps` e cria `app_healthcheck()`, acessível somente pelo backend com a service role.
@@ -82,6 +84,8 @@ Mantenha `CLIENT_IP_SOURCE=render`. Esse valor usa somente `CF-Connecting-IP`, s
 
 O Render usa `GET /health/live` como health check. Essa rota não consulta serviços externos, portanto uma indisponibilidade do Supabase não provoca reinício do processo Node. O endpoint autenticado `/health/dependencies` verifica o banco e se a retenção executou nas últimas 36 horas.
 
+`/health/live` também expõe o SHA não secreto de `RENDER_GIT_COMMIT`, permitindo confirmar qual commit está implantado na API e compará-lo ao alvo registrado para o Render.
+
 O endpoint público `GET /health/status` alimenta os indicadores do rodapé. Ele verifica Supabase, autenticação SMTP da Brevo e disponibilidade do `siteverify` do reCAPTCHA sem expor segredos. Resultados totalmente operacionais ficam em cache por cinco minutos; falhas são reavaliadas após 30 segundos.
 
 ## 5. Cloudflare Pages
@@ -100,6 +104,8 @@ Variáveis de produção:
 - `VITE_RECAPTCHA_SITE_KEY`.
 
 Os arquivos `_redirects` e `_headers` são copiados de `public/`. O primeiro implementa o fallback da SPA; o segundo adiciona headers de segurança e cache para os assets versionados.
+
+O build gera `/release.json` a partir de `CF_PAGES_COMMIT_SHA`. Esse manifesto não contém segredo e é servido sem cache para a verificação pós-deploy.
 
 ## 6. Keep-alive no GitHub Actions
 
