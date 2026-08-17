@@ -2,6 +2,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { isEmailTransportAvailable } from "@/lib/contact-email.server";
 import { isRecaptchaServiceAvailable } from "@/lib/contact-recaptcha.server";
 import { json } from "../http";
+import { apiReleaseCommit } from "../release";
 
 export type ServiceAvailability = "operational" | "unavailable";
 
@@ -63,7 +64,9 @@ export async function runInfrastructureChecks(
 }
 
 export function live(): Response {
-  return json({ ok: true, service: "guifer-api" }, 200, { "cache-control": "no-store" });
+  return json({ ok: true, service: "guifer-api", release: apiReleaseCommit() }, 200, {
+    "cache-control": "no-store",
+  });
 }
 
 export async function infrastructureStatus(): Promise<Response> {

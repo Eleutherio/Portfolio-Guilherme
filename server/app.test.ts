@@ -12,10 +12,12 @@ import { app } from "./app";
 import { readJsonBody } from "./http";
 import { createApiServer } from "./node-server";
 import { ClientAddressError, resolveClientAddress } from "./request-context";
+import { releaseManifestSource } from "./release";
 import { runInfrastructureChecks } from "./services/health";
 
 const originalAllowedOrigins = process.env.API_ALLOWED_ORIGINS;
 const originalKeepAliveSecret = process.env.KEEP_ALIVE_SECRET;
+const originalRenderGitCommit = process.env.RENDER_GIT_COMMIT;
 
 async function withHttpServer(
   handler: Parameters<typeof createApiServer>[0],
@@ -56,12 +58,34 @@ after(() => {
   else process.env.API_ALLOWED_ORIGINS = originalAllowedOrigins;
   if (originalKeepAliveSecret === undefined) delete process.env.KEEP_ALIVE_SECRET;
   else process.env.KEEP_ALIVE_SECRET = originalKeepAliveSecret;
+  if (originalRenderGitCommit === undefined) delete process.env.RENDER_GIT_COMMIT;
+  else process.env.RENDER_GIT_COMMIT = originalRenderGitCommit;
 });
 
 test("live health check is public and independent from dependencies", async () => {
+  process.env.RENDER_GIT_COMMIT = "0123456789ABCDEF0123456789ABCDEF01234567";
   const response = await app(new Request("https://api.example.com/health/live"));
   assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { ok: true, service: "guifer-api" });
+  assert.deepEqual(await response.json(), {
+    ok: true,
+    service: "guifer-api",
+    release: "0123456789abcdef0123456789abcdef01234567",
+  });
+  assert.equal(response.headers.get("cache-control"), "no-store");
+});
+
+test("live health check does not expose malformed release metadata", async () => {
+  process.env.RENDER_GIT_COMMIT = "not-a-commit";
+  const response = await app(new Request("https://api.example.com/health/live"));
+  assert.equal((await response.json()).release, "local");
+});
+
+test("Pages release manifest normalizes its build commit", () => {
+  assert.equal(
+    releaseManifestSource("FEDCBA9876543210FEDCBA9876543210FEDCBA98"),
+    '{"commit":"fedcba9876543210fedcba9876543210fedcba98"}\n',
+  );
+  assert.equal(releaseManifestSource("invalid"), '{"commit":"local"}\n');
 });
 
 test("infrastructure status normalizes operational and unavailable services", async () => {
@@ -465,6 +489,7 @@ test("Pages headers enforce the CSP and isolation policy required by the fronten
   assert.match(headersFile, /Strict-Transport-Security: max-age=31536000; includeSubDomains/);
   assert.match(headersFile, /Cross-Origin-Opener-Policy: same-origin/);
   assert.match(headersFile, /Cross-Origin-Resource-Policy: same-origin/);
+  assert.match(headersFile, /\/release\.json\s+Cache-Control: no-store/);
   assert.doesNotMatch(headersFile, /Cross-Origin-Embedder-Policy/);
 });
 

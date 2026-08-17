@@ -1,0 +1,53 @@
+name: Verify production release
+
+on:
+  repository_dispatch:
+    types: [verify-production-release]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require the production branch
+        env:
+          WORKFLOW_REF: ${{ github.ref }}
+        run: |
+          if [ "$WORKFLOW_REF" != "refs/heads/main" ]; then
+            echo "Release evidence is valid only when dispatched from main."
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Confirm targets belong to main
+        env:
+          RELEASE_FRONTEND_COMMIT: ${{ github.event.client_payload.frontend_commit }}
+          RELEASE_API_COMMIT: ${{ github.event.client_payload.api_commit }}
+        run: |
+          if ! [[ "$RELEASE_FRONTEND_COMMIT" =~ ^[0-9a-fA-F]{40}$ ]] || ! [[ "$RELEASE_API_COMMIT" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "Both release targets must be full Git SHAs."
+            exit 1
+          fi
+          git merge-base --is-ancestor "$RELEASE_FRONTEND_COMMIT" origin/main
+          git merge-base --is-ancestor "$RELEASE_API_COMMIT" origin/main
+
+      - name: Verify deployed commit
+        env:
+          RELEASE_FRONTEND_COMMIT: ${{ github.event.client_payload.frontend_commit }}
+          RELEASE_API_COMMIT: ${{ github.event.client_payload.api_commit }}
+          RELEASE_FRONTEND_URL: ${{ vars.RELEASE_FRONTEND_URL }}
+          RELEASE_API_URL: ${{ vars.RELEASE_API_URL }}
+        run: npm run release:verify
