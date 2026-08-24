@@ -69,45 +69,12 @@ export const dictionary = {
     about: {
       title: "Quem sou, o que faço e porquê",
       subtitle: "Perfil",
-      lead: "Minha base em tecnologia e a experiência com projetos reais orientam soluções legíveis, acessíveis e preparadas para evoluir.",
       photos: {
         label: "Registros da minha trajetória",
         featuredAlt: "Guilherme apresentando o projeto GrenGame com um microfone.",
         workbenchAlt: "Notebooks desmontados durante a recuperação após a enchente.",
         campusAlt: "Fachada iluminada do Espaço Unisinos durante a noite.",
       },
-      kicker: "perfil",
-      idLabel: "ID · GF-01 / Porto Alegre",
-      availableLabel: "disponível",
-      factsLabel: "panorama",
-      processLabel: "como eu trabalho",
-      facts: [
-        { label: "experiência", value: "+4 anos" },
-        { label: "Localizado em", value: "Porto Alegre - RS, Brazil" },
-        {
-          label: "Trabalhos",
-          value: "Desenvolvimento de aplicativos · Websites · Hardware & Software",
-        },
-        { label: "disponibilidade", value: "Trabalho remoto & Híbrido" },
-      ],
-      process: [
-        {
-          label: "descoberta",
-          title: "Entender antes de codar",
-          text: "Mapeio o problema real, restrições e o que já existe. Decisão técnica só depois de clareza sobre o produto.",
-        },
-        {
-          label: "execução",
-          title: "Iteração curta e revisão",
-          text: "Trabalho em ciclos pequenos, com commits objetivos, tipos fortes e revisão de código como parte do fluxo — não como etapa final.",
-        },
-        {
-          label: "entrega",
-          title: "Deploy sem drama",
-          text: "Automação, observabilidade básica e documentação enxuta para que o próximo dev (às vezes eu mesmo) entenda em minutos.",
-        },
-      ],
-
       p1: "Minha relação com a tecnologia começou antes de eu imaginar que ela se tornaria profissão, entre computadores desmontados, tentativas e problemas que eu ainda não sabia resolver.",
       p2: "Entre aquela curiosidade e o profissional que busco me tornar, há experiências que mudaram a forma como estudo, trabalho e assumo responsabilidades.",
       story: {
@@ -355,12 +322,7 @@ export const dictionary = {
     },
     whyHire: {
       tag: "Por que me contratar",
-      tagSubtitle: "",
       titleA: "Por que escolher alguém que pensa além do código?",
-      titleHighlight: "pensa além do código?",
-      titleB: "",
-      titleC: "",
-      titleD: "",
       reasons: [
         {
           label: "código & arquitetura",
@@ -378,12 +340,10 @@ export const dictionary = {
           text: "Uso IA para acelerar pesquisa, refactor e validação, mantendo ownership técnico sobre as decisões finais.",
         },
       ],
-      aboutCta: "Sobre mim",
     },
 
     contact: {
       title: "Vamos conversar?",
-      subtitle: "Entre em contato",
       lead: "Para conversar sobre projetos, oportunidades ou colaboração técnica, comece por aqui.",
       formAriaLabel: "Formulário de contato",
       form: {
@@ -447,12 +407,8 @@ export const dictionary = {
       homeLink: "Guilherme Ferreira — início",
       primaryNavigation: "Navegação principal",
       mobileNavigation: "Navegação mobile",
-      socialNavigation: "Redes sociais",
       openMenu: "Abrir menu",
       closeMenu: "Fechar menu",
-      timelinePrevious: "Marco anterior",
-      timelineNext: "Próximo marco",
-      timelinePosition: (current: number, total: number) => `Marco ${current} de ${total}`,
     },
     accessibility: {
       kicker: "// acessibilidade",
@@ -510,13 +466,8 @@ export const dictionary = {
         { label: "Entrar em contato", href: "/#contato", meta: "contato" },
       ],
     },
-    aboutTeaser: {
-      question: "Quer conhecer a pessoa por trás do código?",
-      cta: "Ler minha história",
-    },
     toggles: {
       langLabel: "Mudar idioma",
-      themeLabel: "Mudar tema",
       themeToLight: "Mudar para tema claro",
       themeToDark: "Mudar para tema escuro",
       backToTop: "Voltar ao topo",
@@ -589,42 +540,12 @@ export const dictionary = {
     about: {
       title: "Who I am, what I do and why",
       subtitle: "Profile",
-      lead: "My technology background and experience with real projects guide readable, accessible solutions built to evolve.",
       photos: {
         label: "Moments from my journey",
         featuredAlt: "Guilherme presenting the GrenGame project with a microphone.",
         workbenchAlt: "Disassembled laptops during recovery work after the flood.",
         campusAlt: "Illuminated facade of Espaço Unisinos at night.",
       },
-      kicker: "profile",
-      idLabel: "ID · GF-01 / Porto Alegre",
-      availableLabel: "available",
-      factsLabel: "snapshot",
-      processLabel: "how i work",
-      facts: [
-        { label: "experience", value: "+4 years" },
-        { label: "Based in", value: "Porto Alegre - RS, Brazil" },
-        { label: "Work", value: "App development · Websites · Hardware & Software" },
-        { label: "availability", value: "Remote & Hybrid" },
-      ],
-      process: [
-        {
-          label: "discovery",
-          title: "Understand before coding",
-          text: "I map the real problem, constraints and what already exists. Technical decisions come after product clarity.",
-        },
-        {
-          label: "execution",
-          title: "Short cycles, real review",
-          text: "I work in small iterations with focused commits, strong types and code review as part of the flow — not as a final step.",
-        },
-        {
-          label: "delivery",
-          title: "Deploy without drama",
-          text: "Automation, basic observability and lean docs so the next dev (sometimes future me) gets it in minutes.",
-        },
-      ],
-
       p1: "My relationship with technology began before I imagined it would become my profession, among disassembled computers, trial and error, and problems I still did not know how to solve.",
       p2: "Between that curiosity and the professional I am working to become, there are experiences that changed the way I study, work and take responsibility.",
       story: {
@@ -869,12 +790,7 @@ export const dictionary = {
     },
     whyHire: {
       tag: "Why hire me",
-      tagSubtitle: "",
       titleA: "Why choose someone who thinks beyond the code?",
-      titleHighlight: "thinks beyond the code?",
-      titleB: "",
-      titleC: "",
-      titleD: "",
       reasons: [
         {
           label: "code & architecture",
@@ -892,12 +808,10 @@ export const dictionary = {
           text: "I use AI to speed up research, refactoring and validation while keeping technical ownership over final decisions.",
         },
       ],
-      aboutCta: "About me",
     },
 
     contact: {
       title: "Let's talk?",
-      subtitle: "Get in touch",
       lead: "To discuss projects, opportunities or technical collaboration, start here.",
       formAriaLabel: "Contact form",
       form: {
@@ -961,12 +875,8 @@ export const dictionary = {
       homeLink: "Guilherme Ferreira — home",
       primaryNavigation: "Primary navigation",
       mobileNavigation: "Mobile navigation",
-      socialNavigation: "Social media",
       openMenu: "Open menu",
       closeMenu: "Close menu",
-      timelinePrevious: "Previous milestone",
-      timelineNext: "Next milestone",
-      timelinePosition: (current: number, total: number) => `Milestone ${current} of ${total}`,
     },
     accessibility: {
       kicker: "// accessibility",
@@ -1024,13 +934,8 @@ export const dictionary = {
         { label: "Get in touch", href: "/#contato", meta: "contact" },
       ],
     },
-    aboutTeaser: {
-      question: "Want to meet the person behind the code?",
-      cta: "Read my story",
-    },
     toggles: {
       langLabel: "Switch language",
-      themeLabel: "Switch theme",
       themeToLight: "Switch to light theme",
       themeToDark: "Switch to dark theme",
       backToTop: "Back to top",
