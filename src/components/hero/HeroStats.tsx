@@ -83,6 +83,7 @@ export function HeroStats() {
     <div className="flex w-full flex-wrap items-center justify-start gap-x-3 gap-y-2 font-mono text-[12px] text-muted-foreground sm:justify-center sm:text-[13px]">
       <a
         href="https://github.com/Eleutherio"
+        data-cursor-open={t.cursor.destinations.github}
         target="_blank"
         rel="noreferrer noopener"
         className="group inline-flex items-center gap-1.5 transition-colors hover:text-foreground"

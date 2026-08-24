@@ -5,6 +5,11 @@ import { useApp } from "@/i18n/AppContext";
 
 export function NextSteps() {
   const { t } = useApp();
+  const cursorDestinationFor = (href: string) => {
+    if (href.includes("#projetos")) return t.cursor.destinations.projects;
+    if (href.includes("#contato")) return t.cursor.destinations.contact;
+    return t.cursor.destinations.home;
+  };
 
   return (
     <section aria-label={t.nextSteps.title} className="relative border-t border-hairline">
@@ -48,7 +53,11 @@ export function NextSteps() {
                   viewport={{ once: true, margin: "-40px" }}
                   transition={{ duration: 0.5, delay: i * 0.05 }}
                 >
-                  <a href={item.href} className="group block">
+                  <a
+                    href={item.href}
+                    data-cursor-open={cursorDestinationFor(item.href)}
+                    className="group block"
+                  >
                     {content}
                   </a>
                 </motion.li>

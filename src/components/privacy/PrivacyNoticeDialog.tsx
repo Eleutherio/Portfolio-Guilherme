@@ -86,7 +86,7 @@ type PrivacyNoticeDialogProps = {
 };
 
 export function PrivacyNoticeDialog({ children, triggerClassName }: PrivacyNoticeDialogProps) {
-  const { lang } = useApp();
+  const { lang, t } = useApp();
   const text = content[lang];
 
   return (
@@ -130,6 +130,7 @@ export function PrivacyNoticeDialog({ children, triggerClassName }: PrivacyNotic
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
               href="mailto:contato@guifer.tech?subject=Privacidade%20e%20LGPD%20no%20guifer.tech"
+              data-cursor-open={t.cursor.destinations.email}
               className="link-ink inline-flex items-center gap-2 text-sm text-foreground"
             >
               <Mail className="h-4 w-4" aria-hidden="true" />
@@ -137,6 +138,7 @@ export function PrivacyNoticeDialog({ children, triggerClassName }: PrivacyNotic
             </a>
             <Link
               to="/privacidade"
+              data-cursor-open={t.cursor.destinations.privacy}
               className="link-ink inline-flex items-center gap-2 text-sm text-foreground"
             >
               <span>{text.fullNotice}</span>

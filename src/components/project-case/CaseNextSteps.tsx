@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { ArrowLeft, ArrowUpRight, FolderOpen, Home } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, FolderOpen } from "lucide-react";
 
 import type { LocalizedProjectSummary } from "@/content/project-summaries";
 import type { Dict } from "@/i18n/dictionary";
@@ -15,6 +15,7 @@ type StepItem = {
   icon: React.ReactNode;
   meta: string;
   label: string;
+  cursorOpen: string;
   to: string;
   params?: { slug: string };
   hash?: string;
@@ -26,6 +27,9 @@ export function CaseNextSteps({ prev, next, t }: CaseNextStepsProps) {
       icon: <ArrowLeft className="h-5 w-5 shrink-0" aria-hidden="true" />,
       meta: prev ? t.caseStudy.nextSteps.metaPrev : t.caseStudy.nextSteps.metaHome,
       label: prev ? prev.title : t.caseStudy.nextSteps.home,
+      cursorOpen: prev
+        ? `${t.cursor.destinations.project} ${prev.title}`
+        : t.cursor.destinations.home,
       to: prev ? "/projetos/$slug" : "/",
       params: prev ? { slug: prev.slug } : undefined,
     },
@@ -33,6 +37,9 @@ export function CaseNextSteps({ prev, next, t }: CaseNextStepsProps) {
       icon: <ArrowUpRight className="h-5 w-5 shrink-0" aria-hidden="true" />,
       meta: next ? t.caseStudy.nextSteps.metaNext : t.caseStudy.nextSteps.metaHome,
       label: next ? next.title : t.caseStudy.nextSteps.home,
+      cursorOpen: next
+        ? `${t.cursor.destinations.project} ${next.title}`
+        : t.cursor.destinations.home,
       to: next ? "/projetos/$slug" : "/",
       params: next ? { slug: next.slug } : undefined,
     },
@@ -40,6 +47,7 @@ export function CaseNextSteps({ prev, next, t }: CaseNextStepsProps) {
       icon: <FolderOpen className="h-5 w-5 shrink-0" aria-hidden="true" />,
       meta: t.caseStudy.nextSteps.metaAll,
       label: t.caseStudy.nextSteps.all,
+      cursorOpen: t.cursor.destinations.projects,
       to: "/",
       hash: "projetos",
     },
@@ -87,7 +95,13 @@ export function CaseNextSteps({ prev, next, t }: CaseNextStepsProps) {
                   viewport={{ once: true, margin: "-40px" }}
                   transition={{ duration: 0.5, delay: i * 0.05 }}
                 >
-                  <Link to={item.to} params={item.params} hash={item.hash} className="group block">
+                  <Link
+                    to={item.to}
+                    params={item.params}
+                    hash={item.hash}
+                    data-cursor-open={item.cursorOpen}
+                    className="group block"
+                  >
                     {content}
                   </Link>
                 </motion.li>

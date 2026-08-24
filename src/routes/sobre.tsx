@@ -39,6 +39,7 @@ function SobrePage() {
         <div className="section-container pt-10 md:pt-14">
           <Link
             to="/"
+            data-cursor-open={t.cursor.destinations.home}
             className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground transition-colors hover:text-accent"
           >
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />

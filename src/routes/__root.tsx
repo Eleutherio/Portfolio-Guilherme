@@ -3,6 +3,7 @@ import { HeadContent, Outlet, createRootRouteWithContext, useRouter } from "@tan
 
 import { useApp } from "@/i18n/AppContext";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
+import { CustomCursor } from "@/components/layout/CustomCursor";
 
 function NotFoundComponent() {
   const { t } = useApp();
@@ -22,6 +23,7 @@ function NotFoundComponent() {
         <p className="mt-3 text-sm text-muted-foreground">{t.errors.notFoundBody}</p>
         <a
           href="/"
+          data-cursor-open={t.cursor.destinations.home}
           className="mt-6 inline-flex items-center justify-center rounded-full bg-foreground px-5 py-3 font-display text-sm font-medium text-background"
         >
           {t.errors.notFoundCta}
@@ -59,6 +61,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           </button>
           <a
             href="/"
+            data-cursor-open={t.cursor.destinations.home}
             className="inline-flex items-center justify-center rounded-full border border-border bg-background px-5 py-3 font-display text-sm font-medium text-foreground"
           >
             {t.errors.boundaryHome}
@@ -119,6 +122,7 @@ function RootComponent() {
         <GlobalSkipLink />
         <Outlet />
         <AccessibilityWidget />
+        <CustomCursor />
       </QueryClientProvider>
     </>
   );
@@ -130,6 +134,7 @@ function GlobalSkipLink() {
   return (
     <a
       href="#main"
+      data-cursor-open={t.cursor.destinations.content}
       className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-foreground focus:px-4 focus:py-2 focus:text-background"
     >
       {t.a11y.skipToContent}
