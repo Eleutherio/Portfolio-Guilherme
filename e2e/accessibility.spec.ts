@@ -72,7 +72,7 @@ async function openPage(
   if (route === "/") {
     if (options.loadDeferredSections !== false) {
       await page.evaluate(() => {
-        for (const id of ["projetos", "depoimentos", "trajetoria", "sobre", "contato"]) {
+        for (const id of ["projetos", "depoimentos", "trajetoria", "sobre", "contato", "rodape"]) {
           window.dispatchEvent(new CustomEvent("portfolio:load-deferred-section", { detail: id }));
         }
       });
@@ -152,16 +152,13 @@ async function screenshotPixel(page: Page, x: number, y: number) {
 
 async function expectFocusedTooltip(button: Locator, description: string) {
   await button.focus();
-  let content = "";
-  await expect
-    .poll(async () => {
-      content = await button.evaluate((element) => {
-        const tooltipId = element.getAttribute("aria-describedby");
-        return tooltipId ? (document.getElementById(tooltipId)?.textContent ?? "") : "";
-      });
-      return content;
-    })
-    .toContain(description);
+  const tooltip = button.locator("xpath=following-sibling::span[1]");
+  await expect(button).toHaveAccessibleName(
+    new RegExp(description.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+  );
+  await expect(tooltip).toBeVisible();
+  const content = (await tooltip.textContent()) ?? "";
+  expect(content).toContain(description);
   expect(content).not.toMatch(SIMPLE_TOOLTIP_FORBIDDEN);
 }
 
@@ -869,6 +866,43 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await runAxe(page, testInfo, "contact-success");
   });
 
+  test("formulário bloqueia envios concorrentes enquanto carrega a validação", async ({ page }) => {
+    await installRecaptchaStub(page);
+    let contactRequests = 0;
+    await page.route("**/api/contact", async (route) => {
+      contactRequests += 1;
+      await new Promise((resolve) => setTimeout(resolve, 1_500));
+      await route.fulfill({
+        status: 202,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true }),
+      });
+    });
+    await openPage(page, "/");
+    await fillValidContactForm(page);
+
+    const form = page.locator("#contato form");
+    await form.evaluate((element) => {
+      if (!(element instanceof HTMLFormElement)) return;
+      element.requestSubmit();
+      element.requestSubmit();
+    });
+
+    await expect(form.locator('button[type="submit"]')).toBeDisabled();
+    await expect(page.getByRole("status")).toContainText("mensagem enviada");
+    expect(contactRequests).toBe(1);
+  });
+
+  test("falha ao carregar a validação do contato é anunciada", async ({ page }) => {
+    await page.route(/\/src\/lib\/contact-contract\.ts(?:\?|$)/u, async (route) => route.abort());
+    await openPage(page, "/");
+    await fillValidContactForm(page);
+    await page.getByRole("button", { name: "enviar mensagem" }).click();
+
+    await expect(page.getByRole("status")).toContainText("algo deu errado");
+    await expect(page.getByRole("button", { name: "enviar mensagem" })).toBeEnabled();
+  });
+
   for (const status of [422, 429, 500]) {
     test(`erro ${status} do formulário é anunciado`, async ({ page }, testInfo) => {
       await installRecaptchaStub(page);
@@ -1149,6 +1183,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     }
 
     await section.scrollIntoViewIfNeeded();
+    await section.locator('a[aria-current="true"]').hover();
     await expect
       .poll(() =>
         videos.evaluateAll(
@@ -1214,6 +1249,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     const activeVideo = section.locator('a[aria-current="true"] video');
     await expect(activeVideo).toHaveCount(1);
     await expect(activeVideo).toBeVisible();
+    await section.locator('a[aria-current="true"]').hover();
     await expect
       .poll(() => activeVideo.evaluate((video) => video.readyState), { timeout: 30_000 })
       .toBeGreaterThanOrEqual(2);
@@ -1397,6 +1433,78 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await expect(footer.getByText("Thanks for stopping by", { exact: false })).toHaveCount(0);
   });
 
+  test("badge Website Carbon preserva nota, escala oficial e privacidade", async ({ page }) => {
+    let carbonApiRequests = 0;
+    page.on("request", (request) => {
+      if (request.url().startsWith("https://api.websitecarbon.com/")) carbonApiRequests += 1;
+    });
+
+    await openPage(page, "/", { width: 1440, height: 900 });
+    const reportUrl = "https://www.websitecarbon.com/website/guifer-tech/";
+    const badge = page.locator(`footer a[href="${reportUrl}"]`);
+    await expect(badge).toBeVisible();
+    await expect(badge).toHaveAccessibleName(
+      /Nota C\. 0,20 g de CO₂\/visita\. Mais limpa que 54% das páginas testadas/,
+    );
+
+    const gradeColors = {
+      "A+": "#00f5bd",
+      A: "#54f56f",
+      B: "#9bfb35",
+      C: "#caff00",
+      D: "#f5f000",
+      E: "#ffb800",
+      F: "#ff2028",
+    } as const;
+    const cacheKey = "website-carbon:grade:https://guifer.tech/";
+
+    for (const [grade, color] of Object.entries(gradeColors)) {
+      await page.evaluate(
+        ({ key, nextGrade }) => {
+          localStorage.setItem(
+            key,
+            JSON.stringify({
+              grade: nextGrade,
+              carbon: 0.02,
+              cleanerThan: 98,
+              measuredAt: Date.now(),
+              lastAttemptAt: Date.now(),
+              source: "api",
+            }),
+          );
+        },
+        { key: cacheKey, nextGrade: grade },
+      );
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(page.locator("main#main")).toBeVisible();
+      await page.evaluate(() => {
+        window.dispatchEvent(
+          new CustomEvent("portfolio:load-deferred-section", { detail: "rodape" }),
+        );
+      });
+      await expect(badge).toBeAttached();
+      await badge.scrollIntoViewIfNeeded();
+      await expect(badge.locator(":scope > span > span").first()).toHaveText(grade);
+      await expect
+        .poll(() =>
+          badge.evaluate((element) => getComputedStyle(element).getPropertyValue("--carbon-grade")),
+        )
+        .toBe(color);
+    }
+
+    expect(carbonApiRequests).toBe(0);
+
+    await openPage(page, "/", { language: "en" });
+    await badge.scrollIntoViewIfNeeded();
+    await expect(badge).toHaveAccessibleName(
+      /Grade F\. 0\.02 g of CO₂\/view\. Cleaner than 98% of pages tested/,
+    );
+
+    await openPage(page, "/privacidade", { language: "pt" });
+    await expect(page.getByText(/Website Carbon \/ Wholegrain Digital/)).toBeVisible();
+    await expect(page.getByText(/nota fica armazenada no navegador por até 7 dias/)).toBeVisible();
+  });
+
   test("infraestrutura comunica estados sem depender somente de cor", async ({ page }) => {
     await page.route("**/health/status", async (route) => {
       await route.fulfill({
@@ -1434,8 +1542,11 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       [/reCAPTCHA v3:/, "Indica se a proteção contra envios automatizados está disponível."],
     ] as const;
 
+    const firstTooltip = page
+      .getByRole("button", { name: scenarios[0][0] })
+      .locator("xpath=following-sibling::span[1]");
     await page.getByRole("button", { name: scenarios[0][0] }).hover();
-    await expect(page.getByRole("tooltip").filter({ hasText: scenarios[0][1] })).toBeVisible();
+    await expect(firstTooltip).toBeVisible();
     await page.mouse.move(0, 0);
     for (const [name, description] of scenarios) {
       const button = page.getByRole("button", { name });
@@ -1471,8 +1582,11 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       [/sessão:/, "Mostra há quanto tempo esta página está aberta nesta aba."],
     ] as const;
 
+    const firstTooltip = page
+      .getByRole("button", { name: scenarios[0][0] })
+      .locator("xpath=following-sibling::span[1]");
     await page.getByRole("button", { name: scenarios[0][0] }).hover();
-    await expect(page.getByRole("tooltip").filter({ hasText: scenarios[0][1] })).toBeVisible();
+    await expect(firstTooltip).toBeVisible();
     await page.mouse.move(0, 0);
     for (const [name, description] of scenarios) {
       const button = page.getByRole("button", { name });
@@ -1502,17 +1616,17 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
     await openPage(page, "/", { loadDeferredSections: false });
     await page.evaluate(async () => {
       await Promise.all([
-        document.fonts.load('500 16px "Sora Variable"', "Sora"),
-        document.fonts.load('600 16px "Caveat Variable"', "Caveat"),
+        document.fonts.load('500 16px "Sora Subset"', "Sora"),
+        document.fonts.load('600 16px "Caveat Subset"', "Caveat"),
         document.fonts.load('400 16px "Space Grotesk Variable"', "Space"),
       ]);
     });
 
     await expect(page.locator("body")).toHaveCSS("font-family", /Space Grotesk Variable/);
-    await expect(page.locator("h1")).toHaveCSS("font-family", /Sora Variable/);
+    await expect(page.locator("h1")).toHaveCSS("font-family", /Sora Subset/);
     await expect(page.locator("#home-heading .font-title")).toHaveCSS(
       "font-family",
-      /Caveat Variable/,
+      /Caveat Subset/,
     );
 
     const fontResources = await page.evaluate(() =>
@@ -1521,10 +1635,17 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
         .map((entry) => entry.name)
         .filter((url) => url.includes("-wght-normal.woff2")),
     );
-    expect(fontResources).toHaveLength(3);
-    expect(fontResources.some((url) => url.includes("sora-latin-wght-normal"))).toBe(true);
-    expect(fontResources.some((url) => url.includes("caveat-latin-wght-normal"))).toBe(true);
-    expect(fontResources.some((url) => url.includes("space-grotesk-latin-wght-normal"))).toBe(true);
+    expect(fontResources).toHaveLength(0);
+    const subsetResources = await page.evaluate(() =>
+      performance
+        .getEntriesByType("resource")
+        .map((entry) => entry.name)
+        .filter((url) => url.includes(".woff2")),
+    );
+    expect(subsetResources).toHaveLength(3);
+    expect(subsetResources.some((url) => url.includes("sora-heading-500"))).toBe(true);
+    expect(subsetResources.some((url) => url.includes("caveat-signature-600"))).toBe(true);
+    expect(subsetResources.some((url) => url.includes("space-grotesk-body"))).toBe(true);
     expect(fontResources.some((url) => url.includes("inter-latin-wght-normal"))).toBe(false);
   });
 
@@ -1554,7 +1675,7 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
     await openPage(page, "/", { loadDeferredSections: false });
     await expect(page.locator('[data-deferred-section="contato"]')).toBeAttached();
     const footer = page.locator("footer");
-    await expect(footer).toHaveAttribute("data-runtime-activity", "paused");
+    await expect(footer).toHaveCount(0);
     expect(requestedModules.some((url) => url.includes("/sections/Contact.tsx"))).toBe(false);
     expect(healthRequests).toBe(0);
 
@@ -1562,7 +1683,8 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
     await expect(page.locator("#contact-name")).toBeAttached();
     expect(requestedModules.some((url) => url.includes("/sections/Contact.tsx"))).toBe(true);
 
-    await footer.scrollIntoViewIfNeeded();
+    await page.locator('[data-deferred-section="rodape"]').scrollIntoViewIfNeeded();
+    await expect(footer).toBeAttached();
     await expect(footer).toHaveAttribute("data-runtime-activity", "active");
     await expect.poll(() => healthRequests).toBeGreaterThan(0);
 
@@ -1607,7 +1729,7 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
           element instanceof HTMLImageElement ? element.currentSrc : "",
         ),
       )
-      .toContain("-640w.avif");
+      .toContain("-400w.avif");
     await expect(
       page.locator('picture source:not([srcset]), picture source[srcset=""]'),
     ).toHaveCount(0);
