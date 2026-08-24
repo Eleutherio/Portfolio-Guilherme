@@ -2,6 +2,8 @@
 
 Este documento transforma os prazos publicados em `/privacidade` em controles verificáveis. Ele deve ser revisado sempre que um fornecedor, plano ou finalidade mudar.
 
+> Este é um runbook, não um registro de tarefas. Estado, prioridade e aceite das ações abertas ficam exclusivamente em `.agente/backlog.md`.
+
 ## Matriz de retenção
 
 | Dado ou evidência                  | Local                      | Prazo                                      | Controle                                           |
@@ -28,7 +30,7 @@ A migration `20260720213000_privacy_retention.sql`:
 5. executa a primeira limpeza durante a migration;
 6. expõe `get_privacy_retention_status()` somente para a service role.
 
-Aplicar a migration antes de publicar a versão da API que consulta o status de retenção.
+Em um ambiente novo, aplique a migration antes de publicar a versão da API que consulta o status de retenção.
 
 ### Verificação após a migration
 

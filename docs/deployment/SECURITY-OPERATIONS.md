@@ -2,11 +2,13 @@
 
 Este documento fecha os controles operacionais de `SEC-01` a `SEC-04`. Ele não deve conter credenciais, headers brutos de e-mail, endereços pessoais, payloads de contato ou cópias de logs com dados pessoais.
 
+> Este é um runbook, não um registro de tarefas. Estado, prioridade e aceite das ações abertas ficam exclusivamente em `.agente/backlog.md`.
+
 ## Confiança do endereço do cliente
 
 O serviço Node recebe conexões somente pelo balanceador público do Render. Em produção, `CLIENT_IP_SOURCE=render` faz a aplicação usar somente o IP válido de `CF-Connecting-IP`, que a documentação atual do Render informa ser sobrescrito pela borda Cloudflare, como fonte do rate limit. `X-Forwarded-For` e headers alternativos não selecionam o bucket. Ausência ou valor inválido falha fechado. Essa é uma dependência operacional do edge e deve ser revalidada pelo probe depois de cada mudança de infraestrutura ou deploy de segurança.
 
-Em 13 de agosto de 2026, o teste publicado comprovou que rotacionar o primeiro valor de `X-Forwarded-For` contornava o bucket anterior. A correção local passou a usar `CF-Connecting-IP`; a fronteira permanece reprovada no ambiente publicado até implantar essa versão e repetir o teste com `422` seguido de `429`.
+Em 13 de agosto de 2026, o teste publicado comprovou que rotacionar o primeiro valor de `X-Forwarded-For` contornava o bucket anterior. A implementação atual usa `CF-Connecting-IP`; a revalidação operacional correspondente é acompanhada no backlog local.
 
 No desenvolvimento, `CLIENT_IP_SOURCE=direct` usa somente o endereço do socket. A aplicação transforma o IP em HMAC antes de chamar o Supabase e não registra o endereço bruto.
 
