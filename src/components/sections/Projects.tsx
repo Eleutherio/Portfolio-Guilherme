@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { useReducedMotion } from "@/lib/motion";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { GithubIcon } from "@/components/icons/Brand";
@@ -236,7 +236,7 @@ function ProjectDetails({ project }: { project: LocalizedProjectSummary }) {
 export function Projects() {
   const { t, lang } = useApp();
   const projects = getLocalizedProjectSummaries(lang);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const railRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
   const scrollFrameRef = useRef(0);

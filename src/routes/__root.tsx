@@ -2,8 +2,7 @@ import { HeadContent, Outlet, createRootRoute, useRouter } from "@tanstack/react
 
 import { useApp } from "@/i18n/AppContext";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
-import { CustomCursor } from "@/components/layout/CustomCursor";
-import { domAnimation, LazyMotion } from "@/lib/motion";
+import { DeferredCustomCursor } from "@/components/layout/DeferredCustomCursor";
 
 function NotFoundComponent() {
   const { t } = useApp();
@@ -116,12 +115,10 @@ function RootComponent() {
   return (
     <>
       <HeadContent />
-      <LazyMotion features={domAnimation} strict>
-        <GlobalSkipLink />
-        <Outlet />
-        <AccessibilityWidget />
-        <CustomCursor />
-      </LazyMotion>
+      <GlobalSkipLink />
+      <Outlet />
+      <AccessibilityWidget />
+      <DeferredCustomCursor />
     </>
   );
 }

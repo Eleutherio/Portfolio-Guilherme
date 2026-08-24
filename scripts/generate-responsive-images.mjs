@@ -10,10 +10,18 @@ const imageGroups = [
     widths: [200, 240, 320, 400, 480, 640, 800],
     sources: [
       ["grengame-presentation-portrait.jpg", "grengame-presentation-portrait"],
-      ["hardware-workbench.jpg", "hardware-workbench"],
+      [
+        "hardware-workbench.jpg",
+        "hardware-workbench",
+        {
+          extract: { left: 160, top: 200, width: 480, height: 600 },
+          widths: [200, 240, 320, 400, 480],
+          fallback: { outputName: "hardware-workbench-home.jpg", quality: 82 },
+        },
+      ],
       ["unisinos-campus.jpg", "unisinos-campus"],
     ],
-    avifQuality: 50,
+    avifQuality: 54,
     webpQuality: 78,
   },
   {
@@ -47,20 +55,34 @@ let generatedCount = 0;
 for (const group of imageGroups) {
   await mkdir(group.directory, { recursive: true });
 
-  for (const [inputName, outputName] of group.sources) {
+  for (const [inputName, outputName, transforms] of group.sources) {
     const input = path.join(group.directory, inputName);
+    const widths = transforms?.widths ?? group.widths;
 
-    for (const width of group.widths) {
-      const pipeline = sharp(input).rotate().resize({ width, withoutEnlargement: true });
+    if (transforms?.fallback) {
+      const source = sharp(input).rotate();
+      const pipeline = transforms.extract ? source.extract(transforms.extract) : source;
+      await pipeline
+        .jpeg({ quality: transforms.fallback.quality, mozjpeg: true })
+        .toFile(path.join(group.directory, transforms.fallback.outputName));
+      generatedCount += 1;
+    }
+
+    for (const width of widths) {
+      const source = sharp(input).rotate();
+      const pipeline = (transforms?.extract ? source.extract(transforms.extract) : source).resize({
+        width,
+        withoutEnlargement: true,
+      });
 
       await Promise.all([
         pipeline
           .clone()
-          .avif({ quality: group.avifQuality, effort: 5 })
+          .avif({ quality: group.avifQuality, effort: 8 })
           .toFile(path.join(group.directory, `${outputName}-${width}w.avif`)),
         pipeline
           .clone()
-          .webp({ quality: group.webpQuality, effort: 5 })
+          .webp({ quality: group.webpQuality, effort: 6, smartSubsample: true })
           .toFile(path.join(group.directory, `${outputName}-${width}w.webp`)),
       ]);
       generatedCount += 2;

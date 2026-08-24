@@ -1,4 +1,3 @@
-import { motion } from "@/lib/motion";
 import type { ReactNode } from "react";
 import { ViewportActivityProvider } from "@/components/ViewportActivity";
 import { useElementActivity } from "@/hooks/use-element-activity";
@@ -44,11 +43,7 @@ function SectionHeading({
   const Heading = headingLevel === 1 ? "h1" : "h2";
 
   return (
-    <motion.header
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+    <header
       className={
         spacing === "tight" ? "mb-6 md:mb-8" : compact ? "mb-8 md:mb-10" : "mb-10 md:mb-14"
       }
@@ -136,7 +131,7 @@ function SectionHeading({
           </div>
         </>
       )}
-    </motion.header>
+    </header>
   );
 }
 
@@ -162,13 +157,9 @@ export function SectionShell({
       className="relative"
     >
       <ViewportActivityProvider active={active}>
-        <motion.div
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 1.1, ease: [0.2, 0.8, 0.2, 1] }}
+        <div
           style={{ transformOrigin: "left" }}
-          className="h-px w-full bg-hairline"
+          className="section-rule-reveal h-px w-full bg-hairline"
           aria-hidden="true"
         />
 

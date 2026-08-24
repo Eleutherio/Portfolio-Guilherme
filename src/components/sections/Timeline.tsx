@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useReducedMotion } from "@/lib/motion";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 import { ScrambleText } from "@/components/ScrambleText";
 import { useApp } from "@/i18n/AppContext";
@@ -153,7 +153,7 @@ function AnimatedEnglishLevel({
 export function Timeline() {
   const { t } = useApp();
   const { ref: sectionRef, active: animationActive } = useElementActivity<HTMLElement>();
-  const reducedMotion = Boolean(useReducedMotion());
+  const reducedMotion = usePrefersReducedMotion();
   const items = t.timeline.items;
   const groups: Array<{ year: string; items: Array<(typeof items)[number]> }> = [];
 

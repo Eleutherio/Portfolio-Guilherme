@@ -2,6 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CaseTemplate } from "@/components/project-case/CaseTemplate";
+import { MotionBoundary } from "@/components/MotionBoundary";
 
 export const Route = createFileRoute("/projetos/$slug")({
   loader: async ({ params }) => {
@@ -32,13 +33,15 @@ export const Route = createFileRoute("/projetos/$slug")({
 
 function ProjectCase() {
   return (
-    <div className="portfolio-visual project-case-visual flex min-h-dvh flex-col bg-background">
-      <Header />
-      <div className="site-header-spacer shrink-0" aria-hidden="true" />
-      <main id="main" tabIndex={-1} className="flex-1 overflow-x-clip outline-none">
-        <CaseTemplate />
-      </main>
-      <Footer />
-    </div>
+    <MotionBoundary>
+      <div className="portfolio-visual project-case-visual flex min-h-dvh flex-col bg-background">
+        <Header />
+        <div className="site-header-spacer shrink-0" aria-hidden="true" />
+        <main id="main" tabIndex={-1} className="flex-1 overflow-x-clip outline-none">
+          <CaseTemplate />
+        </main>
+        <Footer />
+      </div>
+    </MotionBoundary>
   );
 }

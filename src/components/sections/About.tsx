@@ -1,4 +1,3 @@
-import { motion, useReducedMotion } from "@/lib/motion";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { useApp } from "@/i18n/AppContext";
@@ -8,18 +7,13 @@ import { SectionShell } from "./SectionShell";
 
 export function About() {
   const { t } = useApp();
-  const reducedMotion = useReducedMotion();
 
   return (
     <SectionShell id="sobre" label={t.about.title} headerVariant="editorial" compact>
       <div className="contents md:col-span-12 md:grid md:grid-cols-12 md:items-center md:gap-8">
         <div className="md:col-span-7">
-          <motion.div
-            initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: reducedMotion ? 0 : 0.6 }}
-            className="relative mx-auto grid w-full max-w-[220px] grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-2 sm:max-w-[450px] sm:gap-3 md:mx-0 md:max-w-[570px]"
+          <div
+            className="section-content-reveal relative mx-auto grid w-full max-w-[220px] grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-2 sm:max-w-[450px] sm:gap-3 md:mx-0 md:max-w-[570px]"
             role="group"
             aria-label={t.about.photos.label}
           >
@@ -61,7 +55,7 @@ export function About() {
                   alt={t.about.photos.workbenchAlt}
                   sizes="(max-width: 639px) 68px, (max-width: 767px) 146px, (max-width: 1023px) 17.5vw, 186px"
                   className="block h-full w-full"
-                  imgClassName="h-full w-full scale-[1.67] object-cover object-center"
+                  imgClassName="h-full w-full object-cover object-center"
                 />
               </div>
 
@@ -75,30 +69,18 @@ export function About() {
                 />
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         <div className="mt-5 sm:mt-8 md:col-span-5 md:mt-0 md:pl-2">
-          <motion.div
-            initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: reducedMotion ? 0 : 0.7, delay: reducedMotion ? 0 : 0.05 }}
-            className="prose-measure space-y-3 text-[14px] leading-[1.55] text-foreground sm:space-y-4 sm:text-[16px] sm:leading-relaxed md:text-[17px]"
-          >
+          <div className="section-content-reveal section-content-reveal-delay prose-measure space-y-3 text-[14px] leading-[1.55] text-foreground sm:space-y-4 sm:text-[16px] sm:leading-relaxed md:text-[17px]">
             <p className="first-letter:float-left first-letter:mr-2 first-letter:font-display first-letter:text-[2.75rem] first-letter:font-medium first-letter:leading-[0.85] first-letter:text-gradient sm:first-letter:text-[3.25rem]">
               {t.about.p1}
             </p>
             <p className="text-muted-foreground">{t.about.p2}</p>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: reducedMotion ? 0 : 0.6, delay: reducedMotion ? 0 : 0.15 }}
-            className="mt-4 sm:mt-6"
-          >
+          <div className="section-content-reveal section-content-reveal-late mt-4 sm:mt-6">
             <Link
               to="/sobre"
               data-cursor-open={t.cursor.destinations.about}
@@ -110,7 +92,7 @@ export function About() {
                 aria-hidden="true"
               />
             </Link>
-          </motion.div>
+          </div>
         </div>
       </div>
     </SectionShell>

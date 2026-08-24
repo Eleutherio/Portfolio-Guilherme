@@ -37,5 +37,23 @@ export default defineConfig({
   build: {
     outDir: "dist/client",
     assetsInlineLimit: 0,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: "home-hero-runtime",
+              test: /src[\\/]components[\\/]hero[\\/](?:CoffeeIcon|HeroCarouselContext|HeroStats|TerminalCard)\.tsx$/,
+              includeDependenciesRecursively: false,
+            },
+            {
+              name: "shared-content-ui",
+              test: /src[\\/](?:components[\\/](?:TechnologyBadge\.tsx|sections[\\/]SectionShell\.tsx)|content[\\/]project-summaries\.ts|lib[\\/]contact-shared\.ts)$/,
+              includeDependenciesRecursively: false,
+            },
+          ],
+        },
+      },
+    },
   },
 });

@@ -80,7 +80,7 @@ function canShowNavigationTooltip(navigation: HTMLElement) {
   return Boolean(navigation.querySelector("img, picture, video"));
 }
 
-export function CustomCursor() {
+export function CustomCursor({ initialPointer }: { initialPointer?: { x: number; y: number } }) {
   const { t } = useApp();
   const cursorRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -267,6 +267,13 @@ export function CustomCursor() {
     window.addEventListener("blur", hide);
     window.addEventListener("resize", schedulePlacement, { passive: true });
 
+    if (initialPointer) {
+      pointerX = initialPointer.x;
+      pointerY = initialPointer.y;
+      syncTarget(document.elementFromPoint(pointerX, pointerY));
+      schedulePlacement();
+    }
+
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
       resetMagneticButton();
@@ -283,7 +290,7 @@ export function CustomCursor() {
       window.removeEventListener("resize", schedulePlacement);
       delete document.documentElement.dataset.customCursor;
     };
-  }, [t.cursor.destinations.email, t.cursor.destinations.external, t.cursor.open]);
+  }, [initialPointer, t.cursor.destinations.email, t.cursor.destinations.external, t.cursor.open]);
 
   return (
     <>

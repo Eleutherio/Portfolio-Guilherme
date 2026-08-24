@@ -33,16 +33,12 @@ import workbench240Avif from "@/assets/about/hardware-workbench-240w.avif";
 import workbench320Avif from "@/assets/about/hardware-workbench-320w.avif";
 import workbench400Avif from "@/assets/about/hardware-workbench-400w.avif";
 import workbench480Avif from "@/assets/about/hardware-workbench-480w.avif";
-import workbench640Avif from "@/assets/about/hardware-workbench-640w.avif";
-import workbench800Avif from "@/assets/about/hardware-workbench-800w.avif";
-import workbenchFallback from "@/assets/about/hardware-workbench.jpg";
+import workbenchFallback from "@/assets/about/hardware-workbench-home.jpg";
 import workbench200Webp from "@/assets/about/hardware-workbench-200w.webp";
 import workbench240Webp from "@/assets/about/hardware-workbench-240w.webp";
 import workbench320Webp from "@/assets/about/hardware-workbench-320w.webp";
 import workbench400Webp from "@/assets/about/hardware-workbench-400w.webp";
 import workbench480Webp from "@/assets/about/hardware-workbench-480w.webp";
-import workbench640Webp from "@/assets/about/hardware-workbench-640w.webp";
-import workbench800Webp from "@/assets/about/hardware-workbench-800w.webp";
 import type { ResponsiveImage } from "@/components/ImageCover";
 
 const srcSet = (sources: Array<[string, number]>) =>
@@ -79,8 +75,6 @@ export const aboutWorkbenchImage: ResponsiveImage = {
     [workbench320Avif, 320],
     [workbench400Avif, 400],
     [workbench480Avif, 480],
-    [workbench640Avif, 640],
-    [workbench800Avif, 800],
   ]),
   webp: srcSet([
     [workbench200Webp, 200],
@@ -88,12 +82,10 @@ export const aboutWorkbenchImage: ResponsiveImage = {
     [workbench320Webp, 320],
     [workbench400Webp, 400],
     [workbench480Webp, 480],
-    [workbench640Webp, 640],
-    [workbench800Webp, 800],
   ]),
   fallback: workbenchFallback,
-  width: 800,
-  height: 1000,
+  width: 480,
+  height: 600,
 };
 
 export const aboutCampusImage: ResponsiveImage = {

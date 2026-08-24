@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { GitCommit } from "lucide-react";
-import { AnimatePresence, motion } from "@/lib/motion";
 import {
   fetchCoffeeCount,
   fetchGithubYearStats,
@@ -123,18 +122,9 @@ export function HeroStats() {
         </span>
         <span className="inline-flex items-baseline gap-1">
           <span className="relative inline-block min-w-[1ch] overflow-hidden tabular-nums text-foreground">
-            <AnimatePresence mode="popLayout" initial={false}>
-              <motion.span
-                key={coffeeCount}
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -10, opacity: 0 }}
-                transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-                className="inline-block"
-              >
-                {coffeeCount.toLocaleString(locale)}
-              </motion.span>
-            </AnimatePresence>
+            <span key={coffeeCount} className="coffee-count-reveal inline-block">
+              {coffeeCount.toLocaleString(locale)}
+            </span>
           </span>
           <span>{coffeeCount === 1 ? s.coffeeSingular : s.coffeePlural}</span>
         </span>

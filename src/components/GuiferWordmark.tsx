@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type HTMLAttributes } from "react";
-import { useReducedMotion } from "@/lib/motion";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 import { ScrambleText } from "@/components/ScrambleText";
 
@@ -14,7 +14,7 @@ export function GuiferWordmark({
   className,
   ...props
 }: GuiferWordmarkProps) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [suffixVisible, setSuffixVisible] = useState(!animateSuffix);
   const initialRevealCompletedRef = useRef(!animateSuffix);
 

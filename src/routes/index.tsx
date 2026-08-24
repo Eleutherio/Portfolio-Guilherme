@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
 import { Header } from "@/components/layout/Header";
+import { DeferredBackToTop } from "@/components/layout/DeferredBackToTop";
 import { DeferredSection } from "@/components/sections/DeferredSection";
 
 import { Hero } from "@/components/sections/Hero";
@@ -15,10 +15,6 @@ const loadTimeline = () =>
 const loadContact = () =>
   import("@/components/sections/Contact").then((m) => ({ default: m.Contact }));
 const loadFooter = () => import("@/components/layout/Footer").then((m) => ({ default: m.Footer }));
-const BackToTop = lazy(() =>
-  import("@/components/layout/BackToTop").then((m) => ({ default: m.BackToTop })),
-);
-
 const TITLE = "Guilherme Ferreira Eleutherio — Full-stack Developer";
 const DESCRIPTION =
   "Full-stack developer focused on secure, scalable and maintainable web applications using React, TypeScript, Django and PostgreSQL.";
@@ -55,9 +51,7 @@ function Index() {
         <DeferredSection id="contato" load={loadContact} />
       </main>
       <DeferredSection id="rodape" load={loadFooter} placeholderClassName="min-h-[28rem]" />
-      <Suspense fallback={null}>
-        <BackToTop />
-      </Suspense>
+      <DeferredBackToTop />
     </div>
   );
 }

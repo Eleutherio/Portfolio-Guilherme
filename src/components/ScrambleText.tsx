@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useReducedMotion } from "@/lib/motion";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { useViewportActivity } from "@/components/ViewportActivity";
 
 const LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
@@ -30,7 +30,7 @@ type ScrambleTextProps = {
 };
 
 export function ScrambleText({ text, active: activeOverride, renderDisplayed }: ScrambleTextProps) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const viewportActive = useViewportActivity();
   const active = activeOverride ?? viewportActive;
   const [displayed, setDisplayed] = useState(active ? text : "");

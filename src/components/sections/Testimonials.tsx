@@ -1,16 +1,16 @@
-import { AnimatePresence, motion, useReducedMotion } from "@/lib/motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { testimonials } from "@/content/linkedin-recommendations";
 import { useElementActivity } from "@/hooks/use-element-activity";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { useApp } from "@/i18n/AppContext";
 
 const AUTOPLAY_INTERVAL = 9000;
 
 export function Testimonials() {
   const { t } = useApp();
-  const reducedMotion = Boolean(useReducedMotion());
+  const reducedMotion = usePrefersReducedMotion();
   const { ref: sectionRef, active } = useElementActivity<HTMLElement>();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -77,54 +77,48 @@ export function Testimonials() {
           </h2>
 
           <div className="flex flex-1 flex-col justify-center py-14 md:py-16">
-            <AnimatePresence initial={false} mode="wait" custom={direction}>
-              <motion.figure
-                key={current.id}
-                custom={direction}
-                initial={reducedMotion ? false : { opacity: 0, x: direction * 28 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={reducedMotion ? { opacity: 1 } : { opacity: 0, x: direction * -28 }}
-                transition={{ duration: reducedMotion ? 0 : 0.38, ease: [0.22, 1, 0.36, 1] }}
-                className="mx-auto grid h-[37rem] w-full max-w-5xl grid-rows-[1fr_auto] gap-10 max-[360px]:h-[42rem] lg:h-[20.5rem] lg:gap-12"
-                aria-label={`${index + 1} / ${testimonials.length}`}
+            <figure
+              key={current.id}
+              data-direction={direction}
+              className="testimonial-slide mx-auto grid h-[37rem] w-full max-w-5xl grid-rows-[1fr_auto] gap-10 max-[360px]:h-[42rem] lg:h-[20.5rem] lg:gap-12"
+              aria-label={`${index + 1} / ${testimonials.length}`}
+            >
+              <blockquote
+                className={`${quoteScale} self-center text-center tracking-[-0.04em] text-background`}
               >
-                <blockquote
-                  className={`${quoteScale} self-center text-center tracking-[-0.04em] text-background`}
-                >
-                  <span aria-hidden="true">“</span>
-                  {current.quote}
-                  <span aria-hidden="true">”</span>
-                </blockquote>
+                <span aria-hidden="true">“</span>
+                {current.quote}
+                <span aria-hidden="true">”</span>
+              </blockquote>
 
-                <figcaption className="flex items-center justify-start gap-4">
-                  <picture className="h-16 w-16 shrink-0">
-                    <source type="image/avif" srcSet={current.image.avif} />
-                    <source type="image/webp" srcSet={current.image.webp} />
-                    <img
-                      src={current.image.fallback}
-                      alt={t.testimonials.photoAlt.replace("{name}", current.name)}
-                      width={96}
-                      height={96}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-16 w-16 rounded-full object-cover"
-                    />
-                  </picture>
+              <figcaption className="flex items-center justify-start gap-4">
+                <picture className="h-16 w-16 shrink-0">
+                  <source type="image/avif" srcSet={current.image.avif} />
+                  <source type="image/webp" srcSet={current.image.webp} />
+                  <img
+                    src={current.image.fallback}
+                    alt={t.testimonials.photoAlt.replace("{name}", current.name)}
+                    width={96}
+                    height={96}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-16 w-16 rounded-full object-cover"
+                  />
+                </picture>
 
-                  <span className="min-w-0">
-                    <strong className="block text-base font-medium leading-tight text-background md:text-lg">
-                      {current.name}
-                    </strong>
-                    <span className="mt-1 block text-sm text-background/60 md:text-base">
-                      {current.company}
-                    </span>
-                    {current.date ? (
-                      <span className="mt-1 block text-xs text-background/60">{current.date}</span>
-                    ) : null}
+                <span className="min-w-0">
+                  <strong className="block text-base font-medium leading-tight text-background md:text-lg">
+                    {current.name}
+                  </strong>
+                  <span className="mt-1 block text-sm text-background/60 md:text-base">
+                    {current.company}
                   </span>
-                </figcaption>
-              </motion.figure>
-            </AnimatePresence>
+                  {current.date ? (
+                    <span className="mt-1 block text-xs text-background/60">{current.date}</span>
+                  ) : null}
+                </span>
+              </figcaption>
+            </figure>
           </div>
 
           <div

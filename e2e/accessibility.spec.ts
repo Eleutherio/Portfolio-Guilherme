@@ -239,6 +239,7 @@ test.describe("Cursor customizado", () => {
     const chevron = cursor.locator(".custom-cursor__chevron");
     const tooltip = page.locator("#custom-cursor-tooltip");
 
+    await page.mouse.move(12, 12);
     await expect(html).toHaveAttribute("data-custom-cursor", "active");
     await page.locator("#home h1").hover({ position: { x: 12, y: 12 } });
     await expect(cursor).toHaveAttribute("data-visible", "true");
@@ -479,7 +480,7 @@ test.describe("Cursor customizado", () => {
       const probe = document.createElement("a");
       probe.id = "cursor-edge-probe";
       probe.href = "#cursor-test";
-      probe.className = "btn-outline";
+      probe.dataset.cursorTooltip = "button";
       probe.dataset.cursorOpen = "destino";
       Object.assign(probe.style, {
         position: "fixed",
@@ -489,7 +490,10 @@ test.describe("Cursor customizado", () => {
       document.getElementById("root")?.append(probe);
     });
 
+    const probe = page.locator("#cursor-edge-probe");
     const tooltip = page.locator("#custom-cursor-tooltip");
+    await page.mouse.move(width / 2, height / 2);
+    await expect(page.locator("html")).toHaveAttribute("data-custom-cursor", "active");
     const cases = [
       { x: 2, y: 2, horizontal: "right", vertical: "below" },
       { x: width - 2, y: 2, horizontal: "left", vertical: "below" },
@@ -510,20 +514,20 @@ test.describe("Cursor customizado", () => {
       expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(height - 8);
     }
 
-    await page.locator("#cursor-edge-probe").evaluate((element) => {
+    await probe.evaluate((element) => {
       delete (element as HTMLElement).dataset.cursorOpen;
       element.setAttribute("aria-label", "documentação");
     });
     await page.mouse.move(width / 2, height / 2);
     await expect(tooltip).toHaveText("Abrir documentação");
 
-    await page.locator("#cursor-edge-probe").evaluate((element) => {
+    await probe.evaluate((element) => {
       element.removeAttribute("aria-label");
       element.setAttribute("href", "https://example.com/recurso");
     });
     await page.mouse.move(width / 2 + 1, height / 2 + 1);
     await expect(tooltip).toHaveText("Abrir example.com");
-    await page.locator("#cursor-edge-probe").evaluate((element) => element.remove());
+    await probe.evaluate((element) => element.remove());
   });
 
   test("preserva zonas nativas e remove animação com movimento reduzido", async ({ page }) => {
@@ -534,6 +538,7 @@ test.describe("Cursor customizado", () => {
     const visual = cursor.locator(".custom-cursor__visual");
     const projects = page.locator("header nav button").nth(1);
     await projects.hover();
+    await expect(page.locator("html")).toHaveAttribute("data-custom-cursor", "active");
     await page.mouse.down();
     await expect(cursor).toHaveAttribute("data-visible", "true");
     await expect(visual).toHaveCSS("transition-duration", "0s");
@@ -592,7 +597,7 @@ test.describe("Cursor customizado", () => {
     await openPage(page, "/", { width: 1440, height: 900, loadDeferredSections: false });
 
     await expect(page.locator("html")).toHaveAttribute("data-custom-cursor", "inactive");
-    await expect(page.locator("#custom-cursor")).toHaveCSS("display", "none");
+    await expect(page.locator("#custom-cursor")).toHaveCount(0);
     await expect(page.locator("[data-header-switches] button").first()).not.toHaveCSS(
       "cursor",
       "none",
@@ -604,7 +609,7 @@ test.describe("Cursor customizado", () => {
     await openPage(page, "/", { width: 1440, height: 900, loadDeferredSections: false });
 
     await expect(page.locator("html")).toHaveAttribute("data-custom-cursor", "inactive");
-    await expect(page.locator("#custom-cursor")).toHaveCSS("display", "none");
+    await expect(page.locator("#custom-cursor")).toHaveCount(0);
     await expect(page.locator("#home a.btn-primary").first()).not.toHaveCSS("cursor", "none");
   });
 });
@@ -620,7 +625,7 @@ test.describe("Cursor customizado em touch", () => {
     });
 
     await expect(page.locator("html")).toHaveAttribute("data-custom-cursor", "inactive");
-    await expect(page.locator("#custom-cursor")).toHaveAttribute("data-visible", "false");
+    await expect(page.locator("#custom-cursor")).toHaveCount(0);
   });
 });
 
@@ -1709,6 +1714,19 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
     await expect(footer).toHaveAttribute("data-runtime-activity", "paused");
   });
 
+  test("botão de voltar ao topo aguarda intenção real de rolagem", async ({ page }) => {
+    await openPage(page, "/", { loadDeferredSections: false });
+
+    await page.evaluate(() =>
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "auto" }),
+    );
+    await expect(page.locator("[data-back-to-top]")).toHaveCount(0);
+
+    await page.mouse.down();
+    await page.mouse.up();
+    await expect(page.locator("[data-back-to-top]")).toBeVisible();
+  });
+
   test("imagens adiadas usam prioridade e variantes responsivas corretas", async ({ page }) => {
     await openPage(page, "/", {
       width: 1023,
@@ -1746,10 +1764,23 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
           element instanceof HTMLImageElement ? element.currentSrc : "",
         ),
       )
-      .toContain("-400w.avif");
+      .toMatch(/-400w(?:-[^/]+)?\.avif$/);
     await expect(
       page.locator('picture source:not([srcset]), picture source[srcset=""]'),
     ).toHaveCount(0);
+
+    const workbench = about.getByRole("img", {
+      name: "Notebooks desmontados durante a recuperação após a enchente.",
+    });
+    await expect(workbench).toHaveAttribute("width", "480");
+    await expect(workbench).toHaveAttribute("height", "600");
+    await expect(workbench).toHaveAttribute("src", /hardware-workbench-home[^/]*\.jpg/);
+
+    const workbenchSources = workbench.locator("xpath=..").locator("source");
+    for (const source of await workbenchSources.all()) {
+      await expect(source).toHaveAttribute("srcset", /200w.*,.*240w.*,.*320w.*,.*400w.*,.*480w/);
+      await expect(source).not.toHaveAttribute("srcset", /(?:640|800)w/);
+    }
   });
 
   test("hash direto solicita e focaliza uma seção adiada", async ({ page }) => {

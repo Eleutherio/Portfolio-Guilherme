@@ -1,5 +1,4 @@
 import { useRef, useState, type FormEvent } from "react";
-import { motion } from "@/lib/motion";
 import { ArrowUpRight, Loader2, Phone } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/icons/Brand";
 import { useApp } from "@/i18n/AppContext";
@@ -182,13 +181,9 @@ export function Contact() {
       </div>
 
       {/* Right column — secondary path: form */}
-      <motion.form
-        initial={{ opacity: 0, y: 14 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.1 }}
+      <form
         onSubmit={onSubmit}
-        className="mt-10 space-y-4 md:col-span-7 md:mt-0"
+        className="section-content-reveal section-content-reveal-delay mt-10 space-y-4 md:col-span-7 md:mt-0"
         noValidate
         aria-label={formLabel}
         aria-busy={status === "submitting"}
@@ -367,7 +362,7 @@ export function Contact() {
             </a>
           </p>
         )}
-      </motion.form>
+      </form>
     </SectionShell>
   );
 }
