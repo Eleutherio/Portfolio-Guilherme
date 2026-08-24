@@ -1,8 +1,20 @@
 import grengameCover from "@/assets/projects/grengame-cover.webp";
+import grengameCover400Avif from "@/assets/projects/grengame-cover-400w.avif";
+import grengameCover800Avif from "@/assets/projects/grengame-cover-800w.avif";
+import grengameCover400Webp from "@/assets/projects/grengame-cover-400w.webp";
+import grengameCover800Webp from "@/assets/projects/grengame-cover-800w.webp";
 import grengamePreview from "@/assets/projects/grengame-preview.mp4";
 import abriuChaveiroCover from "@/assets/projects/abriu-chaveiro-cover.webp";
+import abriuChaveiroCover400Avif from "@/assets/projects/abriu-chaveiro-cover-400w.avif";
+import abriuChaveiroCover800Avif from "@/assets/projects/abriu-chaveiro-cover-800w.avif";
+import abriuChaveiroCover400Webp from "@/assets/projects/abriu-chaveiro-cover-400w.webp";
+import abriuChaveiroCover800Webp from "@/assets/projects/abriu-chaveiro-cover-800w.webp";
 import abriuChaveiroPreview from "@/assets/projects/abriu-chaveiro-preview.mp4";
 import marthaIzabelCover from "@/assets/projects/martha-izabel-cover.webp";
+import marthaIzabelCover400Avif from "@/assets/projects/martha-izabel-cover-400w.avif";
+import marthaIzabelCover800Avif from "@/assets/projects/martha-izabel-cover-800w.avif";
+import marthaIzabelCover400Webp from "@/assets/projects/martha-izabel-cover-400w.webp";
+import marthaIzabelCover800Webp from "@/assets/projects/martha-izabel-cover-800w.webp";
 import marthaIzabelPreview from "@/assets/projects/martha-izabel-preview.mp4";
 import type { ResponsiveImage } from "@/components/ImageCover";
 import type { Lang } from "@/i18n/dictionary";
@@ -35,7 +47,18 @@ type ProjectSummaryDefinition = {
 export type LocalizedProjectSummary = Omit<ProjectSummaryDefinition, "locale"> &
   ProjectSummaryLocale;
 
-const buildImage = (fallback: string, width: number, height: number): ResponsiveImage => ({
+const srcSet = (sources: Array<[string, number]>) =>
+  sources.map(([source, width]) => `${source} ${width}w`).join(", ");
+
+const buildImage = (
+  fallback: string,
+  width: number,
+  height: number,
+  avifSources: Array<[string, number]>,
+  webpSources: Array<[string, number]>,
+): ResponsiveImage => ({
+  avif: srcSet(avifSources),
+  webp: srcSet(webpSources),
   fallback,
   width,
   height,
@@ -46,7 +69,19 @@ const projectSummaries: ProjectSummaryDefinition[] = [
     id: "01",
     slug: "grengame",
     coverSrc: grengameCover,
-    coverImage: buildImage(grengameCover, 1680, 826),
+    coverImage: buildImage(
+      grengameCover,
+      1680,
+      826,
+      [
+        [grengameCover400Avif, 400],
+        [grengameCover800Avif, 800],
+      ],
+      [
+        [grengameCover400Webp, 400],
+        [grengameCover800Webp, 800],
+      ],
+    ),
     previewVideoSrc: grengamePreview,
     stack: ["React", "TypeScript", "Vite", "Django", "DRF", "PostgreSQL"],
     repoUrl: "https://github.com/Eleutherio/TIC55-grengame-showcase",
@@ -85,7 +120,19 @@ const projectSummaries: ProjectSummaryDefinition[] = [
     id: "02",
     slug: "abriu-chaveiro",
     coverSrc: abriuChaveiroCover,
-    coverImage: buildImage(abriuChaveiroCover, 1680, 751),
+    coverImage: buildImage(
+      abriuChaveiroCover,
+      1680,
+      751,
+      [
+        [abriuChaveiroCover400Avif, 400],
+        [abriuChaveiroCover800Avif, 800],
+      ],
+      [
+        [abriuChaveiroCover400Webp, 400],
+        [abriuChaveiroCover800Webp, 800],
+      ],
+    ),
     previewVideoSrc: abriuChaveiroPreview,
     stack: ["HTML", "CSS", "JavaScript", "Serverless", "SEO", "Vercel"],
     repoUrl: "https://github.com/Eleutherio/Abriuchaveiro",
@@ -124,7 +171,19 @@ const projectSummaries: ProjectSummaryDefinition[] = [
     id: "03",
     slug: "martha-izabel",
     coverSrc: marthaIzabelCover,
-    coverImage: buildImage(marthaIzabelCover, 1680, 836),
+    coverImage: buildImage(
+      marthaIzabelCover,
+      1680,
+      836,
+      [
+        [marthaIzabelCover400Avif, 400],
+        [marthaIzabelCover800Avif, 800],
+      ],
+      [
+        [marthaIzabelCover400Webp, 400],
+        [marthaIzabelCover800Webp, 800],
+      ],
+    ),
     previewVideoSrc: marthaIzabelPreview,
     stack: ["React 18", "TypeScript", "Vite", "Tailwind CSS", "shadcn/ui", "framer-motion"],
     repoUrl: "https://github.com/Eleutherio/projeto-martha-izabel",

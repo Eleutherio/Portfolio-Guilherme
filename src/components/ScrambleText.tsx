@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useReducedMotion } from "motion/react";
+import { useReducedMotion } from "@/lib/motion";
 import { useViewportActivity } from "@/components/ViewportActivity";
 
 const LOWERCASE = "abcdefghijklmnopqrstuvwxyz";

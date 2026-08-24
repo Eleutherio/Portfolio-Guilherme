@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { motion } from "@/lib/motion";
 import { useApp } from "@/i18n/AppContext";
 import { SectionShell } from "./SectionShell";
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { useReducedMotion } from "motion/react";
+import { useReducedMotion } from "@/lib/motion";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { GithubIcon } from "@/components/icons/Brand";
@@ -18,25 +18,28 @@ type ProjectMediaProps = {
   project: LocalizedProjectSummary;
   active: boolean;
   eager: boolean;
+  playbackEnabled: boolean;
+  onPreviewIntent: () => void;
 };
 
 function ProjectPreviewVideo({
   src,
-  poster,
   active,
+  playbackEnabled,
 }: {
   src: string;
-  poster: string;
   active: boolean;
+  playbackEnabled: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const viewportActive = useViewportActivity();
+  const shouldLoad = active && playbackEnabled;
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    if (!active || !viewportActive) {
+    if (!shouldLoad || !viewportActive) {
       video.pause();
       return;
     }
@@ -44,25 +47,31 @@ function ProjectPreviewVideo({
     void video.play().catch(() => {
       // O poster permanece visível caso o navegador bloqueie a reprodução automática.
     });
-  }, [active, viewportActive]);
+  }, [shouldLoad, viewportActive]);
 
   return (
     <video
       ref={videoRef}
-      src={src}
-      poster={poster}
+      src={shouldLoad ? src : undefined}
       muted
       loop
       playsInline
-      preload={active ? "metadata" : "none"}
+      preload="none"
       aria-hidden="true"
-      className="absolute inset-0 block h-full w-full object-contain"
+      className="absolute inset-0 z-10 block h-full w-full object-contain"
     />
   );
 }
 
-function ProjectMedia({ project, active, eager }: ProjectMediaProps) {
+function ProjectMedia({
+  project,
+  active,
+  eager,
+  playbackEnabled,
+  onPreviewIntent,
+}: ProjectMediaProps) {
   const { t } = useApp();
+  const lastTouchPointerAtRef = useRef(Number.NEGATIVE_INFINITY);
   const projectDestination = `${t.cursor.destinations.project} ${project.title}`;
 
   return (
@@ -80,6 +89,18 @@ function ProjectMedia({ project, active, eager }: ProjectMediaProps) {
         aria-label={`${t.projects.openPreview} — ${project.title}`}
         aria-current={active ? "true" : undefined}
         tabIndex={active ? 0 : -1}
+        onPointerEnter={(event) => {
+          if (event.pointerType !== "touch") onPreviewIntent();
+        }}
+        onPointerDown={(event) => {
+          if (event.pointerType === "touch") {
+            lastTouchPointerAtRef.current = performance.now();
+          }
+        }}
+        onFocus={() => {
+          const focusCameFromTouch = performance.now() - lastTouchPointerAtRef.current < 1_000;
+          if (!focusCameFromTouch) onPreviewIntent();
+        }}
         style={{
           aspectRatio: `${project.coverImage.width} / ${project.coverImage.height}`,
           borderRadius: 0,
@@ -87,11 +108,24 @@ function ProjectMedia({ project, active, eager }: ProjectMediaProps) {
         className="card-surface card-surface--accent card-surface--static relative block w-full overflow-hidden"
       >
         {project.previewVideoSrc ? (
-          <ProjectPreviewVideo
-            src={project.previewVideoSrc}
-            poster={project.coverSrc}
-            active={active}
-          />
+          <>
+            {active ? (
+              <ImageCover
+                image={project.coverImage}
+                alt=""
+                sizes="(max-width: 1024px) calc(100vw - 6rem), 800px"
+                eager={eager}
+                fetchPriority={eager ? "high" : undefined}
+                className="absolute inset-0 block h-full w-full"
+                imgClassName="h-full w-full object-contain"
+              />
+            ) : null}
+            <ProjectPreviewVideo
+              src={project.previewVideoSrc}
+              active={active}
+              playbackEnabled={playbackEnabled}
+            />
+          </>
         ) : (
           <ImageCover
             image={project.coverImage}
@@ -207,10 +241,12 @@ export function Projects() {
   const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
   const scrollFrameRef = useRef(0);
   const settleTimerRef = useRef<number | null>(null);
+  const touchPlaybackPendingRef = useRef(false);
   const physicalIndexRef = useRef(projects.length);
   const [index, setIndex] = useState(0);
   const [physicalIndex, setPhysicalIndex] = useState(projects.length);
   const [hydrated, setHydrated] = useState(false);
+  const [previewPlaybackEnabled, setPreviewPlaybackEnabled] = useState(false);
 
   useEffect(() => setHydrated(true), []);
 
@@ -263,6 +299,11 @@ export function Projects() {
 
       if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
       settleTimerRef.current = window.setTimeout(() => {
+        if (touchPlaybackPendingRef.current) {
+          touchPlaybackPendingRef.current = false;
+          setPreviewPlaybackEnabled(true);
+        }
+
         if (closestIndex >= total && closestIndex < total * 2) return;
         const normalizedIndex = total + (closestIndex % total);
         const normalizedSlide = slideRefs.current[normalizedIndex];
@@ -346,7 +387,12 @@ export function Projects() {
     >
       <div className="md:col-span-12" data-projects-hydrated={hydrated}>
         <div className="grid gap-10 pb-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(17rem,0.65fr)] lg:items-start lg:pb-10">
-          <div className="grid min-w-0 grid-cols-[44px_minmax(0,1fr)] gap-2 sm:gap-4">
+          <div
+            className="grid min-w-0 grid-cols-[44px_minmax(0,1fr)] gap-2 sm:gap-4"
+            onTouchStart={() => {
+              touchPlaybackPendingRef.current = true;
+            }}
+          >
             <div
               ref={railRef}
               role="region"
@@ -370,6 +416,8 @@ export function Projects() {
                       project={project}
                       active={itemIndex === physicalIndex}
                       eager={itemIndex === total}
+                      playbackEnabled={previewPlaybackEnabled}
+                      onPreviewIntent={() => setPreviewPlaybackEnabled(true)}
                     />
                   </div>
                 ))}

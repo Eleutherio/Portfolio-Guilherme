@@ -5,9 +5,8 @@ import {
   useInfrastructureStatus,
   type InfrastructureAvailability,
 } from "@/lib/useInfrastructureStatus";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link } from "@tanstack/react-router";
-import { PrivacyNoticeDialog } from "@/components/privacy/PrivacyNoticeDialog";
+import { DeferredPrivacyNoticeDialog } from "@/components/privacy/DeferredPrivacyNoticeDialog";
 import { useElementActivity } from "@/hooks/use-element-activity";
 import { GuiferWordmark } from "@/components/GuiferWordmark";
 import { WebsiteCarbonBadge } from "@/components/layout/WebsiteCarbonBadge";
@@ -192,19 +191,17 @@ export function Footer() {
             <p className="mb-3 text-sm font-medium tracking-normal text-foreground">
               {t.footer.infraLabel}
             </p>
-            <TooltipProvider delayDuration={200}>
-              <ul className="space-y-1">
-                {infrastructureItems.map((item) => (
-                  <InfrastructureRow
-                    key={item.label}
-                    label={item.label}
-                    status={item.status}
-                    statusLabel={t.footer.serviceStatus[item.status]}
-                    description={item.description}
-                  />
-                ))}
-              </ul>
-            </TooltipProvider>
+            <ul className="space-y-1">
+              {infrastructureItems.map((item) => (
+                <InfrastructureRow
+                  key={item.label}
+                  label={item.label}
+                  status={item.status}
+                  statusLabel={t.footer.serviceStatus[item.status]}
+                  description={item.description}
+                />
+              ))}
+            </ul>
           </div>
 
           {/* Vitals column */}
@@ -215,23 +212,21 @@ export function Footer() {
               </span>
             </div>
 
-            <TooltipProvider delayDuration={200}>
-              <ul className="space-y-1">
-                {metrics.map((metric) => (
-                  <VitalRow
-                    key={metric.k}
-                    label={metric.k}
-                    value={metric.v}
-                    description={vitalDescriptions[metric.k]}
-                  />
-                ))}
+            <ul className="space-y-1">
+              {metrics.map((metric) => (
                 <VitalRow
-                  label={t.footer.uptimeLabel}
-                  value={status.uptime}
-                  description={vitalDescriptions.session}
+                  key={metric.k}
+                  label={metric.k}
+                  value={metric.v}
+                  description={vitalDescriptions[metric.k]}
                 />
-              </ul>
-            </TooltipProvider>
+              ))}
+              <VitalRow
+                label={t.footer.uptimeLabel}
+                value={status.uptime}
+                description={vitalDescriptions.session}
+              />
+            </ul>
           </div>
         </div>
 
@@ -270,9 +265,9 @@ export function Footer() {
               {t.footer.accessibility}
             </Link>
             <span aria-hidden="true">·</span>
-            <PrivacyNoticeDialog triggerClassName="rounded-sm underline decoration-transparent underline-offset-4 transition-colors hover:text-foreground hover:decoration-current focus-visible:text-foreground focus-visible:decoration-current">
+            <DeferredPrivacyNoticeDialog triggerClassName="rounded-sm underline decoration-transparent underline-offset-4 transition-colors hover:text-foreground hover:decoration-current focus-visible:text-foreground focus-visible:decoration-current">
               {t.footer.privacy}
-            </PrivacyNoticeDialog>
+            </DeferredPrivacyNoticeDialog>
           </nav>
         </div>
       </div>
@@ -290,20 +285,16 @@ function VitalRow({
   description: string;
 }) {
   return (
-    <li>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            className="flex min-h-6 w-full items-center justify-between gap-3 rounded-sm text-left outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            aria-label={`${label}: ${value}. ${description}`}
-          >
-            <span className="text-muted-foreground/80">{label}</span>
-            <span className="tabular-nums text-foreground/85">{value}</span>
-          </button>
-        </TooltipTrigger>
-        <StatusTooltipContent>{description}</StatusTooltipContent>
-      </Tooltip>
+    <li className="group relative">
+      <button
+        type="button"
+        className="flex min-h-6 w-full items-center justify-between gap-3 rounded-sm text-left outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        aria-label={`${label}: ${value}. ${description}`}
+      >
+        <span className="text-muted-foreground/80">{label}</span>
+        <span className="tabular-nums text-foreground/85">{value}</span>
+      </button>
+      <StatusTooltipContent>{description}</StatusTooltipContent>
     </li>
   );
 }
@@ -320,37 +311,33 @@ function InfrastructureRow({
   description: string;
 }) {
   return (
-    <li>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            className="flex min-h-6 w-full items-center gap-2 rounded-sm text-left text-foreground/85 outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            aria-label={`${label}: ${statusLabel}. ${description}`}
-          >
-            <ServiceStatusDot status={status} />
-            <span>{label}</span>
-          </button>
-        </TooltipTrigger>
-        <StatusTooltipContent>
-          <span className="font-medium text-foreground">
-            {label}: {statusLabel}.
-          </span>{" "}
-          {description}
-        </StatusTooltipContent>
-      </Tooltip>
+    <li className="group relative">
+      <button
+        type="button"
+        className="flex min-h-6 w-full items-center gap-2 rounded-sm text-left text-foreground/85 outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        aria-label={`${label}: ${statusLabel}. ${description}`}
+      >
+        <ServiceStatusDot status={status} />
+        <span>{label}</span>
+      </button>
+      <StatusTooltipContent>
+        <span className="font-medium text-foreground">
+          {label}: {statusLabel}.
+        </span>{" "}
+        {description}
+      </StatusTooltipContent>
     </li>
   );
 }
 
 function StatusTooltipContent({ children }: { children: ReactNode }) {
   return (
-    <TooltipContent
-      side="left"
-      className="max-w-[min(20rem,calc(100vw-2rem))] border border-hairline bg-surface font-sans text-[11px] leading-relaxed text-foreground"
+    <span
+      aria-hidden="true"
+      className="pointer-events-none invisible absolute top-full left-0 z-50 mt-2 block w-max max-w-[min(20rem,calc(100vw-2rem))] rounded-md border border-hairline bg-surface px-3 py-1.5 font-sans text-[11px] leading-relaxed text-foreground opacity-0 shadow-md transition-[opacity,visibility] duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 md:top-1/2 md:right-full md:left-auto md:mt-0 md:mr-2 md:-translate-y-1/2"
     >
       {children}
-    </TooltipContent>
+    </span>
   );
 }
 

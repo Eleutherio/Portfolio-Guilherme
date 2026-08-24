@@ -1,4 +1,4 @@
-import { motion, useReducedMotion, AnimatePresence } from "motion/react";
+import { motion, useReducedMotion, AnimatePresence } from "@/lib/motion";
 
 export type CoffeeState = "idle" | "filling" | "tipping";
 

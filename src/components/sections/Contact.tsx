@@ -1,25 +1,20 @@
-import { useState, type FormEvent } from "react";
-import { motion } from "motion/react";
+import { useRef, useState, type FormEvent } from "react";
+import { motion } from "@/lib/motion";
 import { ArrowUpRight, Loader2, Phone } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/icons/Brand";
 import { useApp } from "@/i18n/AppContext";
-import {
-  CONTACT_LIMITS,
-  contactPayloadSchema,
-  createContactPayloadSchema,
-  type ContactApiResponse,
-} from "@/lib/contact-contract";
+import { CONTACT_LIMITS, type ContactApiResponse } from "@/lib/contact-shared";
 import { executeContactRecaptcha } from "@/lib/recaptcha";
 import { apiUrl } from "@/lib/api-client";
-import { PrivacyNoticeDialog } from "@/components/privacy/PrivacyNoticeDialog";
+import { DeferredPrivacyNoticeDialog } from "@/components/privacy/DeferredPrivacyNoticeDialog";
 import { SectionShell } from "./SectionShell";
 
 type Status = "idle" | "submitting" | "success" | "error";
 type FieldErrors = Partial<Record<"name" | "email" | "subject" | "message", string>>;
 
-const buildSchema = (lang: "pt" | "en") => {
+const validationMessages = (lang: "pt" | "en") => {
   const msg = (pt: string, en: string) => (lang === "pt" ? pt : en);
-  return createContactPayloadSchema({
+  return {
     nameRequired: msg(
       "Informe seu nome (mín. 2 caracteres).",
       "Please enter your name (min. 2 chars).",
@@ -39,51 +34,55 @@ const buildSchema = (lang: "pt" | "en") => {
       "Message too long (max 1000 chars).",
     ),
     messageInvalid: msg("Mensagem inválida.", "Invalid message."),
-  });
+  };
 };
 
 export function Contact() {
   const { t, lang } = useApp();
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<FieldErrors>({});
+  const submissionLockRef = useRef(false);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (status === "submitting") return;
+    if (submissionLockRef.current) return;
+    submissionLockRef.current = true;
+    setStatus("submitting");
 
     const form = e.currentTarget;
     const data = new FormData(form);
 
-    const schema = buildSchema(lang);
-    const result = schema.safeParse({
-      name: data.get("name"),
-      email: data.get("email"),
-      subject: data.get("subject"),
-      message: data.get("message"),
-      website: data.get("website"),
-      locale: lang,
-    });
-
-    if (!result.success) {
-      const fieldErrors: FieldErrors = {};
-      for (const issue of result.error.issues) {
-        const key = issue.path[0];
-        if (
-          (key === "name" || key === "email" || key === "subject" || key === "message") &&
-          !fieldErrors[key]
-        ) {
-          fieldErrors[key] = issue.message;
-        }
-      }
-      setErrors(fieldErrors);
-      setStatus("error");
-      return;
-    }
-
-    setErrors({});
-    setStatus("submitting");
-
     try {
+      const { contactPayloadSchema, createContactPayloadSchema } =
+        await import("@/lib/contact-contract");
+      const schema = createContactPayloadSchema(validationMessages(lang));
+      const result = schema.safeParse({
+        name: data.get("name"),
+        email: data.get("email"),
+        subject: data.get("subject"),
+        message: data.get("message"),
+        website: data.get("website"),
+        locale: lang,
+      });
+
+      if (!result.success) {
+        const fieldErrors: FieldErrors = {};
+        for (const issue of result.error.issues) {
+          const key = issue.path[0];
+          if (
+            (key === "name" || key === "email" || key === "subject" || key === "message") &&
+            !fieldErrors[key]
+          ) {
+            fieldErrors[key] = issue.message;
+          }
+        }
+        setErrors(fieldErrors);
+        setStatus("error");
+        return;
+      }
+
+      setErrors({});
+
       const antiBotToken = await executeContactRecaptcha();
       const payload = contactPayloadSchema.safeParse({ ...result.data, antiBotToken });
       if (!payload.success) {
@@ -108,6 +107,8 @@ export function Contact() {
       form.reset();
     } catch {
       setStatus("error");
+    } finally {
+      submissionLockRef.current = false;
     }
   };
 
@@ -316,9 +317,9 @@ export function Contact() {
             {t.contact.form.recaptchaTerms}
           </a>
           . {t.contact.form.sitePrivacyPrefix}{" "}
-          <PrivacyNoticeDialog triggerClassName="link-ink text-left text-foreground">
+          <DeferredPrivacyNoticeDialog triggerClassName="link-ink text-left text-foreground">
             {t.contact.form.sitePrivacy}
-          </PrivacyNoticeDialog>
+          </DeferredPrivacyNoticeDialog>
           .
         </p>
 

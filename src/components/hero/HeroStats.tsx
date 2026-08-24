@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GitCommit } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
-import { fetchCoffeeCount, fetchGithubYearStats, submitCoffeeTap } from "@/lib/api-client";
+import { AnimatePresence, motion } from "@/lib/motion";
+import {
+  fetchCoffeeCount,
+  fetchGithubYearStats,
+  submitCoffeeTap,
+  type GithubYearStats,
+} from "@/lib/api-client";
 import { useApp } from "@/i18n/AppContext";
 import { CoffeeIcon, type CoffeeState } from "@/components/hero/CoffeeIcon";
 
@@ -13,7 +17,7 @@ function ensureVisitorId(): string {
   if (typeof window === "undefined") return "";
   let id = window.localStorage.getItem(VISITOR_KEY);
   if (!id) {
-    id = (crypto as Crypto).randomUUID();
+    id = crypto.randomUUID();
     window.localStorage.setItem(VISITOR_KEY, id);
   }
   return id;
@@ -23,61 +27,60 @@ export function HeroStats() {
   const { t, lang } = useApp();
   const s = t.hero.stats;
   const locale = lang === "pt" ? "pt-BR" : "en-US";
-  const qc = useQueryClient();
   const [tapped, setTapped] = useState(false);
   const [visitorId, setVisitorId] = useState("");
   const [coffeeState, setCoffeeState] = useState<CoffeeState>("idle");
+  const [githubStats, setGithubStats] = useState<GithubYearStats>(null);
+  const [coffeeCount, setCoffeeCount] = useState(0);
+  const [tapPending, setTapPending] = useState(false);
   const timersRef = useRef<Array<ReturnType<typeof setTimeout>>>([]);
 
   useEffect(() => {
+    let active = true;
     setVisitorId(ensureVisitorId());
     setTapped(window.localStorage.getItem(TAPPED_KEY) === "1");
+
+    void fetchGithubYearStats()
+      .then((result) => {
+        if (active) setGithubStats(result);
+      })
+      .catch(() => {});
+    void fetchCoffeeCount()
+      .then((result) => {
+        if (active) setCoffeeCount(result.count);
+      })
+      .catch(() => {});
+
     const timers = timersRef.current;
     return () => {
+      active = false;
       timers.forEach(clearTimeout);
     };
   }, []);
 
-  const gh = useQuery({
-    queryKey: ["gh-year"],
-    queryFn: fetchGithubYearStats,
-    staleTime: 10 * 60_000,
-  });
-
-  const coffee = useQuery({
-    queryKey: ["coffee-count"],
-    queryFn: fetchCoffeeCount,
-    staleTime: 30_000,
-  });
-
-  const tapMutation = useMutation({
-    mutationFn: async () => submitCoffeeTap(visitorId),
-    onSuccess: (res) => {
-      qc.setQueryData(["coffee-count"], res);
-      window.localStorage.setItem(TAPPED_KEY, "1");
-      setTapped(true);
-    },
-    onError: () => {
-      qc.invalidateQueries({ queryKey: ["coffee-count"] });
-    },
-  });
-
   const runTapAnimation = () => {
-    if (tapped || !visitorId || tapMutation.isPending) return;
-    // fill → tip → increment + fire mutation
+    if (tapped || !visitorId || tapPending) return;
     setCoffeeState("filling");
     const t1 = setTimeout(() => setCoffeeState("tipping"), 350);
     const t2 = setTimeout(() => {
-      // Optimistic bump + real call — count animates via AnimatePresence key swap.
-      const prev = qc.getQueryData<{ count: number }>(["coffee-count"]);
-      qc.setQueryData(["coffee-count"], { count: (prev?.count ?? 0) + 1 });
-      tapMutation.mutate();
+      setCoffeeCount((current) => current + 1);
+      setTapPending(true);
+      void submitCoffeeTap(visitorId)
+        .then((result) => {
+          setCoffeeCount(result.count);
+          window.localStorage.setItem(TAPPED_KEY, "1");
+          setTapped(true);
+        })
+        .catch(() => {
+          void fetchCoffeeCount()
+            .then((result) => setCoffeeCount(result.count))
+            .catch(() => {});
+        })
+        .finally(() => setTapPending(false));
     }, 550);
     const t3 = setTimeout(() => setCoffeeState("idle"), 850);
     timersRef.current.push(t1, t2, t3);
   };
-
-  const coffeeCountValue = coffee.data?.count ?? 0;
 
   return (
     <div className="flex w-full flex-wrap items-center justify-start gap-x-3 gap-y-2 font-mono text-[12px] text-muted-foreground sm:justify-center sm:text-[13px]">
@@ -91,7 +94,7 @@ export function HeroStats() {
         <GitCommit className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
         <span>
           <span className="tabular-nums text-foreground">
-            {gh.data ? gh.data.total.toLocaleString(locale) : "—"}
+            {githubStats ? githubStats.total.toLocaleString(locale) : "—"}
           </span>{" "}
           {s.commitsLabel}
         </span>
@@ -100,7 +103,7 @@ export function HeroStats() {
         ·
       </span>
       <span className="tabular-nums text-foreground">
-        {gh.data ? gh.data.year : new Date().getFullYear()}
+        {githubStats ? githubStats.year : new Date().getFullYear()}
       </span>
       <span aria-hidden="true" className="text-muted-foreground/50">
         ·
@@ -108,7 +111,7 @@ export function HeroStats() {
       <button
         type="button"
         onClick={runTapAnimation}
-        disabled={tapped || !visitorId || tapMutation.isPending}
+        disabled={tapped || !visitorId || tapPending}
         aria-label={tapped ? s.coffeeThanks : s.coffeeOffer}
         title={tapped ? s.coffeeThanksIcon : s.coffeeOffer}
         className={`inline-flex items-center gap-1.5 transition-colors ${
@@ -119,21 +122,21 @@ export function HeroStats() {
           <CoffeeIcon state={coffeeState} />
         </span>
         <span className="inline-flex items-baseline gap-1">
-          <span className="relative inline-block min-w-[1ch] tabular-nums text-foreground overflow-hidden">
+          <span className="relative inline-block min-w-[1ch] overflow-hidden tabular-nums text-foreground">
             <AnimatePresence mode="popLayout" initial={false}>
               <motion.span
-                key={coffeeCountValue}
+                key={coffeeCount}
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -10, opacity: 0 }}
                 transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
                 className="inline-block"
               >
-                {coffeeCountValue.toLocaleString(locale)}
+                {coffeeCount.toLocaleString(locale)}
               </motion.span>
             </AnimatePresence>
           </span>
-          <span>{coffeeCountValue === 1 ? s.coffeeSingular : s.coffeePlural}</span>
+          <span>{coffeeCount === 1 ? s.coffeeSingular : s.coffeePlural}</span>
         </span>
       </button>
     </div>

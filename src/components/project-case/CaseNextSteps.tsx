@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { motion } from "motion/react";
+import { motion } from "@/lib/motion";
 import { ArrowLeft, ArrowUpRight, FolderOpen } from "lucide-react";
 
 import type { LocalizedProjectSummary } from "@/content/project-summaries";

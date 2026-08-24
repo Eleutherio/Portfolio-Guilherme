@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useReducedMotion } from "motion/react";
+import { useReducedMotion } from "@/lib/motion";
 
 import { ScrambleText } from "@/components/ScrambleText";
 import { useApp } from "@/i18n/AppContext";

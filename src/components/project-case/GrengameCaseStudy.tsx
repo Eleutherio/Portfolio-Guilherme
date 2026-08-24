@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { motion, useReducedMotion } from "motion/react";
+import { motion, useReducedMotion } from "@/lib/motion";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 
 import { CaseContactPrompt } from "@/components/project-case/CaseContactPrompt";

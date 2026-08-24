@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "motion/react";
+import { motion, useReducedMotion } from "@/lib/motion";
 
 type Variant = "discovery" | "build" | "delivery";
 

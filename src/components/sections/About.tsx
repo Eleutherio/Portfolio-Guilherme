@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "motion/react";
+import { motion, useReducedMotion } from "@/lib/motion";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { useApp } from "@/i18n/AppContext";

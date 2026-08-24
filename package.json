@@ -24,6 +24,7 @@
     "security:rate-limit-atomic": "node scripts/verify-atomic-rate-limit.mjs",
     "release:verify": "node scripts/verify-release.mjs",
     "images:generate": "node scripts/generate-responsive-images.mjs",
+    "fonts:generate": "node scripts/generate-font-subsets.mjs",
     "format": "prettier --write .",
     "test:a11y": "playwright test e2e/accessibility.spec.ts",
     "test:a11y:headed": "playwright test e2e/accessibility.spec.ts --headed"
@@ -36,7 +37,6 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@supabase/supabase-js": "^2.110.0",
     "@tailwindcss/vite": "^4.2.1",
-    "@tanstack/react-query": "^5.101.1",
     "@tanstack/react-router": "^1.170.16",
     "@tanstack/router-plugin": "^1.168.18",
     "accessible-web-widget": "1.5.3",
@@ -70,6 +70,7 @@
     "lru-cache": "^11.5.2",
     "prettier": "^3.7.3",
     "sharp": "^0.35.3",
+    "subset-font": "^2.5.0",
     "tsx": "^4.20.6",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",

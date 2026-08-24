@@ -11,8 +11,18 @@ const MAX_A_PLUS_BYTES = 272_510;
 const TARGET_WITH_MARGIN_BYTES = 250_000;
 const RESPONSE_OVERHEAD_BYTES = 500;
 const EXTERNAL_FALLBACK_BYTES = 2_048;
+const REPORT_LIMIT = Number.parseInt(process.env.CARBON_REPORT_LIMIT ?? "10", 10);
 const DIST_ROOT = path.resolve("dist/client");
-const TEXT_EXTENSIONS = new Set([".css", ".html", ".js", ".json", ".svg", ".txt", ".webmanifest", ".xml"]);
+const TEXT_EXTENSIONS = new Set([
+  ".css",
+  ".html",
+  ".js",
+  ".json",
+  ".svg",
+  ".txt",
+  ".webmanifest",
+  ".xml",
+]);
 
 if (!existsSync(path.join(DIST_ROOT, "index.html"))) {
   throw new Error("Build do frontend não encontrado em dist/client.");
@@ -38,7 +48,9 @@ async function getAvailablePort() {
   });
   const address = server.address();
   const port = typeof address === "object" && address ? address.port : null;
-  await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  await new Promise((resolve, reject) =>
+    server.close((error) => (error ? reject(error) : resolve())),
+  );
   if (!port) throw new Error("Não foi possível reservar uma porta para o preview.");
   return port;
 }
@@ -56,6 +68,36 @@ function resolveLocalFile(resourceUrl, baseUrl) {
   }
 
   return existsSync(candidate) ? candidate : path.join(DIST_ROOT, "index.html");
+}
+
+function uniqueResponses(responses) {
+  const unique = new Map();
+  for (const response of responses) {
+    if (!response.url.startsWith("http")) continue;
+    const key = new URL(response.url);
+    key.search = "";
+    unique.set(key.href, response);
+  }
+  return [...unique.values()];
+}
+
+function totalResources(resources) {
+  const bodyBytes = resources.reduce((total, resource) => total + resource.bytes, 0);
+  return bodyBytes + resources.length * RESPONSE_OVERHEAD_BYTES;
+}
+
+function measureResponses(responses, baseUrl) {
+  const measuredResources = uniqueResponses(responses).map((response) => {
+    const localFile = resolveLocalFile(response.url, baseUrl);
+    const bytes = localFile
+      ? estimateLocalTransfer(localFile)
+      : Math.max(response.encodedBytes, EXTERNAL_FALLBACK_BYTES);
+    return { url: response.url, type: response.type, status: response.status, bytes };
+  });
+  return {
+    resources: measuredResources,
+    totalBytes: totalResources(measuredResources),
+  };
 }
 
 async function waitForPreview(server, baseUrl) {
@@ -81,11 +123,36 @@ async function waitForPreview(server, baseUrl) {
 async function stopPreview(server) {
   if (server.exitCode !== null) return;
   server.kill();
-  await Promise.race([
-    once(server, "exit"),
-    new Promise((resolve) => setTimeout(resolve, 3_000)),
-  ]);
+  await Promise.race([once(server, "exit"), new Promise((resolve) => setTimeout(resolve, 3_000))]);
   if (server.exitCode === null) server.kill("SIGKILL");
+}
+
+async function hydrateEntireDocument(page) {
+  let previousHeight = 0;
+  let stablePasses = 0;
+
+  for (let pass = 0; pass < 20; pass += 1) {
+    const height = await page.evaluate(() => document.documentElement.scrollHeight);
+    for (let y = 0; y <= height; y += 600) {
+      await page.evaluate((nextY) => window.scrollTo(0, nextY), y);
+      await page.waitForTimeout(200);
+    }
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(750);
+
+    const state = await page.evaluate(() => ({
+      height: document.documentElement.scrollHeight,
+      pendingSections: document.querySelectorAll("[data-deferred-section]").length,
+      footerMounted: Boolean(document.querySelector("footer")),
+    }));
+    const complete = state.pendingSections === 0 && state.footerMounted;
+    stablePasses = complete && state.height === previousHeight ? stablePasses + 1 : 0;
+    previousHeight = state.height;
+
+    if (stablePasses >= 2) return;
+  }
+
+  throw new Error("A rolagem integral não hidratou todas as seções e o rodapé.");
 }
 
 const port = await getAvailablePort();
@@ -93,7 +160,15 @@ const baseUrl = `http://127.0.0.1:${port}`;
 
 const preview = spawn(
   process.execPath,
-  ["node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1", "--port", String(port), "--strictPort"],
+  [
+    "node_modules/vite/bin/vite.js",
+    "preview",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    String(port),
+    "--strictPort",
+  ],
   { cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"], windowsHide: true },
 );
 
@@ -131,39 +206,26 @@ try {
 
   await page.goto(baseUrl, { waitUntil: "networkidle", timeout: 60_000 });
   await page.waitForTimeout(1_000);
-
-  const documentHeight = await page.evaluate(() => document.documentElement.scrollHeight);
-  for (let y = 0; y < documentHeight; y += 600) {
-    await page.evaluate((nextY) => window.scrollTo(0, nextY), y);
-    await page.waitForTimeout(250);
-  }
-  await page.waitForTimeout(3_000);
-
-  const uniqueResources = new Map();
-  for (const response of responses.values()) {
-    if (!response.url.startsWith("http")) continue;
-    const key = new URL(response.url);
-    key.search = "";
-    uniqueResources.set(key.href, response);
-  }
-
-  const mediaRequests = [...uniqueResources.values()].filter(
-    (response) => response.type === "Media" && response.status < 400,
+  const initialMeasurement = measureResponses(responses.values(), baseUrl);
+  const initialWithoutMediaBytes = totalResources(
+    initialMeasurement.resources.filter((response) => response.type !== "Media"),
   );
 
-  const measuredResources = [];
-  for (const response of uniqueResources.values()) {
-    const localFile = resolveLocalFile(response.url, baseUrl);
-    const bytes = localFile
-      ? estimateLocalTransfer(localFile)
-      : Math.max(response.encodedBytes, EXTERNAL_FALLBACK_BYTES);
-    measuredResources.push({ url: response.url, type: response.type, bytes });
-  }
+  await hydrateEntireDocument(page);
+  await page.waitForTimeout(3_000);
 
-  const bodyBytes = measuredResources.reduce((total, resource) => total + resource.bytes, 0);
-  const totalBytes = bodyBytes + measuredResources.length * RESPONSE_OVERHEAD_BYTES;
-  const largest = measuredResources.sort((a, b) => b.bytes - a.bytes).slice(0, 10);
+  const fullMeasurement = measureResponses(responses.values(), baseUrl);
+  const measuredResources = fullMeasurement.resources;
+  const totalBytes = fullMeasurement.totalBytes;
+  const mediaRequests = measuredResources.filter(
+    (response) => response.type === "Media" && response.status < 400,
+  );
+  const largest = measuredResources
+    .sort((a, b) => b.bytes - a.bytes)
+    .slice(0, Number.isFinite(REPORT_LIMIT) ? REPORT_LIMIT : 10);
 
+  console.log(`Carga fria inicial: ${formatBytes(initialMeasurement.totalBytes)}`);
+  console.log(`Carga fria sem mídia automática: ${formatBytes(initialWithoutMediaBytes)}`);
   console.log(`Website Carbon A+: ${formatBytes(totalBytes)} / ${formatBytes(MAX_A_PLUS_BYTES)}`);
   console.log(`Meta interna com margem: ${formatBytes(TARGET_WITH_MARGIN_BYTES)}`);
   console.log(`Recursos contabilizados: ${measuredResources.length}`);
@@ -182,9 +244,7 @@ try {
     );
   }
   if (totalBytes > MAX_A_PLUS_BYTES) {
-    failures.push(
-      `O orçamento excedeu A+ em ${formatBytes(totalBytes - MAX_A_PLUS_BYTES)}.`,
-    );
+    failures.push(`O orçamento excedeu A+ em ${formatBytes(totalBytes - MAX_A_PLUS_BYTES)}.`);
   }
 
   if (failures.length > 0) {

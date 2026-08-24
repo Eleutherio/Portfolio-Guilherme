@@ -4,7 +4,7 @@ import { useHeroCarousel } from "@/components/hero/HeroCarouselContext";
 // Snippet reflete a estrutura real de src/components/sections/Hero.tsx
 // com dois slots dinâmicos ligados ao subtítulo ao vivo.
 const TEMPLATE = `// src/components/sections/Hero.tsx
-import { motion, useReducedMotion } from "motion/react";
+import { motion, useReducedMotion } from "@/lib/motion";
 import { useApp } from "@/i18n/AppContext";
 
 export function Hero() {

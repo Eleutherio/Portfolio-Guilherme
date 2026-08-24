@@ -83,14 +83,19 @@ const content = {
 type PrivacyNoticeDialogProps = {
   children: ReactNode;
   triggerClassName?: string;
+  defaultOpen?: boolean;
 };
 
-export function PrivacyNoticeDialog({ children, triggerClassName }: PrivacyNoticeDialogProps) {
+export function PrivacyNoticeDialog({
+  children,
+  triggerClassName,
+  defaultOpen = false,
+}: PrivacyNoticeDialogProps) {
   const { lang, t } = useApp();
   const text = content[lang];
 
   return (
-    <Dialog>
+    <Dialog defaultOpen={defaultOpen}>
       <DialogTrigger asChild>
         <button type="button" className={triggerClassName}>
           {children}

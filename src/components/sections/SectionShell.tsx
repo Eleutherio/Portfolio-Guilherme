@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { motion } from "@/lib/motion";
 import type { ReactNode } from "react";
 import { ViewportActivityProvider } from "@/components/ViewportActivity";
 import { useElementActivity } from "@/hooks/use-element-activity";

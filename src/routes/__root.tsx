@@ -1,9 +1,9 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HeadContent, Outlet, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
+import { HeadContent, Outlet, createRootRoute, useRouter } from "@tanstack/react-router";
 
 import { useApp } from "@/i18n/AppContext";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
 import { CustomCursor } from "@/components/layout/CustomCursor";
+import { domAnimation, LazyMotion } from "@/lib/motion";
 
 function NotFoundComponent() {
   const { t } = useApp();
@@ -94,7 +94,7 @@ const PERSON_JSONLD = {
   ],
 };
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRoute({
   head: () => ({
     meta: [
       { title: "Guilherme Ferreira Eleutherio — Full-stack Developer" },
@@ -113,17 +113,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
-
   return (
     <>
       <HeadContent />
-      <QueryClientProvider client={queryClient}>
+      <LazyMotion features={domAnimation} strict>
         <GlobalSkipLink />
         <Outlet />
         <AccessibilityWidget />
         <CustomCursor />
-      </QueryClientProvider>
+      </LazyMotion>
     </>
   );
 }

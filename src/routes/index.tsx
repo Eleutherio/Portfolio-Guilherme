@@ -14,9 +14,7 @@ const loadTimeline = () =>
   import("@/components/sections/Timeline").then((m) => ({ default: m.Timeline }));
 const loadContact = () =>
   import("@/components/sections/Contact").then((m) => ({ default: m.Contact }));
-const Footer = lazy(() =>
-  import("@/components/layout/Footer").then((m) => ({ default: m.Footer })),
-);
+const loadFooter = () => import("@/components/layout/Footer").then((m) => ({ default: m.Footer }));
 const BackToTop = lazy(() =>
   import("@/components/layout/BackToTop").then((m) => ({ default: m.BackToTop })),
 );
@@ -56,8 +54,8 @@ function Index() {
         <DeferredSection id="sobre" load={loadAbout} />
         <DeferredSection id="contato" load={loadContact} />
       </main>
+      <DeferredSection id="rodape" load={loadFooter} placeholderClassName="min-h-[28rem]" />
       <Suspense fallback={null}>
-        <Footer />
         <BackToTop />
       </Suspense>
     </div>

@@ -3,24 +3,22 @@
 @import "tw-animate-css";
 
 @font-face {
-  font-family: "Sora Variable";
+  font-family: "Sora Subset";
   font-style: normal;
   font-display: swap;
-  font-weight: 100 800;
-  src: url("@fontsource-variable/sora/files/sora-latin-wght-normal.woff2")
-    format("woff2-variations");
+  font-weight: 500;
+  src: url("./assets/fonts/sora-heading-500.woff2") format("woff2");
   unicode-range:
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
-  font-family: "Caveat Variable";
+  font-family: "Caveat Subset";
   font-style: normal;
   font-display: swap;
-  font-weight: 400 700;
-  src: url("@fontsource-variable/caveat/files/caveat-latin-wght-normal.woff2")
-    format("woff2-variations");
+  font-weight: 600;
+  src: url("./assets/fonts/caveat-signature-600.woff2") format("woff2");
   unicode-range:
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
@@ -31,8 +29,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 300 700;
-  src: url("@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2")
-    format("woff2-variations");
+  src: url("./assets/fonts/space-grotesk-body.woff2") format("woff2-variations");
   unicode-range:
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
@@ -69,8 +66,8 @@ html {
 @theme inline {
   --font-display: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-heading: "Sora Variable", "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-title: "Caveat Variable", "Segoe Print", "Bradley Hand", cursive;
+  --font-heading: "Sora Subset", "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-title: "Caveat Subset", "Segoe Print", "Bradley Hand", cursive;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
 
   --radius-sm: 4px;

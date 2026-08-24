@@ -1,5 +1,5 @@
 import { useRef, useState, type KeyboardEvent } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "@/lib/motion";
 import { useApp } from "@/i18n/AppContext";
 import { aboutAlbumPhotos, type AboutAlbumPhoto } from "@/content/about-album";
 import { SectionShell } from "./SectionShell";

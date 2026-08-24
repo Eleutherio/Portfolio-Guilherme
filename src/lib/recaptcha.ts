@@ -1,4 +1,4 @@
-import { RECAPTCHA_ACTION } from "@/lib/contact-contract";
+import { RECAPTCHA_ACTION } from "@/lib/contact-shared";
 
 type RecaptchaApi = {
   ready: (callback: () => void) => void;

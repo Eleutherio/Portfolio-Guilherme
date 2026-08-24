@@ -63,11 +63,9 @@ function readStoredResult(): CarbonResult | null {
 
     const parsed = JSON.parse(stored) as Partial<CarbonResult> & { cachedAt?: unknown };
     const carbon = parsed.carbon === undefined ? undefined : Number(parsed.carbon);
-    const cleanerThan =
-      parsed.cleanerThan === undefined ? undefined : Number(parsed.cleanerThan);
+    const cleanerThan = parsed.cleanerThan === undefined ? undefined : Number(parsed.cleanerThan);
     const hasCarbon = typeof carbon === "number" && Number.isFinite(carbon);
-    const hasCleanerThan =
-      typeof cleanerThan === "number" && Number.isFinite(cleanerThan);
+    const hasCleanerThan = typeof cleanerThan === "number" && Number.isFinite(cleanerThan);
     const grade = isCarbonGrade(parsed.grade)
       ? parsed.grade
       : hasCarbon
@@ -107,8 +105,7 @@ const copy = {
     refreshing: "Atualizando a nota semanal…",
     stale: "Última nota armazenada · nova tentativa em até 7 dias",
     emission: (carbon: string) => `${carbon} g de CO₂/visita`,
-    cleanerThan: (percentage: number) =>
-      `Mais limpa que ${percentage}% das páginas testadas`,
+    cleanerThan: (percentage: number) => `Mais limpa que ${percentage}% das páginas testadas`,
     open: "Abrir Website Carbon",
   },
   en: {
@@ -117,8 +114,7 @@ const copy = {
     refreshing: "Updating the weekly grade…",
     stale: "Last stored grade · retrying within 7 days",
     emission: (carbon: string) => `${carbon} g of CO₂/view`,
-    cleanerThan: (percentage: number) =>
-      `Cleaner than ${percentage}% of pages tested`,
+    cleanerThan: (percentage: number) => `Cleaner than ${percentage}% of pages tested`,
     open: "Open Website Carbon",
   },
 } as const;
@@ -192,13 +188,13 @@ export function WebsiteCarbonBadge({ active, lang }: { active: boolean; lang: La
   }, [active]);
 
   const primary = labels.grade(result.grade);
-  const hasMeasurement = result.carbon !== undefined && result.cleanerThan !== undefined;
-  const carbon = hasMeasurement
-    ? new Intl.NumberFormat(lang === "pt" ? "pt-BR" : "en", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 3,
-      }).format(result.carbon)
-    : null;
+  const carbon =
+    result.carbon !== undefined
+      ? new Intl.NumberFormat(lang === "pt" ? "pt-BR" : "en", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 3,
+        }).format(result.carbon)
+      : null;
   const measurement =
     carbon && result.cleanerThan !== undefined
       ? {

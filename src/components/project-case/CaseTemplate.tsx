@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { motion } from "motion/react";
+import { motion } from "@/lib/motion";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { useApp } from "@/i18n/AppContext";
 import { getLocalizedProjectCaseBySlug } from "@/content/project-case-details";

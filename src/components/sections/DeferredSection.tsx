@@ -65,7 +65,7 @@ export function DeferredSection({
         observer.disconnect();
         requestLoad();
       },
-      { rootMargin: "75% 0px" },
+      { rootMargin: "0px 0px -1px" },
     );
     observer.observe(placeholder);
     return () => observer.disconnect();

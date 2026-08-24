@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { AboutAlbum } from "@/components/sections/AboutAlbum";
 import { NextSteps } from "@/components/sections/NextSteps";
 import { useApp } from "@/i18n/AppContext";
-import { firstAboutAlbumImage } from "@/content/about-album";
+import firstAboutAlbumImage from "@/assets/about/unisinos-campus.jpg";
 
 const TITLE = "Sobre — Guilherme Ferreira Eleutherio";
 const DESCRIPTION =

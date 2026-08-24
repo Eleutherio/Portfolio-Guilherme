@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type HTMLAttributes } from "react";
-import { useReducedMotion } from "motion/react";
+import { useReducedMotion } from "@/lib/motion";
 
 import { ScrambleText } from "@/components/ScrambleText";
-import { cn } from "@/lib/utils";
 
 type GuiferWordmarkProps = HTMLAttributes<HTMLSpanElement> & {
   animateSuffix?: boolean;
@@ -47,10 +46,7 @@ export function GuiferWordmark({
   return (
     <span
       data-wordmark="guifer.tech"
-      className={cn(
-        "inline-flex items-center font-display leading-none tracking-[-0.055em] normal-case",
-        className,
-      )}
+      className={`inline-flex items-center font-display leading-none tracking-[-0.055em] normal-case${className ? ` ${className}` : ""}`}
       {...props}
     >
       <span data-wordmark-part="guifer" className="inline-flex items-center font-bold">

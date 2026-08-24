@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "@/lib/motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -98,11 +98,19 @@ export function Testimonials() {
                 </blockquote>
 
                 <figcaption className="flex items-center justify-start gap-4">
-                  <img
-                    src={current.image}
-                    alt={t.testimonials.photoAlt.replace("{name}", current.name)}
-                    className="h-16 w-16 rounded-full object-cover"
-                  />
+                  <picture className="h-16 w-16 shrink-0">
+                    <source type="image/avif" srcSet={current.image.avif} />
+                    <source type="image/webp" srcSet={current.image.webp} />
+                    <img
+                      src={current.image.fallback}
+                      alt={t.testimonials.photoAlt.replace("{name}", current.name)}
+                      width={96}
+                      height={96}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-16 w-16 rounded-full object-cover"
+                    />
+                  </picture>
 
                   <span className="min-w-0">
                     <strong className="block text-base font-medium leading-tight text-background md:text-lg">

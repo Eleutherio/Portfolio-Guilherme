@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ChevronUp } from "lucide-react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "@/lib/motion";
 import { useApp } from "@/i18n/AppContext";
 
 export function BackToTop() {
