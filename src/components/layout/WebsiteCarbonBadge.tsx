@@ -1,82 +1,155 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 
 type Language = "pt" | "en";
+type CarbonGrade = "A+" | "A" | "B" | "C" | "D" | "E" | "F";
 
 type CarbonResult = {
-  carbon: number;
-  cleanerThan: number;
-  cachedAt: number;
+  grade: CarbonGrade;
+  carbon?: number;
+  cleanerThan?: number;
+  measuredAt?: number;
+  lastAttemptAt: number;
+  source: "published" | "api";
 };
 
-type BadgeStatus = "idle" | "loading" | "ready" | "local" | "unavailable";
+type BadgeStatus = "published" | "refreshing" | "ready" | "stale";
 
-const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
+const REFRESH_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
+const TARGET_URL = "https://guifer.tech/";
+const PUBLISHED_REPORT_URL = "https://www.websitecarbon.com/website/guifer-tech/";
+const CACHE_KEY = `website-carbon:grade:${TARGET_URL}`;
+
+const PUBLISHED_FALLBACK: CarbonResult = {
+  grade: "C",
+  carbon: 0.2,
+  cleanerThan: 54,
+  lastAttemptAt: 0,
+  source: "published",
+};
+
+// Cores da escala visual A+–F exibida no relatório oficial do Website Carbon.
+const GRADE_COLORS: Record<CarbonGrade, string> = {
+  "A+": "#00f5bd",
+  A: "#54f56f",
+  B: "#9bfb35",
+  C: "#caff00",
+  D: "#f5f000",
+  E: "#ffb800",
+  F: "#ff2028",
+};
+
+// Limites oficiais do Digital Carbon Rating para o SWDM v4.
+const GRADE_THRESHOLDS: ReadonlyArray<readonly [CarbonGrade, number]> = [
+  ["A+", 0.04],
+  ["A", 0.079],
+  ["B", 0.145],
+  ["C", 0.209],
+  ["D", 0.278],
+  ["E", 0.359],
+];
+
+function isCarbonGrade(value: unknown): value is CarbonGrade {
+  return ["A+", "A", "B", "C", "D", "E", "F"].includes(String(value));
+}
+
+function gradeFromCarbon(carbon: number): CarbonGrade {
+  return GRADE_THRESHOLDS.find(([, limit]) => carbon <= limit)?.[0] ?? "F";
+}
+
+function readStoredResult(): CarbonResult | null {
+  try {
+    const stored = window.localStorage.getItem(CACHE_KEY);
+    if (!stored) return null;
+
+    const parsed = JSON.parse(stored) as Partial<CarbonResult> & { cachedAt?: unknown };
+    const carbon = parsed.carbon === undefined ? undefined : Number(parsed.carbon);
+    const cleanerThan =
+      parsed.cleanerThan === undefined ? undefined : Number(parsed.cleanerThan);
+    const hasCarbon = typeof carbon === "number" && Number.isFinite(carbon);
+    const hasCleanerThan =
+      typeof cleanerThan === "number" && Number.isFinite(cleanerThan);
+    const grade = isCarbonGrade(parsed.grade)
+      ? parsed.grade
+      : hasCarbon
+        ? gradeFromCarbon(carbon)
+        : null;
+
+    if (!grade) return null;
+
+    const lastAttemptAt = Number(parsed.lastAttemptAt ?? parsed.cachedAt ?? 0);
+    const measuredAt = Number(parsed.measuredAt ?? parsed.cachedAt ?? 0);
+
+    return {
+      grade,
+      carbon: hasCarbon ? carbon : undefined,
+      cleanerThan: hasCleanerThan ? cleanerThan : undefined,
+      measuredAt: Number.isFinite(measuredAt) && measuredAt > 0 ? measuredAt : undefined,
+      lastAttemptAt: Number.isFinite(lastAttemptAt) ? lastAttemptAt : 0,
+      source: parsed.source === "api" ? "api" : "published",
+    };
+  } catch {
+    return null;
+  }
+}
+
+function storeResult(result: CarbonResult) {
+  try {
+    window.localStorage.setItem(CACHE_KEY, JSON.stringify(result));
+  } catch {
+    // A badge continua funcional com a última nota publicada quando o storage está bloqueado.
+  }
+}
 
 const copy = {
   pt: {
-    measuring: "Medindo CO₂…",
-    local: "Disponível na versão publicada",
-    unavailable: "Medição indisponível no momento",
-    cleaner: (percentage: number) => `Mais limpo que ${percentage}% das páginas testadas`,
-    emissions: (carbon: number) => `${carbon} g de CO₂/visita`,
+    grade: (grade: CarbonGrade) => `Nota ${grade}`,
+    published: "Última nota publicada",
+    refreshing: "Atualizando a nota semanal…",
+    stale: "Última nota armazenada · nova tentativa em até 7 dias",
+    emission: (carbon: string) => `${carbon} g de CO₂/visita`,
+    cleanerThan: (percentage: number) =>
+      `Mais limpa que ${percentage}% das páginas testadas`,
     open: "Abrir Website Carbon",
   },
   en: {
-    measuring: "Measuring CO₂…",
-    local: "Available on the published website",
-    unavailable: "Measurement currently unavailable",
-    cleaner: (percentage: number) => `Cleaner than ${percentage}% of pages tested`,
-    emissions: (carbon: number) => `${carbon} g of CO₂/view`,
+    grade: (grade: CarbonGrade) => `Grade ${grade}`,
+    published: "Last published grade",
+    refreshing: "Updating the weekly grade…",
+    stale: "Last stored grade · retrying within 7 days",
+    emission: (carbon: string) => `${carbon} g of CO₂/view`,
+    cleanerThan: (percentage: number) =>
+      `Cleaner than ${percentage}% of pages tested`,
     open: "Open Website Carbon",
   },
 } as const;
 
 export function WebsiteCarbonBadge({ active, lang }: { active: boolean; lang: Language }) {
-  const [status, setStatus] = useState<BadgeStatus>("idle");
-  const [result, setResult] = useState<CarbonResult | null>(null);
+  const [status, setStatus] = useState<BadgeStatus>("published");
+  const [result, setResult] = useState<CarbonResult>(PUBLISHED_FALLBACK);
   const labels = copy[lang];
 
-  const targetUrl = useMemo(() => {
-    if (typeof window === "undefined") return "";
-    return `${window.location.origin}${window.location.pathname}`;
-  }, []);
-
   useEffect(() => {
-    if (!active || !targetUrl) return;
+    if (!active) return;
+
+    const storedResult = readStoredResult();
+    const currentResult = storedResult ?? PUBLISHED_FALLBACK;
+    setResult(currentResult);
 
     const hostname = window.location.hostname;
     if (hostname === "localhost" || hostname === "127.0.0.1") {
-      setStatus("local");
+      setStatus(currentResult.source === "api" ? "stale" : "published");
       return;
     }
 
-    const cacheKey = `website-carbon:${targetUrl}`;
-    try {
-      const cached = window.localStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached) as CarbonResult;
-        if (
-          Number.isFinite(parsed.carbon) &&
-          Number.isFinite(parsed.cleanerThan) &&
-          Date.now() - parsed.cachedAt < CACHE_DURATION_MS
-        ) {
-          setResult(parsed);
-          setStatus("ready");
-          return;
-        }
-      }
-    } catch {
-      try {
-        window.localStorage.removeItem(cacheKey);
-      } catch {
-        // O armazenamento local pode estar bloqueado sem impedir a medição.
-      }
+    if (Date.now() - currentResult.lastAttemptAt < REFRESH_INTERVAL_MS) {
+      setStatus(currentResult.source === "api" ? "ready" : "published");
+      return;
     }
 
     const controller = new AbortController();
-    setStatus("loading");
+    setStatus(currentResult.source === "api" ? "stale" : "refreshing");
 
-    void fetch(`https://api.websitecarbon.com/b?url=${encodeURIComponent(targetUrl)}`, {
+    void fetch(`https://api.websitecarbon.com/b?url=${encodeURIComponent(TARGET_URL)}`, {
       signal: controller.signal,
       referrerPolicy: "no-referrer",
     })
@@ -92,57 +165,80 @@ export function WebsiteCarbonBadge({ active, lang }: { active: boolean; lang: La
         }
 
         const nextResult: CarbonResult = {
+          grade: gradeFromCarbon(carbon),
           carbon,
           cleanerThan: Math.round(cleanerThan),
-          cachedAt: Date.now(),
+          measuredAt: Date.now(),
+          lastAttemptAt: Date.now(),
+          source: "api",
         };
         setResult(nextResult);
         setStatus("ready");
-        try {
-          window.localStorage.setItem(cacheKey, JSON.stringify(nextResult));
-        } catch {
-          // A badge continua funcional quando o armazenamento local estiver indisponível.
-        }
+        storeResult(nextResult);
       })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
-        setStatus("unavailable");
+
+        const preservedResult: CarbonResult = {
+          ...currentResult,
+          lastAttemptAt: Date.now(),
+        };
+        setResult(preservedResult);
+        setStatus(currentResult.source === "api" ? "stale" : "published");
+        storeResult(preservedResult);
       });
 
     return () => controller.abort();
-  }, [active, targetUrl]);
+  }, [active]);
 
-  const primary =
-    status === "ready" && result
-      ? labels.emissions(result.carbon)
-      : status === "local"
-        ? labels.local
-        : status === "unavailable"
-          ? labels.unavailable
-          : labels.measuring;
-  const secondary =
-    status === "ready" && result ? labels.cleaner(result.cleanerThan) : "Website Carbon";
+  const primary = labels.grade(result.grade);
+  const hasMeasurement = result.carbon !== undefined && result.cleanerThan !== undefined;
+  const carbon = hasMeasurement
+    ? new Intl.NumberFormat(lang === "pt" ? "pt-BR" : "en", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 3,
+      }).format(result.carbon)
+    : null;
+  const measurement =
+    carbon && result.cleanerThan !== undefined
+      ? {
+          emission: labels.emission(carbon),
+          cleanerThan: labels.cleanerThan(result.cleanerThan),
+        }
+      : null;
+  const statusLabel =
+    status === "stale"
+      ? labels.stale
+      : status === "refreshing"
+        ? labels.refreshing
+        : labels.published;
+  const gradeStyle = { "--carbon-grade": GRADE_COLORS[result.grade] } as CSSProperties;
 
   return (
     <a
-      href="https://www.websitecarbon.com/"
+      href={PUBLISHED_REPORT_URL}
       target="_blank"
       rel="noreferrer noopener"
       data-cursor-open={labels.open}
-      aria-label={`${primary}. ${secondary}`}
+      aria-label={`${primary}. ${measurement?.emission ?? statusLabel}. ${measurement?.cleanerThan ?? ""}`}
       className="group inline-flex max-w-full flex-col items-center text-center font-sans text-[10px] leading-[1.15] no-underline"
+      style={gradeStyle}
     >
       <span className="inline-flex max-w-full items-stretch">
-        <span className="inline-flex min-h-8 min-w-[9.5rem] items-center justify-center rounded-l-sm border-2 border-[#00ffbc] bg-white px-2 py-1 text-[#0e11a8]">
-          {primary}
+        <span className="inline-flex min-h-8 items-center justify-center rounded-l-sm border-2 border-[var(--carbon-grade)] bg-[var(--carbon-grade)] px-2 py-1 font-bold text-[#0e11a8]">
+          {result.grade}
         </span>
-        <span className="inline-flex min-h-8 items-center justify-center rounded-r-sm border-2 border-l-0 border-[#00ffbc] bg-[#00ffbc] px-2 py-1 font-bold text-[#0e11a8]">
+        <span className="inline-flex min-h-8 min-w-[8.6rem] items-center justify-center border-y-2 border-[var(--carbon-grade)] bg-white px-2 py-1 text-[#0e11a8]">
+          {measurement?.emission ?? primary}
+        </span>
+        <span className="inline-flex min-h-8 items-center justify-center rounded-r-sm border-2 border-l-0 border-[var(--carbon-grade)] bg-[#0e11a8] px-2 py-1 font-bold text-white">
           Website Carbon
         </span>
       </span>
       <span aria-live="polite" className="mt-1 text-[10px] text-foreground/85">
-        {secondary}
+        {measurement?.cleanerThan ?? statusLabel}
       </span>
+      <span className="sr-only">{statusLabel}</span>
     </a>
   );
 }
