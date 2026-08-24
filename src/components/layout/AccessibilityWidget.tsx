@@ -67,7 +67,7 @@ function configureWidget(lang: "pt" | "en") {
   widgetWindow.AccessibleWebWidgetOptions = {
     ...widgetWindow.AccessibleWebWidgetOptions,
     position: "bottom-right",
-    offset: [24, 24],
+    offset: [24, 80],
     size: "44px",
     lang,
   };
@@ -131,11 +131,12 @@ export function AccessibilityWidget() {
     <>
       <button
         id="accessibility-widget-launcher"
+        data-custom-cursor-native
         type="button"
         onClick={() => void loadAndOpen()}
         disabled={loading}
         aria-busy={loading}
-        className="fixed bottom-6 right-6 z-40 grid h-11 w-11 place-items-center rounded-full border border-hairline bg-foreground text-background shadow-lg transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-wait disabled:opacity-70"
+        className="fixed bottom-20 right-6 z-40 grid h-11 w-11 place-items-center rounded-full border border-hairline bg-foreground text-background shadow-lg transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-wait disabled:opacity-70"
         aria-label={t.footer.accessibility}
       >
         <Accessibility className="h-5 w-5" aria-hidden="true" />
