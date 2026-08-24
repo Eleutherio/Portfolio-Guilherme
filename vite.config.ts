@@ -28,6 +28,12 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  server: {
+    watch: {
+      // O Playwright regrava estas pastas durante a suíte; observá-las causa EBUSY no Windows.
+      ignored: ["**/playwright-report/**", "**/test-results/**"],
+    },
+  },
   build: {
     outDir: "dist/client",
   },

@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { expect, test, type Locator, type Page, type TestInfo } from "@playwright/test";
+import sharp from "sharp";
 
 type Language = "pt" | "en";
 type Theme = "light" | "dark";
@@ -36,6 +37,7 @@ async function openPage(
     width?: number;
     height?: number;
     loadDeferredSections?: boolean;
+    loadMedia?: boolean;
   } = {},
 ) {
   const language = options.language ?? "pt";
@@ -49,6 +51,15 @@ async function openPage(
     },
     { selectedLanguage: language, selectedTheme: theme },
   );
+  if (!options.loadMedia) {
+    await page.route(/\.mp4(?:\?|$)/u, async (route) => {
+      if (route.request().resourceType() === "media") {
+        await route.abort();
+        return;
+      }
+      await route.continue();
+    });
+  }
   await page.goto(route, { waitUntil: "domcontentloaded" });
   await expect(page.locator("main#main")).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", language === "pt" ? "pt-BR" : "en");
@@ -61,12 +72,14 @@ async function openPage(
   if (route === "/") {
     if (options.loadDeferredSections !== false) {
       await page.evaluate(() => {
-        for (const id of ["sobre", "trajetoria", "projetos", "processo", "contato"]) {
+        for (const id of ["projetos", "depoimentos", "trajetoria", "sobre", "contato"]) {
           window.dispatchEvent(new CustomEvent("portfolio:load-deferred-section", { detail: id }));
         }
       });
-      await expect(page.locator('[data-timeline-hydrated="true"]')).toBeAttached();
       await expect(page.locator('[data-projects-hydrated="true"]')).toBeAttached();
+      await expect(page.locator("#depoimentos-heading")).toBeAttached();
+      await expect(page.locator("#trajetoria-heading")).toBeAttached();
+      await expect(page.locator("#sobre-heading")).toBeAttached();
       await expect(page.locator("footer")).toBeAttached();
     }
   }
@@ -123,6 +136,497 @@ async function fillValidContactForm(page: Page) {
     .fill("Esta mensagem possui tamanho suficiente para validar o formulário.");
 }
 
+async function screenshotPixel(page: Page, x: number, y: number) {
+  const screenshot = await page.screenshot();
+  const { data, info } = await sharp(screenshot)
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const offset = (Math.floor(y) * info.width + Math.floor(x)) * info.channels;
+  return {
+    red: data[offset],
+    green: data[offset + 1],
+    blue: data[offset + 2],
+  };
+}
+
+async function expectFocusedTooltip(button: Locator, description: string) {
+  await button.focus();
+  let content = "";
+  await expect
+    .poll(async () => {
+      content = await button.evaluate((element) => {
+        const tooltipId = element.getAttribute("aria-describedby");
+        return tooltipId ? (document.getElementById(tooltipId)?.textContent ?? "") : "";
+      });
+      return content;
+    })
+    .toContain(description);
+  expect(content).not.toMatch(SIMPLE_TOOLTIP_FORBIDDEN);
+}
+
+test.describe("Identidade visual", () => {
+  test("a assinatura da marca usa o nome completo com pesos bold e light", async ({ page }) => {
+    await openPage(page, "/", { width: 1440, height: 900 });
+
+    const wordmarks = page.locator('[data-wordmark="guifer.tech"]');
+    await expect(wordmarks).toHaveCount(2);
+
+    for (const wordmark of await wordmarks.all()) {
+      await expect(wordmark.locator('[data-wordmark-part="gui"]')).toHaveText("gui");
+      await expect(wordmark.locator('[data-wordmark-part="guifer"]')).toHaveCSS(
+        "font-weight",
+        "700",
+      );
+      await expect(wordmark.locator('[data-wordmark-part="tech"]')).toHaveCSS("font-weight", "300");
+    }
+
+    const headerWordmark = page.locator("header").locator('[data-wordmark="guifer.tech"]');
+    await expect(headerWordmark).toHaveCSS("font-size", "11.5px");
+    await expect(page.locator("footer").locator('[data-wordmark="guifer.tech"]')).toHaveCSS(
+      "font-size",
+      "11.5px",
+    );
+    await expect(page.locator("header").getByText("GF", { exact: true })).toHaveCount(0);
+  });
+
+  test("o MIV preserva a capitalização original sem forçar caixa alta", async ({ page }) => {
+    await openPage(page, "/", { width: 1440, height: 900 });
+
+    const forcedTextTransforms = await page.locator("body *").evaluateAll((elements) =>
+      elements
+        .filter((element) => window.getComputedStyle(element).textTransform !== "none")
+        .map((element) => ({
+          tag: element.tagName,
+          className: element.getAttribute("class"),
+          textTransform: window.getComputedStyle(element).textTransform,
+        })),
+    );
+
+    expect(forcedTextTransforms).toEqual([]);
+    await expect(page.locator("header").getByText("EN", { exact: true })).toBeVisible();
+    await expect(
+      page.locator("footer").getByRole("link", { name: "Acessibilidade" }),
+    ).toBeVisible();
+    await expect(page.locator("footer").getByRole("button", { name: "Privacidade" })).toBeVisible();
+  });
+
+  test("o header concentra navegação e controles na metade direita", async ({ page }) => {
+    await openPage(page, "/", { width: 1440, height: 900, loadDeferredSections: false });
+
+    const headerContainer = page.locator("header .header-container").first();
+    const headerRight = page.locator("[data-header-right]");
+    const navigationItems = headerRight.locator("nav > button");
+
+    await expect(navigationItems).toHaveCount(3);
+    await expect(navigationItems).toHaveText(["sobre", "projetos", "contato"]);
+
+    const containerBox = await headerContainer.boundingBox();
+    const rightBox = await headerRight.boundingBox();
+    expect(rightBox?.x ?? 0).toBeGreaterThanOrEqual(
+      (containerBox?.x ?? 0) + (containerBox?.width ?? 0) / 2 - 1,
+    );
+    await expect(page.locator("[data-header-switches]")).toHaveClass(/rounded-full/);
+  });
+});
+
+test.describe("Cursor customizado", () => {
+  test("usa a forma aprovada, inversão real e crescimento em elementos interativos", async ({
+    page,
+  }) => {
+    await openPage(page, "/", { width: 1440, height: 900, loadDeferredSections: false });
+
+    const html = page.locator("html");
+    const cursor = page.locator("#custom-cursor");
+    const visual = cursor.locator(".custom-cursor__visual");
+    const chevron = cursor.locator(".custom-cursor__chevron");
+    const tooltip = page.locator("#custom-cursor-tooltip");
+
+    await expect(html).toHaveAttribute("data-custom-cursor", "active");
+    await page.locator("#home h1").hover({ position: { x: 12, y: 12 } });
+    await expect(cursor).toHaveAttribute("data-visible", "true");
+    await expect(cursor).toHaveAttribute("data-interactive", "false");
+    await expect(cursor).toHaveCSS("width", "16px");
+    await expect(cursor).toHaveCSS("height", "16px");
+    await expect(cursor).toHaveCSS("mix-blend-mode", "difference");
+    await expect(visual).toHaveCSS("mix-blend-mode", "normal");
+    await expect(visual).toHaveCSS("opacity", "1");
+    await expect(chevron).toHaveCSS("stroke-width", "0.55px");
+    const path = chevron.locator("path");
+    await expect(path).toHaveCount(1);
+    await expect(path).toHaveAttribute(
+      "d",
+      "M2.05 1.25c3.85.8 9.45 2.8 12.3 4.1 1.2.55 1.17 1.43.01 2-1.41.7-4.31.85-5.31 2.6l-2.7 4.6c-.63 1.07-1.62 1.03-2.17-.1L.95 2.7C.57 1.32 1 .98 2.05 1.25Z",
+    );
+    await expect(cursor.locator(".custom-cursor__dot")).toHaveCount(0);
+    await expect(tooltip).toHaveAttribute("data-visible", "false");
+
+    const projects = page.locator("header nav button").nth(1);
+    await projects.hover();
+    await expect(cursor).toHaveAttribute("data-interactive", "true");
+    await expect(cursor).toHaveAttribute("data-visible", "true");
+    await expect(visual).toHaveCSS("opacity", "1");
+    await expect(visual).toHaveCSS("transform", /matrix\(1\.35/);
+    await expect(tooltip).toHaveAttribute("data-visible", "false");
+
+    const themeAction = page.locator("[data-header-switches] button").first();
+    await themeAction.hover();
+    await expect(cursor).toHaveAttribute("data-interactive", "true");
+    await expect(tooltip).toHaveAttribute("data-visible", "false");
+    await expect(themeAction).toHaveCSS("cursor", "none");
+
+    await page.mouse.down();
+    await expect(cursor).toHaveAttribute("data-pressed", "true");
+    await expect(visual).toHaveCSS("opacity", "0.5");
+    await expect(visual).toHaveCSS("transform", /matrix\(0\.92/);
+    await page.mouse.up();
+    await expect(cursor).toHaveAttribute("data-pressed", "false");
+
+    const projectsButton = page.locator("#home a.btn-primary").first();
+    await projectsButton.hover();
+    await expect(cursor).toHaveAttribute("data-visible", "false");
+    await expect(cursor).toHaveAttribute("data-label-visible", "true");
+    await expect(tooltip).toHaveText("Abrir meus projetos");
+    await expect(tooltip).toHaveAttribute("data-visible", "true");
+    await expect(tooltip).toHaveCSS("mix-blend-mode", "normal");
+  });
+
+  test("limita a caixa a botões visuais e imagens clicáveis em PT e EN", async ({ page }) => {
+    await openPage(page, "/", {
+      language: "en",
+      theme: "dark",
+      width: 1440,
+      height: 900,
+    });
+
+    const cursor = page.locator("#custom-cursor");
+    const tooltip = page.locator("#custom-cursor-tooltip");
+    await page.locator("header nav button").nth(1).hover();
+    await expect(cursor).toHaveAttribute("data-visible", "true");
+    await expect(tooltip).toHaveAttribute("data-visible", "false");
+
+    await page.locator("#home a[download]").hover();
+    await expect(cursor).toHaveAttribute("data-visible", "true");
+    await expect(tooltip).toHaveAttribute("data-visible", "false");
+
+    await page.locator("footer a").first().hover();
+    await expect(cursor).toHaveAttribute("data-visible", "true");
+    await expect(tooltip).toHaveAttribute("data-visible", "false");
+
+    await page.locator("#home a.btn-primary").first().hover();
+    await expect(cursor).toHaveAttribute("data-visible", "false");
+    await expect(tooltip).toHaveText("Open my projects");
+
+    const firstProjectLink = page.locator('#projetos a[aria-current="true"]');
+    const projectTitle = await firstProjectLink.getAttribute("data-cursor-open");
+    expect(projectTitle).toBeTruthy();
+    await firstProjectLink.hover();
+    await expect(cursor).toHaveAttribute("data-visible", "false");
+    await expect(tooltip).toHaveText(`Open ${projectTitle}`);
+
+    await openPage(page, "/sobre", { language: "en", width: 1440, height: 900 });
+    const photoButton = page.locator("[data-about-album] button:has(img)").first();
+    await photoButton.hover();
+    await expect(cursor).toHaveAttribute("data-visible", "false");
+    await expect(tooltip).toHaveText(/^Open photo 1:/);
+  });
+
+  test("inverte visualmente sobre fundos claros e escuros", async ({ page }) => {
+    await openPage(page, "/", { width: 800, height: 500, loadDeferredSections: false });
+    await page.evaluate(() => {
+      const panel = document.createElement("div");
+      panel.id = "cursor-inversion-probe";
+      Object.assign(panel.style, {
+        position: "fixed",
+        inset: "0",
+        zIndex: "2147483000",
+        background: "#fff",
+        pointerEvents: "none",
+      });
+      document.body.append(panel);
+    });
+
+    const cursor = page.locator("#custom-cursor");
+    await page.mouse.move(100, 100);
+    await expect(cursor).toHaveAttribute("data-visible", "true");
+    await page.waitForTimeout(150);
+    const onLight = await screenshotPixel(page, 103, 103);
+    expect(Math.max(onLight.red, onLight.green, onLight.blue)).toBeLessThan(40);
+
+    await page.locator("#cursor-inversion-probe").evaluate((panel) => {
+      (panel as HTMLElement).style.background = "#000";
+    });
+    await page.mouse.move(101, 100);
+    const onDark = await screenshotPixel(page, 104, 103);
+    expect(Math.min(onDark.red, onDark.green, onDark.blue)).toBeGreaterThan(215);
+    await page.locator("#cursor-inversion-probe").evaluate((panel) => panel.remove());
+  });
+
+  test("aumenta o cursor em campos e ações sem exibir caixa", async ({ page }) => {
+    await openPage(page, "/", { width: 1440, height: 900 });
+    await page.evaluate(() => {
+      document.documentElement.style.scrollBehavior = "auto";
+      document.getElementById("contact-name")?.scrollIntoView({ block: "center" });
+    });
+
+    const cursor = page.locator("#custom-cursor");
+    const visual = cursor.locator(".custom-cursor__visual");
+    const tooltip = page.locator("#custom-cursor-tooltip");
+    const input = page.locator("#contact-name");
+    await input.hover();
+    await expect(cursor).toHaveAttribute("data-interactive", "true");
+    await expect(cursor.locator(".custom-cursor__dot")).toHaveCount(0);
+    await expect(visual).toHaveCSS("transform", /matrix\(1\.35/);
+    await expect(tooltip).toHaveAttribute("data-visible", "false");
+    await expect(input).toHaveCSS("cursor", "none");
+
+    const submit = page.locator('#contato button[type="submit"]');
+    await submit.hover();
+    await expect(cursor).toHaveAttribute("data-interactive", "true");
+    await expect(visual).toHaveCSS("transform", /matrix\(1\.35/);
+    await expect(tooltip).toHaveAttribute("data-visible", "false");
+
+    const carouselAction = page.locator("#projetos button:not(:disabled)").first();
+    await carouselAction.hover();
+    await expect(cursor).toHaveAttribute("data-interactive", "true");
+    await expect(tooltip).toHaveAttribute("data-visible", "false");
+
+    await page.evaluate(() => {
+      const disabledAction = document.createElement("button");
+      disabledAction.id = "cursor-disabled-probe";
+      disabledAction.disabled = true;
+      disabledAction.textContent = "indisponível";
+      document.body.append(disabledAction);
+    });
+    const disabledAction = page.locator("#cursor-disabled-probe");
+    await disabledAction.hover({ force: true });
+    await expect(cursor).toHaveAttribute("data-interactive", "false");
+    await expect(tooltip).toHaveAttribute("data-visible", "false");
+  });
+
+  test("move botões magnéticos junto ao ponteiro e os devolve à posição original", async ({
+    page,
+  }) => {
+    await openPage(page, "/", { width: 1440, height: 900, loadDeferredSections: false });
+
+    const button = page.locator("#home .btn-primary").first();
+    const buttonBox = await button.boundingBox();
+    expect(buttonBox).not.toBeNull();
+    if (!buttonBox) return;
+
+    const originalAppearance = await button.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        borderRadius: style.borderRadius,
+        height: style.height,
+        width: style.width,
+      };
+    });
+
+    await page.mouse.move(
+      buttonBox.x + buttonBox.width * 0.82,
+      buttonBox.y + buttonBox.height * 0.78,
+    );
+    await expect(button).toHaveAttribute("data-magnetic-active", "true");
+
+    const magneticOffset = await button.evaluate((element) => ({
+      x: Number.parseFloat(element.style.getPropertyValue("--magnetic-x")),
+      y: Number.parseFloat(element.style.getPropertyValue("--magnetic-y")),
+    }));
+    expect(magneticOffset.x).toBeGreaterThan(2);
+    expect(magneticOffset.y).toBeGreaterThan(1);
+    expect(magneticOffset.x).toBeLessThanOrEqual(12);
+    expect(magneticOffset.y).toBeLessThanOrEqual(8);
+
+    await page.locator("#home h1").hover();
+    await expect(button).toHaveAttribute("data-magnetic-active", "false");
+    await expect(button).toHaveCSS("transform", /matrix\(1, 0, 0, 1, 0, 0\)|none/);
+    await expect
+      .poll(() =>
+        button.evaluate((element) => {
+          const style = getComputedStyle(element);
+          return {
+            borderRadius: style.borderRadius,
+            height: style.height,
+            width: style.width,
+          };
+        }),
+      )
+      .toEqual(originalAppearance);
+
+    await page.evaluate(() => {
+      const disabled = document.createElement("button");
+      disabled.id = "magnetic-disabled-probe";
+      disabled.className = "btn-primary";
+      disabled.disabled = true;
+      disabled.textContent = "indisponível";
+      Object.assign(disabled.style, {
+        position: "fixed",
+        left: "20px",
+        bottom: "20px",
+        zIndex: "2147483600",
+      });
+      document.body.append(disabled);
+    });
+    const disabled = page.locator("#magnetic-disabled-probe");
+    await disabled.hover({ force: true });
+    await expect(disabled).not.toHaveAttribute("data-magnetic-active", "true");
+    await expect(disabled).toHaveCSS("transform", /matrix\(1, 0, 0, 1, 0, 0\)|none/);
+  });
+
+  test("faz clamp e inverte a caixa nas quatro bordas", async ({ page }) => {
+    const width = 900;
+    const height = 700;
+    await openPage(page, "/", { width, height, loadDeferredSections: false });
+    await page.evaluate(() => {
+      const probe = document.createElement("a");
+      probe.id = "cursor-edge-probe";
+      probe.href = "#cursor-test";
+      probe.className = "btn-outline";
+      probe.dataset.cursorOpen = "destino";
+      Object.assign(probe.style, {
+        position: "fixed",
+        inset: "0",
+        zIndex: "2147483640",
+      });
+      document.getElementById("root")?.append(probe);
+    });
+
+    const tooltip = page.locator("#custom-cursor-tooltip");
+    const cases = [
+      { x: 2, y: 2, horizontal: "right", vertical: "below" },
+      { x: width - 2, y: 2, horizontal: "left", vertical: "below" },
+      { x: 2, y: height - 2, horizontal: "right", vertical: "above" },
+      { x: width - 2, y: height - 2, horizontal: "left", vertical: "above" },
+    ];
+
+    for (const position of cases) {
+      await page.mouse.move(position.x, position.y);
+      await expect(tooltip).toHaveText("Abrir destino");
+      await expect(tooltip).toHaveAttribute("data-horizontal", position.horizontal);
+      await expect(tooltip).toHaveAttribute("data-vertical", position.vertical);
+      const box = await tooltip.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box?.x ?? 0).toBeGreaterThanOrEqual(8);
+      expect(box?.y ?? 0).toBeGreaterThanOrEqual(8);
+      expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(width - 8);
+      expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(height - 8);
+    }
+
+    await page.locator("#cursor-edge-probe").evaluate((element) => {
+      delete (element as HTMLElement).dataset.cursorOpen;
+      element.setAttribute("aria-label", "documentação");
+    });
+    await page.mouse.move(width / 2, height / 2);
+    await expect(tooltip).toHaveText("Abrir documentação");
+
+    await page.locator("#cursor-edge-probe").evaluate((element) => {
+      element.removeAttribute("aria-label");
+      element.setAttribute("href", "https://example.com/recurso");
+    });
+    await page.mouse.move(width / 2 + 1, height / 2 + 1);
+    await expect(tooltip).toHaveText("Abrir example.com");
+    await page.locator("#cursor-edge-probe").evaluate((element) => element.remove());
+  });
+
+  test("preserva zonas nativas e remove animação com movimento reduzido", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await openPage(page, "/", { width: 1440, height: 900, loadDeferredSections: false });
+
+    const cursor = page.locator("#custom-cursor");
+    const visual = cursor.locator(".custom-cursor__visual");
+    const projects = page.locator("header nav button").nth(1);
+    await projects.hover();
+    await page.mouse.down();
+    await expect(cursor).toHaveAttribute("data-visible", "true");
+    await expect(visual).toHaveCSS("transition-duration", "0s");
+    await expect(visual).toHaveCSS("transform", "none");
+    await page.mouse.up();
+
+    const launcher = page.locator("#accessibility-widget-launcher");
+    await launcher.hover();
+    await expect(cursor).toHaveAttribute("data-visible", "false");
+    await expect(launcher).toHaveCSS("cursor", "auto");
+
+    await page.evaluate(() => {
+      const iframe = document.createElement("iframe");
+      iframe.id = "cursor-native-frame";
+      Object.assign(iframe.style, {
+        position: "fixed",
+        left: "120px",
+        top: "120px",
+        width: "120px",
+        height: "80px",
+        zIndex: "100",
+      });
+      document.getElementById("root")?.append(iframe);
+    });
+    await page.locator("#cursor-native-frame").hover();
+    await expect(cursor).toHaveAttribute("data-visible", "false");
+    await expect(page.locator("#cursor-native-frame")).toHaveCSS("cursor", "auto");
+    await page.locator("#cursor-native-frame").evaluate((element) => element.remove());
+  });
+
+  test("permanece global dentro de portais da aplicação", async ({ page }) => {
+    await openPage(page, "/", { width: 1440, height: 900 });
+    await page.locator("footer").getByRole("button", { name: "Privacidade" }).click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    const cursor = page.locator("#custom-cursor");
+    const tooltip = page.locator("#custom-cursor-tooltip");
+
+    const textLink = dialog.getByRole("link").first();
+    await textLink.hover();
+    await expect(cursor).toHaveAttribute("data-visible", "true");
+    await expect(cursor).toHaveAttribute("data-interactive", "true");
+    await expect(tooltip).toHaveAttribute("data-visible", "false");
+    await expect(textLink).toHaveCSS("cursor", "none");
+
+    const action = dialog.locator("button.btn-primary");
+    await action.hover();
+    await expect(cursor).toHaveAttribute("data-visible", "true");
+    await expect(cursor.locator(".custom-cursor__visual")).toHaveCSS("transform", /matrix\(1\.35/);
+    await expect(tooltip).toHaveAttribute("data-visible", "false");
+  });
+
+  test("mantém o cursor nativo em forced colors", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    await openPage(page, "/", { width: 1440, height: 900, loadDeferredSections: false });
+
+    await expect(page.locator("html")).toHaveAttribute("data-custom-cursor", "inactive");
+    await expect(page.locator("#custom-cursor")).toHaveCSS("display", "none");
+    await expect(page.locator("[data-header-switches] button").first()).not.toHaveCSS(
+      "cursor",
+      "none",
+    );
+  });
+
+  test("mantém o cursor nativo na impressão", async ({ page }) => {
+    await page.emulateMedia({ media: "print" });
+    await openPage(page, "/", { width: 1440, height: 900, loadDeferredSections: false });
+
+    await expect(page.locator("html")).toHaveAttribute("data-custom-cursor", "inactive");
+    await expect(page.locator("#custom-cursor")).toHaveCSS("display", "none");
+    await expect(page.locator("#home a.btn-primary").first()).not.toHaveCSS("cursor", "none");
+  });
+});
+
+test.describe("Cursor customizado em touch", () => {
+  test.use({ hasTouch: true, isMobile: true, viewport: { width: 375, height: 812 } });
+
+  test("mantém o cursor nativo em ponteiro coarse", async ({ page }) => {
+    await openPage(page, "/", {
+      width: 375,
+      height: 812,
+      loadDeferredSections: false,
+    });
+
+    await expect(page.locator("html")).toHaveAttribute("data-custom-cursor", "inactive");
+    await expect(page.locator("#custom-cursor")).toHaveAttribute("data-visible", "false");
+  });
+});
+
 test.describe("WCAG 2.2 AA — matriz de rotas", () => {
   for (const route of ROUTES) {
     for (const mode of MODES) {
@@ -155,7 +659,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
 
   test("modal de privacidade preserva foco, Escape e reflow", async ({ page }, testInfo) => {
     await openPage(page, "/", { width: 320, height: 900 });
-    const trigger = page.getByRole("button", { name: "PRIVACIDADE", exact: true });
+    const trigger = page.getByRole("button", { name: "Privacidade", exact: true });
     await trigger.click();
 
     const dialog = page.getByRole("dialog", { name: "Como seus dados são usados" });
@@ -331,17 +835,15 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       (element) => getComputedStyle(element).borderBottomColor,
     );
     await name.focus();
+    await expect
+      .poll(() => name.evaluate((element) => getComputedStyle(element).borderBottomColor))
+      .not.toBe(borderBefore);
     const focusStyle = await name.evaluate((element) => {
       const style = getComputedStyle(element);
-      return {
-        borderBottomColor: style.borderBottomColor,
-        boxShadow: style.boxShadow,
-        outlineStyle: style.outlineStyle,
-      };
+      return { boxShadow: style.boxShadow, outlineStyle: style.outlineStyle };
     });
     expect(focusStyle.outlineStyle).toBe("none");
     expect(focusStyle.boxShadow).toBe("none");
-    expect(focusStyle.borderBottomColor).not.toBe(borderBefore);
     await runAxe(page, testInfo, "contact-whatsapp-focus", "#contato");
   });
 
@@ -400,14 +902,333 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await runAxe(page, testInfo, "contact-recaptcha-unavailable");
   });
 
-  test("timeline e carrossel após navegação", async ({ page }, testInfo) => {
+  test("roadmap e carrosséis permanecem acessíveis após navegação", async ({ page }, testInfo) => {
     await openPage(page, "/", { width: 375, height: 900 });
-    await page.getByRole("button", { name: "Próximo marco" }).click();
+    const roadmap = page.locator("#trajetoria ol");
+    await roadmap.evaluate((element) => {
+      element.scrollLeft = element.scrollWidth;
+    });
     await page.getByRole("button", { name: "Próxima página de projetos" }).click();
     await expect(
       page.locator("#projetos").getByRole("heading", { name: "Landing page para chaveiro 24h" }),
     ).toBeVisible();
+    await page.getByRole("button", { name: "Exibir próximo depoimento" }).click();
+    await expect(page.locator("#depoimentos figure")).toContainText("Martha Izabel");
     await runAxe(page, testInfo, "carousels-next");
+  });
+
+  test("carrossel de projetos responde a teclado, roda e mantém o ciclo infinito", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await openPage(page, "/", { width: 1440, height: 900 });
+
+    const section = page.locator("#projetos");
+    const rail = section.getByRole("region", { name: "Carrossel vertical de projetos" });
+    const previous = section.getByRole("button", { name: "Página anterior de projetos" });
+    const next = section.getByRole("button", { name: "Próxima página de projetos" });
+    const activePreview = section.locator('a[aria-current="true"]');
+    const activeDestination = () => activePreview.getAttribute("data-cursor-open");
+
+    await section.scrollIntoViewIfNeeded();
+    await expect(rail).toHaveCSS("overflow-y", "auto");
+    await expect(rail).toHaveCSS("touch-action", "pan-y");
+    await expect(rail).toHaveAttribute("tabindex", "0");
+
+    const initial = await activeDestination();
+    expect(initial).toBeTruthy();
+    await rail.focus();
+    await rail.press("ArrowDown");
+    await expect.poll(activeDestination).not.toBe(initial);
+    const second = await activeDestination();
+
+    await rail.press("ArrowUp");
+    await expect.poll(activeDestination).toBe(initial);
+
+    await rail.hover();
+    await page.mouse.wheel(0, 520);
+    await expect.poll(activeDestination).toBe(second);
+
+    await previous.click();
+    await expect.poll(activeDestination).toBe(initial);
+    for (let step = 0; step < 3; step += 1) {
+      await next.click();
+      await page.waitForTimeout(180);
+    }
+    await expect.poll(activeDestination).toBe(initial);
+    await expect(
+      section.locator('.projects-carousel__slide:not([aria-hidden="true"])'),
+    ).toHaveCount(1);
+    await expect(section.locator('a[aria-current="true"]')).toHaveCount(1);
+  });
+
+  test("contadores e scrambles pausam fora da seção e executam somente uma vez", async ({
+    page,
+  }) => {
+    await openPage(page, "/", { width: 1440, height: 900 });
+
+    const section = page.locator("#trajetoria");
+    const statValues = section.locator('header ul strong > span[aria-hidden="true"]');
+    const yearValues = section.locator('ol time > span[aria-hidden="true"]');
+    const visualLabels = section.locator(
+      'header ul > li > span.grid > span:last-child span[aria-hidden="true"]',
+    );
+
+    await expect(section).toHaveAttribute("data-runtime-activity", "paused");
+    await expect(statValues).toHaveText(["+0h", "0", "0", "A1"]);
+    await expect(yearValues).toHaveText(["2000", "2000", "2000"]);
+    await page.waitForTimeout(500);
+    await expect(statValues).toHaveText(["+0h", "0", "0", "A1"]);
+
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toHaveAttribute("data-runtime-activity", "active");
+    await expect
+      .poll(async () => {
+        const value = (await statValues.first().textContent()) ?? "";
+        return Number.parseInt(value.replace(/\D/gu, ""), 10);
+      })
+      .toBeGreaterThan(0);
+
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "auto" }));
+    await expect(section).toHaveAttribute("data-runtime-activity", "paused");
+    await page.waitForTimeout(100);
+    const pausedValues = await statValues.allTextContents();
+    await page.waitForTimeout(500);
+    await expect(statValues).toHaveText(pausedValues);
+
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toHaveAttribute("data-runtime-activity", "active");
+    await expect(statValues).toHaveText(["+960h", "3", "2", "C1"], { timeout: 3_000 });
+    await expect(yearValues).toHaveText(["2023", "2025", "2026"]);
+    await expect(visualLabels).toHaveText([
+      "de formação complementar",
+      "programas de formação e certificação",
+      "experiências profissionais",
+      "inglês técnico",
+    ]);
+
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "auto" }));
+    await expect(section).toHaveAttribute("data-runtime-activity", "paused");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toHaveAttribute("data-runtime-activity", "active");
+    await expect(statValues).toHaveText(["+960h", "3", "2", "C1"]);
+    await expect(yearValues).toHaveText(["2023", "2025", "2026"]);
+    await expect(visualLabels).toHaveText([
+      "de formação complementar",
+      "programas de formação e certificação",
+      "experiências profissionais",
+      "inglês técnico",
+    ]);
+  });
+
+  test("header recolhe a faixa e revela os controles sem perder o wordmark", async ({ page }) => {
+    await openPage(page, "/", { width: 1440, height: 900, loadDeferredSections: false });
+
+    const header = page.getByRole("banner");
+    const logo = header.locator('a:has([data-wordmark="guifer.tech"])');
+    const right = header.locator("[data-header-right]");
+    const tech = logo.locator('[data-wordmark-part="tech"]');
+
+    await expect(right).toHaveCSS("opacity", "1");
+    await expect(tech).toHaveText(".tech", { timeout: 2_000 });
+    await page.evaluate(() => window.scrollTo({ top: 700, behavior: "auto" }));
+    await expect(header).toHaveClass(/backdrop-blur-none/);
+    await expect(header).toHaveClass(/bg-transparent/);
+    await expect(right).toHaveCSS("opacity", "0");
+    await expect(logo).toBeVisible();
+    await expect(tech).toHaveText("", { timeout: 2_000 });
+
+    await logo.hover();
+    await expect(right).toHaveCSS("opacity", "1");
+    await expect(header).toHaveClass(/backdrop-blur-md/);
+    await expect(tech).toHaveText(".tech", { timeout: 2_000 });
+
+    await page.mouse.move(720, 180);
+    await expect(right).toHaveCSS("opacity", "0");
+    await expect(header).toHaveClass(/backdrop-blur-none/);
+
+    await page.mouse.move(720, 5);
+    await expect(right).toHaveCSS("opacity", "1");
+    await page.mouse.move(720, 180);
+    await expect(right).toHaveCSS("opacity", "0");
+
+    await logo.focus();
+    await expect(logo).toBeFocused();
+    await expect(right).toHaveCSS("opacity", "1");
+    await expect(header).toHaveClass(/backdrop-blur-md/);
+  });
+
+  test("depoimentos preservam altura, seleção direta e ciclo infinito", async ({
+    page,
+  }, testInfo) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await openPage(page, "/", { width: 1440, height: 900 });
+
+    const section = page.locator("#depoimentos");
+    const figure = section.locator("figure");
+    const dots = section.getByRole("button", { name: /Exibir depoimento \d/ });
+    const next = section.getByRole("button", { name: "Exibir próximo depoimento" });
+
+    await section.scrollIntoViewIfNeeded();
+    await expect(dots).toHaveCount(4);
+    await expect(figure).toContainText("Bruna Vizzotto");
+    const initialSectionHeight = await section.evaluate(
+      (element) => element.getBoundingClientRect().height,
+    );
+    const initialFigureHeight = await figure.evaluate(
+      (element) => element.getBoundingClientRect().height,
+    );
+
+    await dots.nth(3).click();
+    await expect(dots.nth(3)).toHaveAttribute("aria-current", "true");
+    await expect(figure).toContainText("Tainara Conrad Bassani");
+    await next.click();
+    await expect(figure).toContainText("Bruna Vizzotto");
+    await expect(dots.nth(0)).toHaveAttribute("aria-current", "true");
+
+    expect(await section.evaluate((element) => element.getBoundingClientRect().height)).toBe(
+      initialSectionHeight,
+    );
+    expect(await figure.evaluate((element) => element.getBoundingClientRect().height)).toBe(
+      initialFigureHeight,
+    );
+    await runAxe(page, testInfo, "testimonials-carousel", "#depoimentos");
+  });
+
+  test("depoimentos avançam automaticamente e pausam durante interação", async ({ page }) => {
+    await openPage(page, "/", { width: 1440, height: 900 });
+
+    const section = page.locator("#depoimentos");
+    const figure = section.locator("figure");
+    await section.scrollIntoViewIfNeeded();
+    await expect(figure).toContainText("Bruna Vizzotto");
+
+    await expect(figure).toContainText("Martha Izabel", { timeout: 11_000 });
+
+    await section.hover();
+    await page.waitForTimeout(9_500);
+    await expect(figure).toContainText("Martha Izabel");
+
+    await page.getByRole("button", { name: "Acessibilidade", exact: true }).hover();
+    await expect(figure).toContainText("Alecsandra Klatt Martins", { timeout: 11_000 });
+
+    const next = section.getByRole("button", { name: "Exibir próximo depoimento" });
+    await next.focus();
+    await page.waitForTimeout(9_500);
+    await expect(figure).toContainText("Alecsandra Klatt Martins");
+  });
+
+  test("preview em vídeo toca somente no projeto ativo e pausa fora da seção", async ({ page }) => {
+    await page.addInitScript(() => {
+      HTMLMediaElement.prototype.play = async function play() {
+        this.dataset.testPlayback = "playing";
+      };
+      HTMLMediaElement.prototype.pause = function pause() {
+        this.dataset.testPlayback = "paused";
+      };
+    });
+    await openPage(page, "/", {
+      width: 1440,
+      height: 900,
+      loadDeferredSections: false,
+    });
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent("portfolio:load-deferred-section", { detail: "projetos" }),
+      );
+    });
+
+    const section = page.locator("#projetos");
+    await expect(section.locator('[data-projects-hydrated="true"]')).toBeAttached();
+    const videos = section.locator("video");
+    await expect(videos).toHaveCount(9);
+    for (const video of await videos.all()) {
+      await expect(video).toHaveAttribute("loop", "");
+      await expect(video).toHaveAttribute("playsinline", "");
+      expect(await video.evaluate((element) => element.muted)).toBe(true);
+    }
+
+    await section.scrollIntoViewIfNeeded();
+    await expect
+      .poll(() =>
+        videos.evaluateAll(
+          (elements) => elements.filter((video) => video.dataset.testPlayback === "playing").length,
+        ),
+      )
+      .toBe(1);
+    const firstPlayingSource = await videos.evaluateAll((elements) =>
+      elements.find((video) => video.dataset.testPlayback === "playing")?.getAttribute("src"),
+    );
+
+    await section.getByRole("button", { name: "Próxima página de projetos" }).click();
+    await expect
+      .poll(() =>
+        videos.evaluateAll(
+          (elements) => elements.filter((video) => video.dataset.testPlayback === "playing").length,
+        ),
+      )
+      .toBe(1);
+    await expect
+      .poll(() =>
+        videos.evaluateAll((elements) =>
+          elements.find((video) => video.dataset.testPlayback === "playing")?.getAttribute("src"),
+        ),
+      )
+      .not.toBe(firstPlayingSource);
+
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "auto" }));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    await expect(section).toHaveAttribute("data-runtime-activity", "paused");
+    await expect
+      .poll(() =>
+        videos.evaluateAll(
+          (elements) => elements.filter((video) => video.dataset.testPlayback === "playing").length,
+        ),
+      )
+      .toBe(0);
+  });
+
+  test("preview H.264 real carrega, avança e pausa fora da seção", async ({
+    page,
+    browserName,
+  }) => {
+    test.skip(
+      browserName === "webkit",
+      "O WebKit distribuído pelo Playwright no Windows não inclui backend H.264 funcional.",
+    );
+    await openPage(page, "/", {
+      width: 1440,
+      height: 900,
+      loadDeferredSections: false,
+      loadMedia: true,
+    });
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent("portfolio:load-deferred-section", { detail: "projetos" }),
+      );
+    });
+
+    const section = page.locator("#projetos");
+    await expect(section.locator('[data-projects-hydrated="true"]')).toBeAttached();
+    await section.scrollIntoViewIfNeeded();
+    const activeVideo = section.locator('a[aria-current="true"] video');
+    await expect(activeVideo).toHaveCount(1);
+    await expect(activeVideo).toBeVisible();
+    await expect
+      .poll(() => activeVideo.evaluate((video) => video.readyState), { timeout: 30_000 })
+      .toBeGreaterThanOrEqual(2);
+    await expect.poll(() => activeVideo.evaluate((video) => video.error?.code ?? null)).toBeNull();
+    await expect.poll(() => activeVideo.evaluate((video) => video.paused)).toBe(false);
+
+    const initialTime = await activeVideo.evaluate((video) => video.currentTime);
+    await page.waitForTimeout(500);
+    await expect
+      .poll(() => activeVideo.evaluate((video) => video.currentTime))
+      .toBeGreaterThan(initialTime);
+
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "auto" }));
+    await expect(section).toHaveAttribute("data-runtime-activity", "paused");
+    await expect.poll(() => activeVideo.evaluate((video) => video.paused)).toBe(true);
   });
 
   test("álbum narrativo mantém capítulos, imagens e seletor acessíveis", async ({
@@ -536,8 +1357,8 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
   test("footer exibe selo sustentável e links legais padronizados", async ({ page }, testInfo) => {
     await openPage(page, "/", { width: 320, height: 900 });
     const footer = page.locator("footer");
-    const accessibility = footer.getByRole("link", { name: "ACESSIBILIDADE", exact: true });
-    const privacy = footer.getByRole("button", { name: "PRIVACIDADE", exact: true });
+    const accessibility = footer.getByRole("link", { name: "Acessibilidade", exact: true });
+    const privacy = footer.getByRole("button", { name: "Privacidade", exact: true });
     const badge = footer.getByRole("img", {
       name: "This website runs on green hosting - verified by thegreenwebfoundation.org",
     });
@@ -555,21 +1376,24 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await expect(badge).toHaveAttribute("decoding", "async");
     await expect(badge).toHaveAttribute("referrerpolicy", "no-referrer");
 
-    const legalBox = await accessibility.locator("xpath=..").boundingBox();
+    const legalBox = await accessibility.locator("xpath=../..").boundingBox();
     const badgeBox = await badge.boundingBox();
-    expect(badgeBox?.y ?? 0).toBeGreaterThan(legalBox?.y ?? 0);
+    expect(legalBox?.y ?? 0).toBeGreaterThan(badgeBox?.y ?? 0);
     const dimensions = await page.evaluate(() => ({
       viewport: document.documentElement.clientWidth,
       content: document.documentElement.scrollWidth,
     }));
     expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
     await expect(footer.getByText("Obrigado pela visita", { exact: false })).toHaveCount(0);
-    await expect(footer.getByText("local", { exact: true })).toHaveCount(0);
+    await expect(footer.getByText(/Porto Alegre .* Hora local:/)).toBeVisible();
+    await expect(footer.getByText("WCAG 2.2", { exact: false })).toHaveCount(0);
+    await expect(footer.getByText("Internet.nl", { exact: false })).toHaveCount(0);
     await runAxe(page, testInfo, "footer-green-badge");
 
     await openPage(page, "/", { language: "en", width: 320, height: 900 });
-    await expect(footer.getByRole("link", { name: "ACCESSIBILITY", exact: true })).toBeVisible();
-    await expect(footer.getByRole("button", { name: "PRIVACY", exact: true })).toBeVisible();
+    await expect(footer.getByRole("link", { name: "Accessibility", exact: true })).toBeVisible();
+    await expect(footer.getByRole("button", { name: "Privacy", exact: true })).toBeVisible();
+    await expect(footer.getByText(/Porto Alegre .* Local time:/)).toBeVisible();
     await expect(footer.getByText("Thanks for stopping by", { exact: false })).toHaveCount(0);
   });
 
@@ -615,10 +1439,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await page.mouse.move(0, 0);
     for (const [name, description] of scenarios) {
       const button = page.getByRole("button", { name });
-      await button.focus();
-      const tooltip = page.getByRole("tooltip").filter({ hasText: description });
-      await expect(tooltip).toBeVisible();
-      expect((await tooltip.textContent()) ?? "").not.toMatch(SIMPLE_TOOLTIP_FORBIDDEN);
+      await expectFocusedTooltip(button, description);
     }
 
     await openPage(page, "/", { language: "en" });
@@ -632,17 +1453,11 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       [/reCAPTCHA v3:/, "Indicates whether protection against automated submissions is available."],
     ] as const;
 
-    await page.getByRole("button", { name: englishScenarios[0][0] }).hover();
-    await expect(
-      page.getByRole("tooltip").filter({ hasText: englishScenarios[0][1] }),
-    ).toBeVisible();
-    await page.mouse.move(0, 0);
     for (const [name, description] of englishScenarios) {
       const button = page.getByRole("button", { name });
-      await button.focus();
-      const tooltip = page.getByRole("tooltip").filter({ hasText: description });
-      await expect(tooltip).toBeVisible();
-      expect((await tooltip.textContent()) ?? "").not.toMatch(SIMPLE_TOOLTIP_FORBIDDEN);
+      await expect(button).toHaveAccessibleName(
+        new RegExp(description.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+      );
     }
   });
 
@@ -661,10 +1476,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await page.mouse.move(0, 0);
     for (const [name, description] of scenarios) {
       const button = page.getByRole("button", { name });
-      await button.focus();
-      const tooltip = page.getByRole("tooltip").filter({ hasText: description });
-      await expect(tooltip).toBeVisible();
-      expect((await tooltip.textContent()) ?? "").not.toMatch(SIMPLE_TOOLTIP_FORBIDDEN);
+      await expectFocusedTooltip(button, description);
     }
 
     await openPage(page, "/", { language: "en" });
@@ -676,28 +1488,32 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       [/session:/, "Shows how long this page has been open in this tab."],
     ] as const;
 
-    await page.getByRole("button", { name: englishScenarios[0][0] }).hover();
-    await expect(
-      page.getByRole("tooltip").filter({ hasText: englishScenarios[0][1] }),
-    ).toBeVisible();
-    await page.mouse.move(0, 0);
     for (const [name, description] of englishScenarios) {
       const button = page.getByRole("button", { name });
-      await button.focus();
-      const tooltip = page.getByRole("tooltip").filter({ hasText: description });
-      await expect(tooltip).toBeVisible();
-      expect((await tooltip.textContent()) ?? "").not.toMatch(SIMPLE_TOOLTIP_FORBIDDEN);
+      await expect(button).toHaveAccessibleName(
+        new RegExp(description.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+      );
     }
   });
 });
 
 test.describe("WCAG 2.2 AA — reflow e preferências", () => {
   test("tipografia carrega somente as famílias e subsets adotados", async ({ page }) => {
-    await openPage(page, "/acessibilidade");
-    await page.evaluate(() => document.fonts.ready);
+    await openPage(page, "/", { loadDeferredSections: false });
+    await page.evaluate(async () => {
+      await Promise.all([
+        document.fonts.load('500 16px "Sora Variable"', "Sora"),
+        document.fonts.load('600 16px "Caveat Variable"', "Caveat"),
+        document.fonts.load('400 16px "Space Grotesk Variable"', "Space"),
+      ]);
+    });
 
-    await expect(page.locator("body")).toHaveCSS("font-family", /Inter Variable/);
-    await expect(page.locator("h1")).toHaveCSS("font-family", /Space Grotesk Variable/);
+    await expect(page.locator("body")).toHaveCSS("font-family", /Space Grotesk Variable/);
+    await expect(page.locator("h1")).toHaveCSS("font-family", /Sora Variable/);
+    await expect(page.locator("#home-heading .font-title")).toHaveCSS(
+      "font-family",
+      /Caveat Variable/,
+    );
 
     const fontResources = await page.evaluate(() =>
       performance
@@ -705,9 +1521,11 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
         .map((entry) => entry.name)
         .filter((url) => url.includes("-wght-normal.woff2")),
     );
-    expect(fontResources).toHaveLength(2);
-    expect(fontResources.some((url) => url.includes("inter-latin-wght-normal"))).toBe(true);
+    expect(fontResources).toHaveLength(3);
+    expect(fontResources.some((url) => url.includes("sora-latin-wght-normal"))).toBe(true);
+    expect(fontResources.some((url) => url.includes("caveat-latin-wght-normal"))).toBe(true);
     expect(fontResources.some((url) => url.includes("space-grotesk-latin-wght-normal"))).toBe(true);
+    expect(fontResources.some((url) => url.includes("inter-latin-wght-normal"))).toBe(false);
   });
 
   test("home carrega seções e atividade do footer somente por proximidade", async ({ page }) => {
@@ -827,12 +1645,18 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
 
     const menuButton = page.getByRole("button", { name: "Abrir menu", exact: true });
     await menuButton.click();
-    await page.locator("#mobile-navigation button").nth(2).click();
+    await page
+      .locator("#mobile-navigation")
+      .getByRole("button", { name: "projetos", exact: true })
+      .click();
     await expect(page.locator("#mobile-navigation")).toHaveCount(0);
     await menuButton.focus();
     await expect(menuButton).toBeVisible();
     await menuButton.click();
-    await page.locator("#mobile-navigation button").nth(4).click();
+    await page
+      .locator("#mobile-navigation")
+      .getByRole("button", { name: "contato", exact: true })
+      .click();
 
     const contactHeading = page.locator("#contato-heading");
     await expect(contactHeading).toBeFocused();
@@ -880,7 +1704,10 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
     const expandedHeight = (await page.locator("header").first().boundingBox())?.height ?? 0;
     expect(expandedHeight).toBeGreaterThan(collapsedHeight);
 
-    await page.locator("#mobile-navigation button").nth(2).click();
+    await page
+      .locator("#mobile-navigation")
+      .getByRole("button", { name: "projetos", exact: true })
+      .click();
     await expect(page.locator("#mobile-navigation")).toHaveCount(0);
     await expect
       .poll(async () => {
