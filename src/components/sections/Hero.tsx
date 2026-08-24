@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { ArrowDown, ArrowUpRight, Download } from "lucide-react";
 import { useApp } from "@/i18n/AppContext";
 import { HeroCarouselProvider } from "@/components/hero/HeroCarouselContext";
+import { useElementActivity } from "@/hooks/use-element-activity";
 
 const HeroStats = lazy(() =>
   import("@/components/hero/HeroStats").then((m) => ({ default: m.HeroStats })),
@@ -35,11 +36,11 @@ function HighlightHeadline({ text, grad }: { text: string; grad: string }) {
             key={i}
             className={
               isGreeting
-                ? "mb-4 block font-mono text-[11px] font-medium uppercase leading-relaxed tracking-[0.22em] text-muted-foreground"
+                ? "mb-4 block font-sans text-[11px] font-medium leading-relaxed tracking-[-0.01em] text-muted-foreground"
                 : `block${
                     isProfessionalSummary
                       ? " mt-2 max-w-[31rem] font-sans text-[clamp(1rem,1.55vw,1.25rem)] font-medium leading-[1.4] tracking-[-0.01em] text-muted-foreground"
-                      : ""
+                      : " font-title font-semibold tracking-[-0.025em]"
                   }`
             }
           >
@@ -53,13 +54,16 @@ function HighlightHeadline({ text, grad }: { text: string; grad: string }) {
 
 export function Hero() {
   const { t } = useApp();
+  const { ref, active } = useElementActivity<HTMLElement>();
 
   return (
-    <HeroCarouselProvider>
+    <HeroCarouselProvider active={active}>
       <section
+        ref={ref}
         id="home"
         aria-labelledby="home-heading"
-        className="relative isolate flex min-h-[calc(100svh-64px)] flex-col overflow-x-clip overflow-y-visible bg-background md:min-h-[680px] md:overflow-hidden lg:min-h-[640px]"
+        data-runtime-activity={active ? "active" : "paused"}
+        className="relative isolate flex min-h-[calc(100svh-var(--site-header-height))] flex-col overflow-x-clip bg-background"
       >
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           <div
@@ -79,7 +83,7 @@ export function Hero() {
           />
         </div>
 
-        <div className="section-container relative z-10 flex flex-1 flex-col justify-center py-10 md:py-16 lg:py-14">
+        <div className="section-container relative z-10 flex flex-1 flex-col justify-center py-8 md:py-9 lg:py-8">
           <div className="grid w-full grid-cols-1 items-center lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] lg:gap-14 xl:gap-20">
             <div className="min-w-0 lg:py-6 lg:pr-2">
               <div className="max-w-[38rem]">
@@ -92,10 +96,11 @@ export function Hero() {
                   <HighlightHeadline text={t.hero.headline} grad={t.hero.headlineHighlight} />
                 </h1>
 
-                <div className="mt-9 md:mt-10">
+                <div className="mt-7 md:mt-8">
                   <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                     <a
                       href="#projetos"
+                      data-cursor-open={t.cursor.destinations.projects}
                       className="btn-primary px-5 text-center sm:whitespace-nowrap"
                     >
                       <span>{t.hero.cta1}</span>
@@ -103,6 +108,7 @@ export function Hero() {
                     </a>
                     <a
                       href="#contato"
+                      data-cursor-open={t.cursor.destinations.contact}
                       className="btn-outline px-5 text-center sm:whitespace-nowrap"
                     >
                       <span>{t.hero.cta3}</span>
@@ -112,9 +118,10 @@ export function Hero() {
 
                   <a
                     href={t.hero.resumeUrl}
+                    data-cursor-open={t.cursor.destinations.resume}
                     download="Guilherme-Eleutherio-Curriculo.pdf"
                     type="application/pdf"
-                    className="group mt-3 inline-flex w-fit items-center gap-2 rounded-sm py-2 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-accent"
+                    className="group mt-3 inline-flex w-fit items-center gap-2 rounded-sm py-2 font-sans text-xs font-medium tracking-[-0.01em] text-muted-foreground transition-colors hover:text-accent"
                   >
                     <Download
                       className="h-4 w-4 shrink-0 transition-transform group-hover:translate-y-0.5"
@@ -127,11 +134,7 @@ export function Hero() {
             </div>
 
             <div className="hidden min-w-0 items-center justify-end lg:flex">
-              <div className="relative w-full max-w-[34rem] border-l border-hairline/70 pl-7 xl:pl-9">
-                <div
-                  aria-hidden="true"
-                  className="absolute top-0 -left-px h-24 w-px bg-gradient-to-b from-accent via-accent/45 to-transparent"
-                />
+              <div className="relative w-full max-w-[34rem]">
                 <Suspense fallback={<div className="min-h-[22rem]" aria-hidden="true" />}>
                   <TerminalCard />
                 </Suspense>
@@ -139,7 +142,7 @@ export function Hero() {
             </div>
           </div>
 
-          <div className="mt-12 w-full border-t border-hairline/80 pt-4 lg:mt-14">
+          <div className="mt-6 w-full lg:mt-8">
             <div className="min-h-7">
               <Suspense fallback={null}>
                 <HeroStats />

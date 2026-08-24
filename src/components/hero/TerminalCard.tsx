@@ -21,7 +21,11 @@ export function Hero() {
         O seu <em>{kind}</em>{" "}
         construído com <em>{pillar}</em>.
       </p>
-      <a href="#projetos" className="btn-primary">
+      <a
+        href="#projetos"
+        data-cursor-open={t.cursor.destinations.projects}
+        className="btn-primary"
+      >
         {t.hero.cta1} ↓
       </a>
     </section>
@@ -150,7 +154,7 @@ export function TerminalCard() {
   const lines = TEMPLATE.split("\n");
 
   return (
-    <div aria-hidden="true" className="font-mono text-[clamp(8px,1vw,12.5px)] leading-[1.65]">
+    <div aria-hidden="true" className="hero-code text-[clamp(8px,0.85vw,11px)] leading-[1.5]">
       <div className="grid grid-cols-[2.2rem_minmax(0,1fr)] gap-x-3">
         <div className="select-none text-right text-muted-foreground/60 tabular-nums">
           {lines.map((_, i) => (

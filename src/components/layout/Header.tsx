@@ -4,17 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/i18n/AppContext";
 import { useTheme } from "@/lib/theme";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { GuiferWordmark } from "@/components/GuiferWordmark";
 import {
   DEFERRED_SECTION_LOADED_EVENT,
   LOAD_DEFERRED_SECTION_EVENT,
 } from "@/components/sections/DeferredSection";
 
 const sections = [
-  { id: "sobre", key: "sobre" as const },
-  { id: "trajetoria", key: "trajetoria" as const },
-  { id: "projetos", key: "projetos" as const },
-  { id: "processo", key: "processo" as const },
-  { id: "contato", key: "contato" as const },
+  { id: "sobre", key: "sobre" as const, cursorKey: "about" as const },
+  { id: "projetos", key: "projetos" as const, cursorKey: "projects" as const },
+  { id: "contato", key: "contato" as const, cursorKey: "contact" as const },
 ];
 
 export function Header() {
@@ -27,24 +26,16 @@ export function Header() {
   const [activeId, setActiveId] = useState<string>("home");
   const [hidden, setHidden] = useState(false);
   const [hoverReveal, setHoverReveal] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
   const lastYRef = useRef(0);
+  const logoHoverRevealRef = useRef(false);
   const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const pendingSectionFocusCleanupRef = useRef<(() => void) | null>(null);
   const themeActionLabel = theme === "dark" ? t.toggles.themeToLight : t.toggles.themeToDark;
   const ThemeActionIcon = theme === "dark" ? Sun : Moon;
+  const headerControlsVisible = !hidden || hoverReveal;
 
   useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReducedMotion(media.matches);
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
-
-  useEffect(() => {
-    if (reducedMotion) return;
     lastYRef.current = window.scrollY;
     let ticking = false;
     const onScroll = () => {
@@ -56,11 +47,13 @@ export function Header() {
         if (y < 8) {
           setHidden(false);
           setHoverReveal(false);
-        } else if (open) {
+        } else if (open || headerRef.current?.contains(document.activeElement)) {
           setHidden(false);
           setHoverReveal(false);
-        } else if (y > last && y > 120) setHidden(true);
-        else if (y < last) {
+        } else if (y > last && y > 120) {
+          setHidden(true);
+          setHoverReveal(false);
+        } else if (y < last) {
           setHidden(false);
           setHoverReveal(false);
         }
@@ -70,7 +63,7 @@ export function Header() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [reducedMotion, open]);
+  }, [open]);
 
   useEffect(() => {
     if (!hidden || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
@@ -217,62 +210,83 @@ export function Header() {
       onMouseLeave={() => {
         if (hidden) setHoverReveal(false);
       }}
-      className={`fixed inset-x-0 top-0 z-40 border-b border-hairline/70 bg-background/80 backdrop-blur-md transition-transform duration-300 ease-out focus-within:translate-y-0 focus-within:duration-0 ${hidden && !hoverReveal ? "-translate-y-full" : "translate-y-0"}`}
+      className={`fixed inset-x-0 top-0 z-40 transition-[background-color,backdrop-filter] duration-300 ease-out ${
+        headerControlsVisible
+          ? "bg-background/80 backdrop-blur-md"
+          : "pointer-events-none bg-transparent backdrop-blur-none"
+      }`}
     >
-      <div className="section-container flex items-center justify-between gap-3 py-3.5 lg:gap-5">
+      <div className="header-container flex items-center justify-between gap-3 py-3.5 md:grid md:grid-cols-2 lg:gap-5">
         <Link
           to="/"
           aria-label={t.a11y.homeLink}
-          className="group flex shrink-0 items-center gap-2.5 text-foreground"
+          data-cursor-open={t.cursor.destinations.home}
+          onMouseEnter={() => {
+            if (!hidden) return;
+            logoHoverRevealRef.current = true;
+            setHoverReveal(true);
+          }}
+          onMouseLeave={() => {
+            if (!logoHoverRevealRef.current) return;
+            logoHoverRevealRef.current = false;
+            if (hidden) setHoverReveal(false);
+          }}
+          className="pointer-events-auto -ml-6 flex shrink-0 items-center text-[11.5px] text-foreground"
         >
-          <span className="font-mono text-[13px] font-medium tracking-tight text-foreground">
-            <span className="text-accent">{"{"}</span>
-            <span className="mx-0.5">GF</span>
-            <span className="text-accent">{"}"}</span>
-            <span className="ml-1.5 hidden font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground xl:inline">
-              guifer.tech
-            </span>
-          </span>
+          <GuiferWordmark animateSuffix suffixExpanded={headerControlsVisible} />
         </Link>
 
-        <nav
-          aria-label={t.a11y.primaryNavigation}
-          className="hidden min-w-0 flex-1 items-center justify-center gap-[clamp(0.25rem,1vw,0.75rem)] md:flex"
+        <div
+          data-header-right
+          className={`hidden min-w-0 items-center justify-end gap-2 transition-[opacity,transform] duration-300 ease-out md:flex ${
+            !headerControlsVisible
+              ? "pointer-events-none -translate-y-2 opacity-0"
+              : "translate-y-0 opacity-100"
+          }`}
         >
-          {sections.map((s) => {
-            const active = activeId === s.id;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => goToSection(s.id)}
-                aria-current={active ? "page" : undefined}
-                className={`rounded-sm px-2 py-2 font-mono text-[clamp(9px,1.15vw,11px)] uppercase tracking-[clamp(0.12em,0.25vw,0.25em)] transition-colors whitespace-nowrap ${
-                  active ? "text-accent" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t.nav[s.key]}
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className="hidden shrink-0 items-center gap-2 md:flex">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={themeActionLabel}
-            title={themeActionLabel}
-            className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-md text-foreground transition-colors hover:bg-surface hover:text-accent"
+          <nav
+            aria-label={t.a11y.primaryNavigation}
+            className="flex min-w-0 items-center justify-start gap-[clamp(0.25rem,1vw,0.75rem)]"
           >
-            <ThemeActionIcon className="h-4 w-4" aria-hidden="true" />
-          </button>
-          <LanguageToggle
-            lang={lang}
-            onToggle={toggleLang}
-            ariaLabel={t.toggles.langLabel}
-            variant="desktop"
-          />
+            {sections.map((s) => {
+              const active = activeId === s.id;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => goToSection(s.id)}
+                  data-cursor-open={t.cursor.destinations[s.cursorKey]}
+                  aria-current={active ? "page" : undefined}
+                  className={`rounded-sm px-2 py-2 font-sans text-[clamp(12px,1vw,13px)] font-medium tracking-[-0.01em] transition-colors whitespace-nowrap ${
+                    active ? "text-accent" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t.nav[s.key]}
+                </button>
+              );
+            })}
+          </nav>
+
+          <div
+            data-header-switches
+            className="flex shrink-0 items-center gap-0.5 rounded-full border border-hairline/80 bg-surface/50 p-0.5"
+          >
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={themeActionLabel}
+              title={themeActionLabel}
+              className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+            >
+              <ThemeActionIcon className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+            <LanguageToggle
+              lang={lang}
+              onToggle={toggleLang}
+              ariaLabel={t.toggles.langLabel}
+              variant="desktop"
+            />
+          </div>
         </div>
 
         <button
@@ -282,7 +296,11 @@ export function Header() {
           aria-label={open ? t.a11y.closeMenu : t.a11y.openMenu}
           aria-expanded={open}
           aria-controls="mobile-navigation"
-          className="grid h-11 w-11 place-items-center rounded-md text-foreground md:hidden"
+          className={`grid h-11 w-11 place-items-center rounded-md text-foreground transition-[opacity,transform] duration-300 ease-out md:hidden ${
+            !headerControlsVisible
+              ? "pointer-events-none -translate-y-2 opacity-0"
+              : "translate-y-0 opacity-100"
+          }`}
         >
           {open ? (
             <X className="h-5 w-5" aria-hidden="true" />
@@ -293,11 +311,11 @@ export function Header() {
       </div>
 
       {open && (
-        <div className="border-t border-hairline bg-background md:hidden">
+        <div className="bg-background md:hidden">
           <nav
             id="mobile-navigation"
             aria-label={t.a11y.mobileNavigation}
-            className="section-container flex flex-col gap-1 py-4"
+            className="header-container flex flex-col gap-1 py-4"
           >
             {sections.map((s) => (
               <button
@@ -309,28 +327,29 @@ export function Header() {
                     window.requestAnimationFrame(() => goToSection(s.id));
                   });
                 }}
-                className="rounded-md px-2 py-3 text-left font-mono text-sm uppercase tracking-[0.2em] text-foreground transition-colors hover:bg-surface"
+                data-cursor-open={t.cursor.destinations[s.cursorKey]}
+                className="rounded-md px-2 py-3 text-left font-sans text-sm tracking-[-0.01em] text-foreground transition-colors hover:bg-surface"
               >
                 {t.nav[s.key]}
               </button>
             ))}
 
-            <div className="mt-2 flex gap-2">
+            <div className="mt-3 flex w-fit items-center gap-0.5 rounded-full border border-hairline/80 bg-surface/50 p-0.5">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label={themeActionLabel}
+                title={themeActionLabel}
+                className="grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+              >
+                <ThemeActionIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
               <LanguageToggle
                 lang={lang}
                 onToggle={toggleLang}
                 ariaLabel={t.toggles.langLabel}
                 variant="mobile"
               />
-              <button
-                type="button"
-                onClick={toggleTheme}
-                aria-label={themeActionLabel}
-                title={themeActionLabel}
-                className="grid h-11 w-11 min-h-11 min-w-11 place-items-center rounded-md border border-border text-foreground"
-              >
-                <ThemeActionIcon className="h-4 w-4" aria-hidden="true" />
-              </button>
             </div>
           </nav>
         </div>

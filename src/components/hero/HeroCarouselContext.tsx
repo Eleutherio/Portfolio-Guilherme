@@ -21,7 +21,7 @@ const HeroCarouselCtx = createContext<Ctx | null>(null);
 
 /** Auto-advancing typewriter. Cycles through items on its own. Reports the
  *  current item index so callers can react on cycle completion. */
-function useTypewriter(items: string[], prefersReduced: boolean) {
+function useTypewriter(items: string[], prefersReduced: boolean, active: boolean) {
   const [idx, setIdx] = useState(0);
   const [displayed, setDisplayed] = useState<string>(prefersReduced ? (items[0] ?? "") : "");
   const [phase, setPhase] = useState<Phase>("typing");
@@ -32,6 +32,7 @@ function useTypewriter(items: string[], prefersReduced: boolean) {
       setDisplayed(items[0] ?? "");
       return;
     }
+    if (!active) return;
     const current = items[idx] ?? "";
     const schedule = (fn: () => void, ms: number) => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -63,7 +64,7 @@ function useTypewriter(items: string[], prefersReduced: boolean) {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [displayed, phase, idx, items, prefersReduced]);
+  }, [active, displayed, phase, idx, items, prefersReduced]);
 
   // Reset when language switches items
   useEffect(() => {
@@ -77,7 +78,12 @@ function useTypewriter(items: string[], prefersReduced: boolean) {
 
 /** Controlled typewriter — never advances on its own. Deletes and retypes when
  *  `targetIdx` changes; otherwise stays at the full current word. */
-function useControlledTypewriter(items: string[], targetIdx: number, prefersReduced: boolean) {
+function useControlledTypewriter(
+  items: string[],
+  targetIdx: number,
+  prefersReduced: boolean,
+  active: boolean,
+) {
   const [currentIdx, setCurrentIdx] = useState(targetIdx);
   const [displayed, setDisplayed] = useState<string>(
     prefersReduced ? (items[targetIdx] ?? "") : "",
@@ -98,7 +104,7 @@ function useControlledTypewriter(items: string[], targetIdx: number, prefersRedu
       setDisplayed(items[targetIdx] ?? "");
       return;
     }
-    const target = items[targetIdx] ?? "";
+    if (!active) return;
     const current = items[currentIdx] ?? "";
     const schedule = (fn: () => void, ms: number) => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -136,7 +142,7 @@ function useControlledTypewriter(items: string[], targetIdx: number, prefersRedu
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [displayed, phase, currentIdx, targetIdx, items, prefersReduced]);
+  }, [active, displayed, phase, currentIdx, targetIdx, items, prefersReduced]);
 
   return { displayed, full: items[currentIdx] ?? "" };
 }
@@ -154,7 +160,13 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
-export function HeroCarouselProvider({ children }: { children: ReactNode }) {
+export function HeroCarouselProvider({
+  active,
+  children,
+}: {
+  active: boolean;
+  children: ReactNode;
+}) {
   const { t } = useApp();
   const prefersReduced = usePrefersReducedMotion();
 
@@ -164,7 +176,11 @@ export function HeroCarouselProvider({ children }: { children: ReactNode }) {
   const items2 = c2 && c2.length > 0 ? c2 : ["arquitetura escalável & tecnologia moderna"];
 
   // Pillar drives everything — auto typewriter
-  const { displayed: word2, full: full2, idx: idx2 } = useTypewriter(items2, prefersReduced);
+  const {
+    displayed: word2,
+    full: full2,
+    idx: idx2,
+  } = useTypewriter(items2, prefersReduced, active);
 
   // Count pillar cycles: bump when idx2 transitions back to 0 (after > 0)
   const [pillarCycles, setPillarCycles] = useState(0);
@@ -182,6 +198,7 @@ export function HeroCarouselProvider({ children }: { children: ReactNode }) {
     items1,
     targetIdx1,
     prefersReduced,
+    active,
   );
 
   return (
