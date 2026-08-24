@@ -4,6 +4,9 @@ import alecsandraKlattMartinsWebp from "@/assets/testimonials/alecsandra-klatt-m
 import brunaVizzottoPhoto from "@/assets/testimonials/bruna-vizzotto.jpg";
 import brunaVizzottoAvif from "@/assets/testimonials/bruna-vizzotto-96w.avif";
 import brunaVizzottoWebp from "@/assets/testimonials/bruna-vizzotto-96w.webp";
+import leonardoAlvarezPereiraGomesPhoto from "@/assets/testimonials/leonardo-alvarez-pereira-gomes.jpg";
+import leonardoAlvarezPereiraGomesAvif from "@/assets/testimonials/leonardo-alvarez-pereira-gomes-96w.avif";
+import leonardoAlvarezPereiraGomesWebp from "@/assets/testimonials/leonardo-alvarez-pereira-gomes-96w.webp";
 import marthaIzabelPhoto from "@/assets/testimonials/martha-izabel.jpg";
 import marthaIzabelAvif from "@/assets/testimonials/martha-izabel-96w.avif";
 import marthaIzabelWebp from "@/assets/testimonials/martha-izabel-96w.webp";
@@ -11,10 +14,11 @@ import tainaraConradBassaniPhoto from "@/assets/testimonials/tainara-conrad-bass
 import tainaraConradBassaniAvif from "@/assets/testimonials/tainara-conrad-bassani-96w.avif";
 import tainaraConradBassaniWebp from "@/assets/testimonials/tainara-conrad-bassani-96w.webp";
 
-type LinkedInRecommendation = {
+type Testimonial = {
   id: string;
   name: string;
   company: string;
+  date?: string;
   quote: string;
   image: {
     avif: string;
@@ -23,8 +27,8 @@ type LinkedInRecommendation = {
   };
 };
 
-// Snapshot normalizado de Recommendations_Received.csv, exportado do LinkedIn em 2026-08-23.
-export const linkedInRecommendations: LinkedInRecommendation[] = [
+// Curadoria normalizada de recomendações do LinkedIn e feedbacks exportados do Feedz.
+export const testimonials: Testimonial[] = [
   {
     id: "bruna-vizzotto",
     name: "Bruna Vizzotto",
@@ -36,6 +40,32 @@ export const linkedInRecommendations: LinkedInRecommendation[] = [
     },
     quote:
       "Tivemos a oportunidade de atuar juntos em um projeto de tecnologia para a Grendene, por meio da Unisinos, e a contribuição dele foi fundamental para o avanço da equipe. O Guilherme possui uma postura profissional admirável, unindo pensamento analítico com uma execução extremamente organizada. Ele teve um papel crucial na estruturação do nosso fluxo de trabalho, facilitando o andamento das demandas e o alinhamento de todo o time. Além disso, sua proatividade chamou muita atenção no dia a dia: ele constantemente se antecipava aos desafios técnicos e propunha melhorias e nas regras de negócio antes mesmo que se tornassem bloqueios. Ele compreende profundamente a dinâmica de projetos de desenvolvimento colaborativo e tem uma ótima comunicação. Qualquer empresa ou equipe que busque um profissional engajado, colaborativo e focado em entregas de alto nível terá muita sorte em contar com ele.",
+  },
+  {
+    id: "leonardo-alvarez-pereira-gomes-2026-08-21",
+    name: "Leonardo Alvarez Pereira Gomes",
+    company: "Sistema Ocergs · Especialista de Tecnologia da Informação",
+    date: "21/08/2026",
+    image: {
+      avif: leonardoAlvarezPereiraGomesAvif,
+      webp: leonardoAlvarezPereiraGomesWebp,
+      fallback: leonardoAlvarezPereiraGomesPhoto,
+    },
+    quote:
+      "Tens demonstrado comprometimento com as atividades do dia a dia, boa disposição para aprender e relacionamento positivo com a equipe e colaboradores. Tem atendido os usuários com cordialidade e busca soluções para os chamados com dedicação. Continue assim!!",
+  },
+  {
+    id: "leonardo-alvarez-pereira-gomes-2026-07-17",
+    name: "Leonardo Alvarez Pereira Gomes",
+    company: "Sistema Ocergs · Especialista de Tecnologia da Informação",
+    date: "17/07/2026",
+    image: {
+      avif: leonardoAlvarezPereiraGomesAvif,
+      webp: leonardoAlvarezPereiraGomesWebp,
+      fallback: leonardoAlvarezPereiraGomesPhoto,
+    },
+    quote:
+      "Gostaria de registrar meu reconhecimento pelo desempenho apresentado durante este período inicial de atuação no estágio na equipe de TI. Tem demonstrado uma postura muito prestativa, mantendo-se disponível para auxiliar nas demandas e buscando atender os usuários com cordialidade e atenção. Destaca-se também pelo interesse constante em aprender, absorvendo novos conhecimentos e procurando compreender os processos, ferramentas e procedimentos adotados pela área. Outro ponto positivo é sua preocupação em seguir os padrões e boas práticas estabelecidos pelo Sistema Ocergs, demonstrando comprometimento com a qualidade das entregas e com a forma de trabalho da instituição. Continue mantendo essa dedicação, proatividade e vontade de evoluir. Essas características certamente contribuirão para seu desenvolvimento profissional e para o sucesso das atividades da equipe. Parabéns pelo trabalho realizado até o momento! 👏 💻 🚀",
   },
   {
     id: "martha-izabel-di-franco-machado",

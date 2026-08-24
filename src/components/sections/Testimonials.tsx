@@ -2,7 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from "@/lib/motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { linkedInRecommendations } from "@/content/linkedin-recommendations";
+import { testimonials } from "@/content/linkedin-recommendations";
 import { useElementActivity } from "@/hooks/use-element-activity";
 import { useApp } from "@/i18n/AppContext";
 
@@ -17,18 +17,20 @@ export function Testimonials() {
   const [pointerPaused, setPointerPaused] = useState(false);
   const [focusPaused, setFocusPaused] = useState(false);
   const [autoplayVersion, setAutoplayVersion] = useState(0);
-  const current = linkedInRecommendations[index];
+  const current = testimonials[index];
   const quoteScale =
-    current.quote.length > 600
-      ? "text-[clamp(1.05rem,1.35vw,1.5rem)] leading-[1.22]"
-      : "text-[clamp(1.3rem,2vw,2.25rem)] leading-[1.14]";
+    current.quote.length > 800
+      ? "text-[clamp(0.9rem,1.25vw,1.3rem)] leading-[1.2]"
+      : current.quote.length > 600
+        ? "text-[clamp(1.05rem,1.35vw,1.5rem)] leading-[1.22]"
+        : "text-[clamp(1.3rem,2vw,2.25rem)] leading-[1.14]";
 
   useEffect(() => {
     if (!active || reducedMotion || pointerPaused || focusPaused) return;
 
     const interval = window.setInterval(() => {
       setDirection(1);
-      setIndex((currentIndex) => (currentIndex + 1) % linkedInRecommendations.length);
+      setIndex((currentIndex) => (currentIndex + 1) % testimonials.length);
     }, AUTOPLAY_INTERVAL);
 
     return () => window.clearInterval(interval);
@@ -36,10 +38,7 @@ export function Testimonials() {
 
   const selectRelative = (offset: -1 | 1) => {
     setDirection(offset);
-    setIndex(
-      (currentIndex) =>
-        (currentIndex + offset + linkedInRecommendations.length) % linkedInRecommendations.length,
-    );
+    setIndex((currentIndex) => (currentIndex + offset + testimonials.length) % testimonials.length);
     setAutoplayVersion((version) => version + 1);
   };
 
@@ -87,7 +86,7 @@ export function Testimonials() {
                 exit={reducedMotion ? { opacity: 1 } : { opacity: 0, x: direction * -28 }}
                 transition={{ duration: reducedMotion ? 0 : 0.38, ease: [0.22, 1, 0.36, 1] }}
                 className="mx-auto grid h-[37rem] w-full max-w-5xl grid-rows-[1fr_auto] gap-10 max-[360px]:h-[42rem] lg:h-[20.5rem] lg:gap-12"
-                aria-label={`${index + 1} / ${linkedInRecommendations.length}`}
+                aria-label={`${index + 1} / ${testimonials.length}`}
               >
                 <blockquote
                   className={`${quoteScale} self-center text-center tracking-[-0.04em] text-background`}
@@ -119,6 +118,9 @@ export function Testimonials() {
                     <span className="mt-1 block text-sm text-background/60 md:text-base">
                       {current.company}
                     </span>
+                    {current.date ? (
+                      <span className="mt-1 block text-xs text-background/60">{current.date}</span>
+                    ) : null}
                   </span>
                 </figcaption>
               </motion.figure>
@@ -132,7 +134,7 @@ export function Testimonials() {
             <button
               type="button"
               onClick={() => selectRelative(-1)}
-              className="inline-grid h-11 w-11 place-items-center text-background/70 transition-colors hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
+              className="inline-grid h-11 w-8 place-items-center text-background/70 transition-colors hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background focus-visible:ring-offset-2 focus-visible:ring-offset-foreground md:w-11"
               aria-label={t.testimonials.previousLabel}
             >
               <ChevronLeft aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />
@@ -141,9 +143,9 @@ export function Testimonials() {
             <div
               className="flex items-center"
               role="group"
-              aria-label={`${index + 1} / ${linkedInRecommendations.length}`}
+              aria-label={`${index + 1} / ${testimonials.length}`}
             >
-              {linkedInRecommendations.map((recommendation, recommendationIndex) => {
+              {testimonials.map((recommendation, recommendationIndex) => {
                 const selected = recommendationIndex === index;
 
                 return (
@@ -151,7 +153,7 @@ export function Testimonials() {
                     key={recommendation.id}
                     type="button"
                     onClick={() => selectIndex(recommendationIndex)}
-                    className="group grid h-11 w-11 place-items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
+                    className="group grid h-11 w-8 place-items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background focus-visible:ring-offset-2 focus-visible:ring-offset-foreground md:w-11"
                     aria-label={t.testimonials.selectLabel.replace(
                       "{number}",
                       String(recommendationIndex + 1),
@@ -174,7 +176,7 @@ export function Testimonials() {
             <button
               type="button"
               onClick={() => selectRelative(1)}
-              className="inline-grid h-11 w-11 place-items-center text-background/70 transition-colors hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
+              className="inline-grid h-11 w-8 place-items-center text-background/70 transition-colors hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background focus-visible:ring-offset-2 focus-visible:ring-offset-foreground md:w-11"
               aria-label={t.testimonials.nextLabel}
             >
               <ChevronRight aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />

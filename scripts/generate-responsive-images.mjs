@@ -33,6 +33,7 @@ const imageGroups = [
     sources: [
       ["alecsandra-klatt-martins.jpg", "alecsandra-klatt-martins"],
       ["bruna-vizzotto.jpg", "bruna-vizzotto"],
+      ["leonardo-alvarez-pereira-gomes.jpg", "leonardo-alvarez-pereira-gomes"],
       ["martha-izabel.jpg", "martha-izabel"],
       ["tainara-conrad-bassani.jpg", "tainara-conrad-bassani"],
     ],

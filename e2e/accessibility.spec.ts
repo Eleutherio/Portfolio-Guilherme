@@ -947,7 +947,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       page.locator("#projetos").getByRole("heading", { name: "Landing page para chaveiro 24h" }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Exibir próximo depoimento" }).click();
-    await expect(page.locator("#depoimentos figure")).toContainText("Martha Izabel");
+    await expect(page.locator("#depoimentos figure")).toContainText("Leonardo Alvarez");
     await runAxe(page, testInfo, "carousels-next");
   });
 
@@ -1104,7 +1104,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     const next = section.getByRole("button", { name: "Exibir próximo depoimento" });
 
     await section.scrollIntoViewIfNeeded();
-    await expect(dots).toHaveCount(4);
+    await expect(dots).toHaveCount(6);
     await expect(figure).toContainText("Bruna Vizzotto");
     const initialSectionHeight = await section.evaluate(
       (element) => element.getBoundingClientRect().height,
@@ -1113,8 +1113,25 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       (element) => element.getBoundingClientRect().height,
     );
 
-    await dots.nth(3).click();
-    await expect(dots.nth(3)).toHaveAttribute("aria-current", "true");
+    await dots.nth(1).click();
+    await expect(figure).toContainText("Leonardo Alvarez Pereira Gomes");
+    await expect(figure).toContainText("Sistema Ocergs · Especialista de Tecnologia da Informação");
+    await expect(figure).toContainText("21/08/2026");
+    await expect(figure).toContainText("Tens demonstrado comprometimento");
+    const leonardoPhoto = figure.getByRole("img", {
+      name: "Foto de Leonardo Alvarez Pereira Gomes",
+    });
+    await expect(leonardoPhoto).toBeVisible();
+    expect(
+      await leonardoPhoto.evaluate((image) => (image as HTMLImageElement).currentSrc),
+    ).toContain("leonardo-alvarez-pereira-gomes-96w");
+
+    await dots.nth(2).click();
+    await expect(figure).toContainText("17/07/2026");
+    await expect(figure).toContainText("Gostaria de registrar meu reconhecimento");
+
+    await dots.nth(5).click();
+    await expect(dots.nth(5)).toHaveAttribute("aria-current", "true");
     await expect(figure).toContainText("Tainara Conrad Bassani");
     await next.click();
     await expect(figure).toContainText("Bruna Vizzotto");
@@ -1137,19 +1154,19 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await section.scrollIntoViewIfNeeded();
     await expect(figure).toContainText("Bruna Vizzotto");
 
-    await expect(figure).toContainText("Martha Izabel", { timeout: 11_000 });
+    await expect(figure).toContainText("21/08/2026", { timeout: 11_000 });
 
     await section.hover();
     await page.waitForTimeout(9_500);
-    await expect(figure).toContainText("Martha Izabel");
+    await expect(figure).toContainText("21/08/2026");
 
     await page.getByRole("button", { name: "Acessibilidade", exact: true }).hover();
-    await expect(figure).toContainText("Alecsandra Klatt Martins", { timeout: 11_000 });
+    await expect(figure).toContainText("17/07/2026", { timeout: 11_000 });
 
     const next = section.getByRole("button", { name: "Exibir próximo depoimento" });
     await next.focus();
     await page.waitForTimeout(9_500);
-    await expect(figure).toContainText("Alecsandra Klatt Martins");
+    await expect(figure).toContainText("17/07/2026");
   });
 
   test("preview em vídeo toca somente no projeto ativo e pausa fora da seção", async ({ page }) => {
