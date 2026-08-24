@@ -122,6 +122,9 @@ $RECYCLE.BIN/
 *.seed
 *.pid.lock
 
+# Agent-local state, validation records and diagnostic artifacts
+.agente/
+
 # Local documentation drafts
 docs/MIV.md
 docs/AUDITORIA_COMPLETA_*.md
