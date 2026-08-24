@@ -145,32 +145,20 @@ export const dictionary = {
     },
 
     projects: {
-      title: "Do projeto ao produto e à produção",
-      titleSegments: ["Projeto", "Produto", "Produção"],
       subtitle: "Cases selecionados",
       lead: "Trabalhos de destaque da minha trajetória, apresentados com contexto profissional e decisões técnicas.",
-      stacksLabel: "stacks",
-      highlightsLabel: "Destaques",
-      descLabel: "descrição geral",
-      problemLabel: "problema",
-      solutionLabel: "solução",
       paginationPrev: "Página anterior de projetos",
       paginationNext: "Próxima página de projetos",
       repo: "repositório",
       demo: "ver projeto",
       typeLabel: "tipo",
       evidenceLabel: "evidências técnicas",
-      stackLabel: "stack",
       openPreview: "Abrir projeto",
       caseStudy: "Ver case study",
       live: "Ver ao vivo",
     },
     caseStudy: {
       back: "ver todos os cases",
-      open: "abrir case",
-      summaryLabel: "resumo do projeto",
-      linksLabel: "links",
-      previewLabel: "preview",
       stackLabel: "stack",
       grengame: {
         directCta: "Acessar demonstração",
@@ -223,9 +211,6 @@ export const dictionary = {
       resultGains: "ganhos em conversão, SEO, clareza, performance ou organização",
       closingTitle: "Encerramento",
       closingNextSteps: "próximos passos",
-      previousCase: "case anterior",
-      nextCase: "próximo case",
-      moreCases: "mais projetos",
       contactPrompt: {
         text: "Ficou interessado em algum destes cases ou quer tirar alguma dúvida?",
         cta: "Entrar em contato",
@@ -238,8 +223,6 @@ export const dictionary = {
         metaNext: "próximo case",
         metaAll: "todos os cases",
         metaHome: "voltar ao início",
-        prev: "Case anterior",
-        next: "Próximo case",
         all: "Ver todos os cases",
         home: "Voltar ao início",
       },
@@ -272,16 +255,22 @@ export const dictionary = {
       ],
     },
 
+    testimonials: {
+      title: "Depoimentos",
+      carouselLabel: "carrossel de depoimentos",
+      previousLabel: "Exibir depoimento anterior",
+      nextLabel: "Exibir próximo depoimento",
+      selectLabel: "Exibir depoimento {number}",
+      photoAlt: "Foto de {name}",
+    },
+
     timeline: {
       title: "Roadmap de experiências",
-      subtitle: "Trajetória",
-      lead: "Formação e prática em evolução contínua.",
-      evidenceLabel: "Evidência técnica",
-      currentLabel: "Atual",
       stats: {
-        years: "Anos de experiência",
-        projects: "Projetos",
-        awards: "reconhecimentos e certificações",
+        trainingHours: "de formação complementar",
+        trainingPrograms: "programas de formação e certificação",
+        professionalExperiences: "experiências profissionais",
+        englishLevel: "inglês técnico",
       },
       items: [
         {
@@ -675,32 +664,20 @@ export const dictionary = {
     },
 
     projects: {
-      title: "From project to product and production",
-      titleSegments: ["Project", "Product", "Production"],
       subtitle: "Selected case studies",
       lead: "Standout work from my journey, presented with professional context and technical decisions.",
-      stacksLabel: "stacks",
-      highlightsLabel: "Highlights",
-      descLabel: "overview",
-      problemLabel: "problem",
-      solutionLabel: "solution",
       paginationPrev: "Previous projects page",
       paginationNext: "Next projects page",
       repo: "repository",
       demo: "view project",
       typeLabel: "type",
       evidenceLabel: "technical evidence",
-      stackLabel: "stack",
       openPreview: "Open project",
       caseStudy: "View case study",
       live: "Live demo",
     },
     caseStudy: {
       back: "view all cases",
-      open: "open case",
-      summaryLabel: "project summary",
-      linksLabel: "links",
-      previewLabel: "preview",
       stackLabel: "stack",
       grengame: {
         directCta: "Open live demo",
@@ -754,9 +731,6 @@ export const dictionary = {
       resultGains: "gains in conversion, SEO, clarity, performance, or organization",
       closingTitle: "Closing",
       closingNextSteps: "next steps",
-      previousCase: "previous case",
-      nextCase: "next case",
-      moreCases: "more projects",
       contactPrompt: {
         text: "Interested in any of these cases or have a question?",
         cta: "Get in touch",
@@ -769,8 +743,6 @@ export const dictionary = {
         metaNext: "next case",
         metaAll: "all cases",
         metaHome: "back to home",
-        prev: "Previous case",
-        next: "Next case",
         all: "View all cases",
         home: "Back to home",
       },
@@ -803,16 +775,22 @@ export const dictionary = {
       ],
     },
 
+    testimonials: {
+      title: "Testimonials",
+      carouselLabel: "testimonial carousel",
+      previousLabel: "Show previous testimonial",
+      nextLabel: "Show next testimonial",
+      selectLabel: "Show testimonial {number}",
+      photoAlt: "Photo of {name}",
+    },
+
     timeline: {
       title: "Experience roadmap",
-      subtitle: "Journey",
-      lead: "Education and hands-on practice in continuous evolution.",
-      evidenceLabel: "Technical evidence",
-      currentLabel: "Current",
       stats: {
-        years: "Years of experience",
-        projects: "Projects",
-        awards: "awards and certifications",
+        trainingHours: "of complementary training",
+        trainingPrograms: "training and certification programs",
+        professionalExperiences: "professional experiences",
+        englishLevel: "technical English",
       },
       items: [
         {

@@ -2,10 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { useApp } from "@/i18n/AppContext";
-import {
-  getLocalizedProjectCaseBySlug,
-  type LocalizedProjectCase,
-} from "@/content/project-case-details";
+import { getLocalizedProjectCaseBySlug } from "@/content/project-case-details";
 import { getLocalizedProjectSummaries } from "@/content/project-summaries";
 import { GithubIcon } from "@/components/icons/Brand";
 import { TechnologyBadge } from "@/components/TechnologyBadge";
@@ -42,6 +39,7 @@ export function CaseTemplate() {
           <Link
             to="/"
             hash="projetos"
+            data-cursor-open={t.cursor.destinations.projects}
             className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-accent"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
@@ -58,7 +56,7 @@ export function CaseTemplate() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
-              className="mt-5 font-display text-3xl font-semibold leading-[1.05] tracking-[-0.03em] text-foreground sm:text-4xl md:text-6xl"
+              className={`heading-display mt-5 text-foreground ${data.title.length > 24 ? "heading-display--long" : ""}`}
             >
               {data.title}
             </motion.h1>
@@ -70,6 +68,7 @@ export function CaseTemplate() {
               {data.demoUrl && data.demoUrl !== "#" && (
                 <a
                   href={data.demoUrl}
+                  data-cursor-open={`${t.cursor.destinations.project} ${data.title}`}
                   target="_blank"
                   rel="noreferrer noopener"
                   className="btn-primary group w-full sm:w-auto"
@@ -81,6 +80,7 @@ export function CaseTemplate() {
               {data.repoUrl && data.repoUrl !== "#" && (
                 <a
                   href={data.repoUrl}
+                  data-cursor-open={`${t.cursor.destinations.repository} ${data.title}`}
                   target="_blank"
                   rel="noreferrer noopener"
                   className="btn-outline group w-full sm:w-auto"

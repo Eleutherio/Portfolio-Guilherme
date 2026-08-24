@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-export function useElementActivity<T extends Element>(rootMargin = "600px 0px") {
+export function useElementActivity<T extends Element>(rootMargin = "0px") {
   const ref = useRef<T>(null);
   const [nearViewport, setNearViewport] = useState(false);
   const [pageVisible, setPageVisible] = useState(
@@ -17,7 +17,7 @@ export function useElementActivity<T extends Element>(rootMargin = "600px 0px") 
 
     const observer = new IntersectionObserver(
       ([entry]) => setNearViewport(Boolean(entry?.isIntersecting)),
-      { rootMargin },
+      { rootMargin, threshold: 0.01 },
     );
     observer.observe(element);
     return () => observer.disconnect();

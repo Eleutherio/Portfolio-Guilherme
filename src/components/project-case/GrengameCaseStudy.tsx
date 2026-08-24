@@ -21,6 +21,7 @@ type GrengameCaseStudyProps = {
 type CaseSectionLink = {
   id: string;
   label: string;
+  cursorOpen: string;
 };
 
 const trackedSectionIds = [
@@ -37,11 +38,31 @@ export function GrengameCaseStudy({ data, prev, next, t }: GrengameCaseStudyProp
   const [activeSection, setActiveSection] =
     useState<(typeof trackedSectionIds)[number]>("grengame-overview");
   const navigation: CaseSectionLink[] = [
-    { id: "grengame-overview", label: copy.navigation.overview },
-    { id: "grengame-context", label: copy.navigation.context },
-    { id: "grengame-problem", label: copy.navigation.problem },
-    { id: "grengame-process", label: copy.navigation.process },
-    { id: "grengame-outcomes", label: copy.navigation.outcomes },
+    {
+      id: "grengame-overview",
+      label: copy.navigation.overview,
+      cursorOpen: `${t.cursor.destinations.section} ${copy.navigation.overview}`,
+    },
+    {
+      id: "grengame-context",
+      label: copy.navigation.context,
+      cursorOpen: `${t.cursor.destinations.section} ${copy.navigation.context}`,
+    },
+    {
+      id: "grengame-problem",
+      label: copy.navigation.problem,
+      cursorOpen: `${t.cursor.destinations.section} ${copy.navigation.problem}`,
+    },
+    {
+      id: "grengame-process",
+      label: copy.navigation.process,
+      cursorOpen: `${t.cursor.destinations.section} ${copy.navigation.process}`,
+    },
+    {
+      id: "grengame-outcomes",
+      label: copy.navigation.outcomes,
+      cursorOpen: `${t.cursor.destinations.section} ${copy.navigation.outcomes}`,
+    },
   ];
 
   useEffect(() => {
@@ -83,6 +104,7 @@ export function GrengameCaseStudy({ data, prev, next, t }: GrengameCaseStudyProp
             <Link
               to="/"
               hash="projetos"
+              data-cursor-open={t.cursor.destinations.projects}
               className="inline-flex min-h-11 items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-accent"
             >
               <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
@@ -97,7 +119,7 @@ export function GrengameCaseStudy({ data, prev, next, t }: GrengameCaseStudyProp
                 initial={reducedMotion ? false : { opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: reducedMotion ? 0 : 0.65 }}
-                className="mt-5 max-w-4xl font-display text-5xl font-semibold leading-[0.94] tracking-[-0.05em] text-foreground sm:text-6xl md:text-8xl"
+                className="heading-display mt-5 max-w-4xl text-foreground"
               >
                 {data.title}
               </motion.h1>
@@ -163,6 +185,7 @@ export function GrengameCaseStudy({ data, prev, next, t }: GrengameCaseStudyProp
 
             <a
               href={GRENGAME_DEMO_URL}
+              data-cursor-open={`${t.cursor.destinations.project} ${data.title}`}
               target="_blank"
               rel="noopener noreferrer"
               className="group mt-8 flex min-h-28 items-center justify-between gap-6 rounded-md bg-accent px-6 py-6 text-accent-foreground transition-colors hover:bg-accent/90 md:mt-10 md:px-8"
@@ -348,6 +371,7 @@ function DesktopCaseIndex({
             <li key={section.id}>
               <a
                 href={`#${section.id}`}
+                data-cursor-open={section.cursorOpen}
                 aria-current={active ? "location" : undefined}
                 className={`group flex min-h-8 items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
@@ -389,6 +413,7 @@ function MobileCaseIndex({
             <li key={section.id} className="shrink-0 snap-start">
               <a
                 href={`#${section.id}`}
+                data-cursor-open={section.cursorOpen}
                 aria-current={active ? "location" : undefined}
                 className={`flex min-h-11 items-center gap-2 border-b font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
                   active

@@ -65,3 +65,25 @@ export function TechnologyBadge({ label }: { label: string }) {
     </span>
   );
 }
+
+export function TechnologyIcon({ label }: { label: string }) {
+  const meta = TECHNOLOGIES[normalizeTechnology(label)];
+  const Icon = meta?.Icon ?? Code2;
+
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      title={label}
+      className="inline-grid h-7 w-7 place-items-center"
+      style={
+        {
+          "--tech-color-light": meta?.light,
+          "--tech-color-dark": meta?.dark ?? meta?.light,
+        } as CSSProperties
+      }
+    >
+      <Icon className="technology-badge__icon h-[18px] w-[18px]" aria-hidden="true" />
+    </span>
+  );
+}

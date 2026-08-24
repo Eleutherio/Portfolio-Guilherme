@@ -6,8 +6,8 @@ import { DeferredSection } from "@/components/sections/DeferredSection";
 import { Hero } from "@/components/sections/Hero";
 
 const loadAbout = () => import("@/components/sections/About").then((m) => ({ default: m.About }));
-const loadSkills = () =>
-  import("@/components/sections/Skills").then((m) => ({ default: m.Skills }));
+const loadTestimonials = () =>
+  import("@/components/sections/Testimonials").then((m) => ({ default: m.Testimonials }));
 const loadProjects = () =>
   import("@/components/sections/Projects").then((m) => ({ default: m.Projects }));
 const loadTimeline = () =>
@@ -50,10 +50,10 @@ function Index() {
       <div className="home-header-spacer shrink-0" aria-hidden="true" />
       <main id="main" tabIndex={-1} className="flex-1 overflow-x-clip outline-none">
         <Hero />
-        <DeferredSection id="sobre" load={loadAbout} />
-        <DeferredSection id="trajetoria" load={loadTimeline} />
         <DeferredSection id="projetos" load={loadProjects} />
-        <DeferredSection id="processo" load={loadSkills} />
+        <DeferredSection id="depoimentos" load={loadTestimonials} />
+        <DeferredSection id="trajetoria" load={loadTimeline} />
+        <DeferredSection id="sobre" load={loadAbout} />
         <DeferredSection id="contato" load={loadContact} />
       </main>
       <Suspense fallback={null}>
