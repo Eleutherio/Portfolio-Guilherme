@@ -4,7 +4,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { useApp } from "@/i18n/AppContext";
 
-const LAST_UPDATED = "2026-07-22";
+const LAST_UPDATED = "2026-08-23";
 
 const content = {
   pt: {
@@ -73,6 +73,7 @@ const content = {
       "Brevo — transporte SMTP e eventos transacionais; a janela operacional definida para esses logs é de 30 dias.",
       "Google reCAPTCHA — análise antifraude conforme os termos e o aviso de privacidade do Google.",
       "Green Web Foundation — carregamento do selo que verifica o uso de hospedagem sustentável; a requisição da imagem transmite dados técnicos de conexão.",
+      "Website Carbon / Wholegrain Digital — estimativa de emissões da página; a consulta envia a URL pública e dados técnicos de conexão, e o resultado fica armazenado no navegador por até 24 horas.",
       "Provedor da caixa de e-mail do controlador — recebimento e armazenamento temporário das mensagens.",
       "GitHub — execução do keep-alive e consulta de dados públicos do perfil; o conteúdo do formulário não é enviado ao GitHub.",
     ],
@@ -112,6 +113,10 @@ const content = {
       {
         label: "Privacidade da Green Web Foundation",
         href: "https://www.thegreenwebfoundation.org/privacy-statement/",
+      },
+      {
+        label: "Privacidade da Wholegrain Digital",
+        href: "https://www.wholegraindigital.com/privacy-policy-2025/",
       },
     ],
     updatedLabel: "Última atualização",
@@ -183,6 +188,7 @@ const content = {
       "Brevo — SMTP transport and transactional events; the operational window defined for these logs is 30 days.",
       "Google reCAPTCHA — anti-fraud analysis under Google's terms and privacy notice.",
       "Green Web Foundation — loading the badge that verifies the use of green hosting; the image request transmits technical connection data.",
+      "Website Carbon / Wholegrain Digital — estimating page emissions; the request sends the public URL and technical connection data, and the result is stored in the browser for up to 24 hours.",
       "The controller's mailbox provider — receipt and temporary storage of messages.",
       "GitHub — keep-alive execution and public profile data queries; form content is not sent to GitHub.",
     ],
@@ -223,6 +229,10 @@ const content = {
         label: "Green Web Foundation Privacy Policy",
         href: "https://www.thegreenwebfoundation.org/privacy-statement/",
       },
+      {
+        label: "Wholegrain Digital Privacy Policy",
+        href: "https://www.wholegraindigital.com/privacy-policy-2025/",
+      },
     ],
     updatedLabel: "Last updated",
   },
@@ -242,7 +252,7 @@ export const Route = createFileRoute("/privacidade")({
 });
 
 function PrivacyPage() {
-  const { lang } = useApp();
+  const { lang, t } = useApp();
   const page = content[lang];
   const formattedDate = new Intl.DateTimeFormat(lang === "pt" ? "pt-BR" : "en-US", {
     dateStyle: "long",
@@ -259,10 +269,7 @@ function PrivacyPage() {
             <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
               {page.kicker}
             </p>
-            <h1
-              id="privacy-heading"
-              className="mt-4 max-w-4xl font-display text-3xl font-semibold leading-[1.05] tracking-[-0.035em] text-foreground md:text-5xl"
-            >
+            <h1 id="privacy-heading" className="page-title mt-4 max-w-4xl text-foreground">
               {page.title}
             </h1>
             <p className="mt-7 max-w-3xl text-base leading-relaxed text-muted-foreground md:text-lg">
@@ -276,6 +283,7 @@ function PrivacyPage() {
             <p>{page.controllerBody}</p>
             <a
               href="mailto:contato@guifer.tech?subject=Privacidade%20e%20LGPD%20no%20guifer.tech"
+              data-cursor-open={t.cursor.destinations.email}
               className="btn-outline mt-6 w-full sm:w-auto"
             >
               <Mail className="h-4 w-4" aria-hidden="true" />
@@ -345,6 +353,7 @@ function PrivacyPage() {
                   <li key={reference.href}>
                     <a
                       href={reference.href}
+                      data-cursor-open={`${t.cursor.destinations.external}: ${reference.label}`}
                       target="_blank"
                       rel="noreferrer noopener"
                       className="link-ink inline-flex items-start gap-2 text-foreground"
@@ -366,10 +375,7 @@ function PrivacyPage() {
 
 function SectionHeading({ id, children }: { id: string; children: React.ReactNode }) {
   return (
-    <h2
-      id={id}
-      className="font-display text-2xl font-medium tracking-[-0.025em] text-foreground md:text-3xl"
-    >
+    <h2 id={id} className="subsection-title text-foreground">
       {children}
     </h2>
   );
@@ -378,9 +384,7 @@ function SectionHeading({ id, children }: { id: string; children: React.ReactNod
 function InfoSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="border-t border-hairline pt-6">
-      <h2 className="font-display text-xl font-medium tracking-[-0.025em] text-foreground">
-        {title}
-      </h2>
+      <h2 className="subsection-title text-foreground">{title}</h2>
       <div className="mt-4 leading-relaxed text-muted-foreground">{children}</div>
     </section>
   );
