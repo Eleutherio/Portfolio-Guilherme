@@ -40,10 +40,7 @@ function AccessibilityPage() {
             <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
               {content.kicker}
             </p>
-            <h1
-              id="accessibility-heading"
-              className="mt-4 max-w-3xl font-display text-3xl font-semibold leading-[1.05] tracking-[-0.035em] text-foreground md:text-5xl"
-            >
+            <h1 id="accessibility-heading" className="page-title mt-4 max-w-3xl text-foreground">
               {content.title}
             </h1>
             <div className="mt-7 inline-flex items-center gap-2 rounded-md border border-[var(--control-border)] bg-surface px-3 py-2 font-mono text-xs text-foreground">
@@ -78,10 +75,7 @@ function AccessibilityPage() {
 
           <section aria-labelledby="accessibility-feedback" className="md:col-span-2">
             <div className="card-surface card-surface--accent p-6 md:p-8">
-              <h2
-                id="accessibility-feedback"
-                className="font-display text-2xl font-medium tracking-[-0.025em] text-foreground"
-              >
+              <h2 id="accessibility-feedback" className="subsection-title text-foreground">
                 {content.feedbackTitle}
               </h2>
               <p className="mt-3 max-w-3xl leading-relaxed text-muted-foreground">
@@ -89,6 +83,7 @@ function AccessibilityPage() {
               </p>
               <a
                 href="mailto:contato@guifer.tech?subject=Acessibilidade%20do%20guifer.tech"
+                data-cursor-open={t.cursor.destinations.email}
                 className="btn-outline mt-6 w-full sm:w-auto"
               >
                 <Mail className="h-4 w-4" aria-hidden="true" />
@@ -110,9 +105,7 @@ function AccessibilityPage() {
 function InfoSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="border-t border-hairline pt-6">
-      <h2 className="font-display text-xl font-medium tracking-[-0.025em] text-foreground">
-        {title}
-      </h2>
+      <h2 className="subsection-title text-foreground">{title}</h2>
       <div className="mt-4 leading-relaxed text-muted-foreground">{children}</div>
     </section>
   );

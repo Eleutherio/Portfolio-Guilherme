@@ -120,18 +120,21 @@ export function Contact() {
     {
       href: "https://wa.me/5551994055984",
       label: "(51) 99405-5984",
+      cursorLabel: t.cursor.destinations.whatsapp,
       Icon: Phone,
       external: true,
     },
     {
       href: "https://www.linkedin.com/in/guifer-dev/",
       label: "linkedin.com/in/Eleutherio",
+      cursorLabel: t.cursor.destinations.linkedin,
       Icon: LinkedinIcon,
       external: true,
     },
     {
       href: "https://github.com/Eleutherio",
       label: "github.com/Eleutherio",
+      cursorLabel: t.cursor.destinations.github,
       Icon: GithubIcon,
       external: true,
     },
@@ -142,22 +145,17 @@ export function Contact() {
   const fallbackLabel = lang === "pt" ? "Prefere pelo WhatsApp? " : "Prefer WhatsApp? ";
 
   return (
-    <SectionShell
-      id="contato"
-      label={t.contact.title}
-      sublabel={t.contact.subtitle}
-      lead={t.contact.lead}
-      compact
-    >
+    <SectionShell id="contato" label={t.contact.title} lead={t.contact.lead} compact>
       {/* Left column — primary conversion path */}
       <div className="md:col-span-5">
         <div>
           <p className={labelCls}>{primaryLabel}</p>
           <ul className="mt-3 space-y-2">
-            {primaryLinks.map(({ href, label, Icon, external }) => (
+            {primaryLinks.map(({ href, label, cursorLabel, Icon, external }) => (
               <li key={href}>
                 <a
                   href={href}
+                  data-cursor-open={cursorLabel}
                   {...(external ? { target: "_blank", rel: "noreferrer noopener" } : {})}
                   className="group inline-flex max-w-full min-w-0 items-center gap-2.5 text-foreground"
                   aria-label={label}
@@ -300,6 +298,7 @@ export function Contact() {
           {t.contact.form.recaptchaNotice}{" "}
           <a
             href="https://policies.google.com/privacy"
+            data-cursor-open={t.cursor.destinations.googlePrivacy}
             target="_blank"
             rel="noreferrer noopener"
             className="link-ink text-foreground"
@@ -309,6 +308,7 @@ export function Contact() {
           {t.contact.form.recaptchaJoin}{" "}
           <a
             href="https://policies.google.com/terms"
+            data-cursor-open={t.cursor.destinations.googleTerms}
             target="_blank"
             rel="noreferrer noopener"
             className="link-ink text-foreground"
@@ -357,6 +357,7 @@ export function Contact() {
             {fallbackLabel}
             <a
               href="https://wa.me/5551994055984"
+              data-cursor-open={t.cursor.destinations.whatsapp}
               target="_blank"
               rel="noreferrer noopener"
               className="link-ink text-foreground"

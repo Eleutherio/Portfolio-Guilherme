@@ -11,13 +11,7 @@ export function About() {
   const reducedMotion = useReducedMotion();
 
   return (
-    <SectionShell
-      id="sobre"
-      label={t.about.title}
-      sublabel={t.about.subtitle}
-      headerVariant="editorial"
-      compact
-    >
+    <SectionShell id="sobre" label={t.about.title} headerVariant="editorial" compact>
       <div className="contents md:col-span-12 md:grid md:grid-cols-12 md:items-center md:gap-8">
         <div className="md:col-span-7">
           <motion.div
@@ -107,7 +101,8 @@ export function About() {
           >
             <Link
               to="/sobre"
-              className="btn-outline group w-fit max-w-full px-3 text-[10px] tracking-[0.18em] sm:px-[1.2rem] sm:text-[11px] sm:tracking-[0.25em] md:px-3 md:tracking-[0.16em] lg:px-[1.2rem] lg:tracking-[0.25em]"
+              data-cursor-open={t.cursor.destinations.about}
+              className="btn-outline group w-fit max-w-full px-3 sm:px-[1.2rem] md:px-3 lg:px-[1.2rem]"
             >
               <span>{t.about.learnMore}</span>
               <ArrowUpRight

@@ -135,6 +135,7 @@ function PhotoAlbum({ chapterTitle, photos, eager = false }: PhotoAlbumProps) {
               type="button"
               onClick={() => selectPhoto(index)}
               onKeyDown={(event) => handleThumbnailKeyDown(event, index)}
+              data-cursor-open={`${t.cursor.destinations.photo} ${index + 1}: ${photo.caption[lang]}`}
               aria-label={`${t.about.story.showPhotoLabel} ${index + 1}: ${photo.caption[lang]}`}
               aria-current={index === activeIndex ? "true" : undefined}
               className={`h-14 w-11 shrink-0 overflow-hidden rounded-sm border-2 bg-black transition-[border-color,opacity,transform] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring ${
@@ -227,10 +228,7 @@ export function AboutAlbum() {
                 <p className="font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-accent">
                   {String(index + 1).padStart(2, "0")}
                 </p>
-                <h2
-                  id={chapterId}
-                  className="mt-3 font-display text-2xl font-medium leading-tight tracking-[-0.03em] text-foreground md:text-3xl"
-                >
+                <h2 id={chapterId} className="subsection-title mt-3 text-foreground">
                   {chapter.title}
                 </h2>
                 <div
