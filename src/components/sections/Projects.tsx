@@ -145,7 +145,9 @@ function ProjectMedia({
           return (
             <span
               key={label}
-              className="rounded-sm bg-surface px-2.5 py-1 font-display text-xs leading-none text-muted-foreground"
+              className={`rounded-sm bg-surface px-2.5 py-1 font-display text-xs leading-none text-foreground/80 ${
+                active ? "visible" : "invisible"
+              }`}
             >
               {label}
             </span>

@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { useApp } from "@/i18n/AppContext";
 
-const LAST_UPDATED = "2026-07-20";
+const LAST_UPDATED = "2026-08-24";
 
 export function AccessibilityPage() {
   const { t, lang } = useApp();

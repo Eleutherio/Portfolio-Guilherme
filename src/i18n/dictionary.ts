@@ -47,7 +47,7 @@ export const dictionary = {
         "segurança & normas da LGPD",
       ],
       cta1: "Ver projetos",
-      cta2: "Baixar currículo",
+      cta2: "Baixar currículo (PDF)",
       cta3: "Entre em contato",
       resumeUrl: "/curriculo.pdf",
       proofBar: [
@@ -425,7 +425,6 @@ export const dictionary = {
         "Páginas inicial, sobre, acessibilidade e privacidade",
         "Cases GrenGame, Abriu Chaveiro e Martha Izabel",
         "Formulário de contato e seus estados",
-        "Currículo disponibilizado em PDF",
         "Menu de acessibilidade e variações responsivas",
       ],
       methodsTitle: "Métodos de avaliação",
@@ -438,7 +437,7 @@ export const dictionary = {
       ],
       limitationsTitle: "Pendências atuais",
       limitationsBody:
-        "ASES na URL publicada, validação em leitores de tela e dispositivos reais, auditoria do PDF e revisão manual de todos os critérios A e AA.",
+        "ASES na URL publicada, validação em leitores de tela e dispositivos reais e revisão manual de todos os critérios A e AA. O currículo em PDF é um documento separado, fora deste escopo, e sua acessibilidade permanece como melhoria independente.",
       feedbackTitle: "Encontrou uma barreira?",
       feedbackBody:
         "Descreva a página, o dispositivo e a dificuldade encontrada. Isso ajuda a reproduzir e corrigir o problema.",
@@ -518,7 +517,7 @@ export const dictionary = {
         "security & LGPD compliance",
       ],
       cta1: "View projects",
-      cta2: "Download resume",
+      cta2: "Download resume (PDF)",
       cta3: "Contact me",
       resumeUrl: "/curriculo.pdf",
       proofBar: [
@@ -893,7 +892,6 @@ export const dictionary = {
         "Home, about, accessibility and privacy pages",
         "GrenGame, Abriu Chaveiro and Martha Izabel case studies",
         "Contact form and its states",
-        "Resume provided as a PDF",
         "Accessibility menu and responsive variations",
       ],
       methodsTitle: "Evaluation methods",
@@ -906,7 +904,7 @@ export const dictionary = {
       ],
       limitationsTitle: "Current pending checks",
       limitationsBody:
-        "ASES against the published URL, validation with screen readers and real devices, the PDF audit and manual review of every Level A and AA criterion.",
+        "ASES against the published URL, validation with screen readers and real devices, and manual review of every Level A and AA criterion. The PDF resume is a separate document outside this scope, and its accessibility remains an independent improvement.",
       feedbackTitle: "Found a barrier?",
       feedbackBody:
         "Describe the page, device and difficulty you encountered. This helps reproduce and fix the problem.",

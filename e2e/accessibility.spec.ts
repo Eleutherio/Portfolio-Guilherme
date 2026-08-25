@@ -4,6 +4,7 @@ import sharp from "sharp";
 
 type Language = "pt" | "en";
 type Theme = "light" | "dark";
+type Rgb = [number, number, number];
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"];
 const SIMPLE_TOOLTIP_FORBIDDEN = /Brevo|Supabase|Render|Google|[—–]|\p{Extended_Pictographic}/u;
@@ -27,6 +28,39 @@ const MODES = [
   { language: "en" as const, theme: "light" as const, viewport: "mobile" as const },
   { language: "en" as const, theme: "dark" as const, viewport: "mobile" as const },
 ];
+
+function parseHexColor(value: string): Rgb {
+  const normalized = value.trim().replace(/^#/u, "");
+  expect(normalized).toMatch(/^[\da-f]{6}$/iu);
+  return [0, 2, 4].map((offset) =>
+    Number.parseInt(normalized.slice(offset, offset + 2), 16),
+  ) as Rgb;
+}
+
+function relativeLuminance([red, green, blue]: Rgb) {
+  const linearize = (channel: number) => {
+    const normalized = channel / 255;
+    return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * linearize(red) + 0.7152 * linearize(green) + 0.0722 * linearize(blue);
+}
+
+function contrastRatio(foreground: Rgb, background: Rgb) {
+  const values = [relativeLuminance(foreground), relativeLuminance(background)].sort(
+    (left, right) => right - left,
+  );
+  return (values[0] + 0.05) / (values[1] + 0.05);
+}
+
+function compositeColor(foreground: Rgb, background: Rgb, alpha: number): Rgb {
+  return foreground.map((channel, index) =>
+    Math.round(channel * alpha + background[index] * (1 - alpha)),
+  ) as Rgb;
+}
+
+function serializeRgb([red, green, blue]: Rgb) {
+  return `rgb(${red}, ${green}, ${blue})`;
+}
 
 async function openPage(
   page: Page,
@@ -627,6 +661,112 @@ test.describe("Cursor customizado em touch", () => {
     await expect(page.locator("html")).toHaveAttribute("data-custom-cursor", "inactive");
     await expect(page.locator("#custom-cursor")).toHaveCount(0);
   });
+});
+
+test.describe("WCAG 2.2 AA — contraste manual dos gradientes", () => {
+  for (const theme of ["light", "dark"] as const) {
+    test(`${theme}: tokens textuais, controles, botões e depoimentos`, async ({ page }) => {
+      await openPage(page, "/", {
+        theme,
+        width: 1440,
+        height: 900,
+        loadDeferredSections: false,
+      });
+
+      const names = [
+        "--background",
+        "--home-alternate",
+        "--surface",
+        "--home-card",
+        "--foreground",
+        "--muted-foreground",
+        "--accent",
+        "--accent-2",
+        "--accent-foreground",
+        "--destructive",
+        "--success",
+        "--control-border",
+        "--footer-bg",
+        "--footer-foreground",
+        "--footer-muted",
+      ];
+      const tokens = await page.locator(".home-visual").evaluate((element, properties) => {
+        const styles = getComputedStyle(element);
+        return Object.fromEntries(
+          properties.map((property) => [property, styles.getPropertyValue(property)]),
+        );
+      }, names);
+      const color = (name: string) => parseHexColor(tokens[name]);
+      const backgrounds = ["--background", "--home-alternate", "--surface", "--home-card"];
+      const textColors = [
+        "--foreground",
+        "--muted-foreground",
+        "--accent",
+        "--accent-2",
+        "--destructive",
+        "--success",
+      ];
+
+      for (const textColor of textColors) {
+        for (const background of backgrounds) {
+          expect(
+            contrastRatio(color(textColor), color(background)),
+            `${theme}: ${textColor} sobre ${background}`,
+          ).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+
+      for (const endpoint of ["--accent", "--accent-2"]) {
+        expect(
+          contrastRatio(color("--accent-foreground"), color(endpoint)),
+          `${theme}: texto do botão sobre ${endpoint}`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+
+      for (const background of backgrounds) {
+        expect(
+          contrastRatio(color("--control-border"), color(background)),
+          `${theme}: limite do controle sobre ${background}`,
+        ).toBeGreaterThanOrEqual(3);
+      }
+
+      expect(
+        contrastRatio(color("--footer-foreground"), color("--footer-bg")),
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(color("--footer-muted"), color("--footer-bg"))).toBeGreaterThanOrEqual(
+        4.5,
+      );
+
+      const testimonialMuted = compositeColor(color("--background"), color("--foreground"), 0.6);
+      expect(
+        contrastRatio(testimonialMuted, color("--foreground")),
+        `${theme}: metadados dos depoimentos a 60%`,
+      ).toBeGreaterThanOrEqual(4.5);
+
+      await page.evaluate(() => {
+        window.dispatchEvent(
+          new CustomEvent("portfolio:load-deferred-section", { detail: "contato" }),
+        );
+      });
+      const contactName = page.locator("#contact-name");
+      await expect(contactName).toBeAttached();
+      await contactName.scrollIntoViewIfNeeded();
+      await contactName.fill("A");
+      await page.locator("#contact-email").fill("email-invalido");
+      await page.locator("#contact-message").fill("curta");
+      await page.locator('#contato button[type="submit"]').click();
+
+      const alerts = page.locator('#contato [role="alert"]');
+      await expect(alerts).toHaveCount(3);
+      for (const alert of await alerts.all()) {
+        await expect(alert).toHaveCSS("color", serializeRgb(color("--destructive")));
+        await expect(alert).toHaveCSS("opacity", "1");
+      }
+      for (const label of await page.locator("#contato label[for]").all()) {
+        await expect(label).toHaveCSS("color", serializeRgb(color("--muted-foreground")));
+      }
+    });
+  }
 });
 
 test.describe("WCAG 2.2 AA — matriz de rotas", () => {
