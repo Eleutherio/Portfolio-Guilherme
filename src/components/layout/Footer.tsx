@@ -11,6 +11,10 @@ import { useElementActivity } from "@/hooks/use-element-activity";
 import { GuiferWordmark } from "@/components/GuiferWordmark";
 import { WebsiteCarbonBadge } from "@/components/layout/WebsiteCarbonBadge";
 
+const GREEN_HOSTING_BADGE_URL = "https://app.greenweb.org/api/v3/greencheckimage/guifer.tech";
+const GREEN_HOSTING_REPORT_URL =
+  "https://www.thegreenwebfoundation.org/green-web-check/?url=guifer.tech";
+
 function useClock(locale: string, active: boolean) {
   const [time, setTime] = useState("");
 
@@ -232,16 +236,25 @@ export function Footer() {
 
         <div className="mt-10 border-t border-border pt-7 md:mt-12 md:pt-8">
           <div className="flex flex-wrap items-center gap-4">
-            <img
-              src="https://app.greenweb.org/api/v3/greencheckimage/guifer.tech?nocache=true"
-              alt="This website runs on green hosting - verified by thegreenwebfoundation.org"
-              width={200}
-              height={95}
-              loading="lazy"
-              decoding="async"
-              referrerPolicy="no-referrer"
-              className="h-auto w-[170px] max-w-full"
-            />
+            <a
+              href={GREEN_HOSTING_REPORT_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              data-cursor-open={t.cursor.destinations.greenHosting}
+              className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--footer-bg)]"
+            >
+              <img
+                src={GREEN_HOSTING_BADGE_URL}
+                alt={t.footer.greenHostingBadgeAlt}
+                width={200}
+                height={95}
+                loading="eager"
+                fetchPriority="low"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                className="h-auto w-[170px] max-w-full"
+              />
+            </a>
             <WebsiteCarbonBadge active={active} lang={lang} />
           </div>
         </div>

@@ -7,12 +7,14 @@ type DeferredSectionProps = {
   id: string;
   load: () => Promise<{ default: ComponentType }>;
   placeholderClassName?: string;
+  rootMargin?: string;
 };
 
 export function DeferredSection({
   id,
   load,
   placeholderClassName = "min-h-[calc(100svh-var(--site-header-height,64px))]",
+  rootMargin = "0px 0px -1px",
 }: DeferredSectionProps) {
   const placeholderRef = useRef<HTMLDivElement>(null);
   const loadRef = useRef(load);
@@ -65,11 +67,11 @@ export function DeferredSection({
         observer.disconnect();
         requestLoad();
       },
-      { rootMargin: "0px 0px -1px" },
+      { rootMargin },
     );
     observer.observe(placeholder);
     return () => observer.disconnect();
-  }, [Component, requestLoad]);
+  }, [Component, requestLoad, rootMargin]);
 
   useEffect(() => {
     if (!Component) return;

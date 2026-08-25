@@ -50,7 +50,12 @@ function Index() {
         <DeferredSection id="sobre" load={loadAbout} />
         <DeferredSection id="contato" load={loadContact} />
       </main>
-      <DeferredSection id="rodape" load={loadFooter} placeholderClassName="min-h-[28rem]" />
+      <DeferredSection
+        id="rodape"
+        load={loadFooter}
+        placeholderClassName="min-h-[28rem]"
+        rootMargin="6000px 0px"
+      />
       <DeferredBackToTop />
     </div>
   );
