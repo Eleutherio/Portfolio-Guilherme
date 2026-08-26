@@ -1649,35 +1649,39 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await expect(footer.getByText("Thanks for stopping by", { exact: false })).toHaveCount(0);
   });
 
-  test("badge Website Carbon preserva nota, escala oficial e privacidade", async ({ page }) => {
-    let carbonApiRequests = 0;
-    page.on("request", (request) => {
-      if (request.url().startsWith("https://api.websitecarbon.com/")) carbonApiRequests += 1;
+  test("badge Website Carbon apresenta a resposta central e a escala oficial", async ({ page }) => {
+    let result = {
+      grade: "C",
+      carbon: 0.2,
+      cleanerThan: 54,
+      updatedAt: "2026-08-26T12:00:00.000Z",
+      source: "api",
+    };
+    await page.route("**/api/website-carbon", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(result),
+      });
     });
 
-    const cacheKey = "website-carbon:grade:https://guifer.tech/";
-    await page.addInitScript((key) => {
-      if (sessionStorage.getItem("website-carbon-scale-seeded")) return;
-      sessionStorage.setItem("website-carbon-scale-seeded", "true");
-      localStorage.setItem(
-        key,
-        JSON.stringify({
-          grade: "C",
-          carbon: 0.2,
-          cleanerThan: 54,
-          measuredAt: Date.now(),
-          lastAttemptAt: Date.now(),
-          source: "api",
-        }),
-      );
-    }, cacheKey);
-    await openPage(page, "/", { width: 1440, height: 900 });
-    const reportUrl = "https://www.websitecarbon.com/website/guifer-tech/";
-    const badge = page.locator(`footer a[href="${reportUrl}"]`);
-    await expect(badge).toBeVisible();
+    const loadFooter = async () => {
+      await page.evaluate(() => {
+        window.dispatchEvent(
+          new CustomEvent("portfolio:load-deferred-section", { detail: "rodape" }),
+        );
+      });
+      await expect(page.locator("footer")).toBeAttached();
+    };
+    const externalOrigin = "http://guifer.localhost:4173/";
+    await openPage(page, externalOrigin);
+    await loadFooter();
+    const badge = page.locator(
+      'footer a[href="https://www.websitecarbon.com/website/guifer-tech/"]',
+    );
     await badge.scrollIntoViewIfNeeded();
     await expect(badge).toHaveAccessibleName(
-      /Nota C\. 0,20 g de CO₂\/visita\. Mais limpa que 54% das páginas testadas/,
+      /Nota C\. 0,20 g de CO₂\/visita\. Mais limpa que 54% das páginas testadas\. Atualizado em 26\/08\/2026/,
     );
 
     const gradeColors = {
@@ -1690,30 +1694,9 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       F: "#ff2028",
     } as const;
     for (const [grade, color] of Object.entries(gradeColors)) {
-      await page.evaluate(
-        ({ key, nextGrade }) => {
-          localStorage.setItem(
-            key,
-            JSON.stringify({
-              grade: nextGrade,
-              carbon: 0.02,
-              cleanerThan: 98,
-              measuredAt: Date.now(),
-              lastAttemptAt: Date.now(),
-              source: "api",
-            }),
-          );
-        },
-        { key: cacheKey, nextGrade: grade },
-      );
+      result = { ...result, grade };
       await page.reload({ waitUntil: "domcontentloaded" });
-      await expect(page.locator("main#main")).toBeVisible();
-      await page.evaluate(() => {
-        window.dispatchEvent(
-          new CustomEvent("portfolio:load-deferred-section", { detail: "rodape" }),
-        );
-      });
-      await expect(badge).toBeAttached();
+      await loadFooter();
       await badge.scrollIntoViewIfNeeded();
       await expect(badge.locator(":scope > span > span").first()).toHaveText(grade);
       await expect
@@ -1723,170 +1706,51 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
         .toBe(color);
     }
 
-    expect(carbonApiRequests).toBe(0);
-
-    await openPage(page, "/", { language: "en" });
+    await openPage(page, externalOrigin, { language: "en" });
+    await loadFooter();
     await badge.scrollIntoViewIfNeeded();
     await expect(badge).toHaveAccessibleName(
-      /Grade F\. 0\.02 g of CO₂\/view\. Cleaner than 98% of pages tested/,
+      /Grade F\. 0\.20 g of CO₂\/view\. Cleaner than 54% of pages tested\. Updated on 26\/08\/2026/,
     );
 
     await openPage(page, "/privacidade", { language: "pt" });
     await expect(page.getByText(/Website Carbon \/ Wholegrain Digital/)).toBeVisible();
-    await expect(page.getByText(/nota é revalidada diariamente/)).toBeVisible();
+    await expect(
+      page.getByText(/no máximo uma vez a cada 24 horas para todo o site/),
+    ).toBeVisible();
   });
 
-  test("badge Website Carbon não inventa nota quando a primeira consulta falha", async ({
-    page,
-  }) => {
-    let carbonApiRequests = 0;
-    await page.route("https://api.websitecarbon.com/b?url=**", async (route) => {
-      carbonApiRequests += 1;
-      await route.fulfill({
-        status: 503,
-        headers: { "access-control-allow-origin": "*" },
-        body: "unavailable",
-      });
+  test("badge Website Carbon usa o A+ publicado quando a API própria falha", async ({ page }) => {
+    await page.route("**/api/website-carbon", async (route) => {
+      await route.fulfill({ status: 503, contentType: "application/json", body: '{"ok":false}' });
+    });
+    await page.addInitScript(() => {
+      localStorage.setItem("website-carbon:grade:https://guifer.tech/", '{"grade":"C"}');
+      localStorage.setItem("website-carbon:v2:grade:https://guifer.tech/", '{"grade":"C"}');
     });
 
     await openPage(page, "http://guifer.localhost:4173/");
-    const badge = page.locator(
-      'footer a[href="https://www.websitecarbon.com/website/guifer-tech/"]',
-    );
-    await expect(badge).toBeAttached();
-    await badge.scrollIntoViewIfNeeded();
-    await expect(badge).toHaveAccessibleName(/Medição temporariamente indisponível/);
-    await expect(badge.locator(":scope > span > span").first()).toHaveText("—");
-    await expect
-      .poll(() =>
-        page.evaluate(() => localStorage.getItem("website-carbon:grade:https://guifer.tech/")),
-      )
-      .toBeNull();
-    expect(carbonApiRequests).toBe(1);
-
     await page.evaluate(() => {
-      localStorage.setItem(
-        "website-carbon:grade:https://guifer.tech/",
-        JSON.stringify({
-          grade: "C",
-          carbon: 0.2,
-          cleanerThan: 54,
-          lastAttemptAt: Date.now(),
-          source: "published",
-        }),
+      window.dispatchEvent(
+        new CustomEvent("portfolio:load-deferred-section", { detail: "rodape" }),
       );
     });
-    await page.reload({ waitUntil: "domcontentloaded" });
-    await expect(badge).toBeAttached();
+    const badge = page.locator(
+      'footer a[href="https://www.websitecarbon.com/website/guifer-tech/"]',
+    );
     await badge.scrollIntoViewIfNeeded();
-    await expect(badge).toHaveAccessibleName(/Medição temporariamente indisponível/);
-    await expect(badge.locator(":scope > span > span").first()).toHaveText("—");
+    await expect(badge).toHaveAccessibleName(/Nota A\+\. Atualizado em 25\/08\/2026/);
+    await expect(badge.locator(":scope > span > span").first()).toHaveText("A+");
     await expect
       .poll(() =>
         page.evaluate(() => localStorage.getItem("website-carbon:grade:https://guifer.tech/")),
       )
       .toBeNull();
-    expect(carbonApiRequests).toBe(2);
-  });
-
-  test("badge Website Carbon renova diariamente e preserva a última medição em falha", async ({
-    page,
-  }) => {
-    const cacheKey = "website-carbon:grade:https://guifer.tech/";
-    let carbonApiRequests = 0;
-    let apiAvailable = true;
-
-    await page.route("https://api.websitecarbon.com/b?url=**", async (route) => {
-      carbonApiRequests += 1;
-      if (!apiAvailable) {
-        await route.fulfill({
-          status: 503,
-          headers: { "access-control-allow-origin": "*" },
-          body: "unavailable",
-        });
-        return;
-      }
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        headers: { "access-control-allow-origin": "*" },
-        body: JSON.stringify({ c: 0.03, p: 95 }),
-      });
-    });
-    await page.route(
-      "https://app.greenweb.org/api/v3/greencheckimage/guifer.tech",
-      async (route) => {
-        await route.fulfill({ status: 200, contentType: "image/png", body: IMAGE_STUB });
-      },
-    );
-    await page.addInitScript((key) => {
-      if (sessionStorage.getItem("website-carbon-seeded")) return;
-      sessionStorage.setItem("website-carbon-seeded", "true");
-      localStorage.setItem(
-        key,
-        JSON.stringify({
-          grade: "C",
-          carbon: 0.2,
-          cleanerThan: 54,
-          measuredAt: Date.now() - 25 * 60 * 60 * 1000,
-          lastAttemptAt: Date.now() - 25 * 60 * 60 * 1000,
-          source: "api",
-        }),
-      );
-    }, cacheKey);
-
-    const loadFooter = async () => {
-      if ((await page.locator("footer").count()) === 0) {
-        await expect(page.locator("#rodape")).toBeAttached();
-        await page.evaluate(() => {
-          window.dispatchEvent(
-            new CustomEvent("portfolio:load-deferred-section", { detail: "rodape" }),
-          );
-        });
-      }
-      await expect(page.locator("footer")).toBeAttached();
-    };
-
-    const externalOrigin = "http://guifer.localhost:4173/";
-    await openPage(page, externalOrigin);
-    await loadFooter();
-    const badge = page.locator(
-      'footer a[href="https://www.websitecarbon.com/website/guifer-tech/"]',
-    );
-    await badge.scrollIntoViewIfNeeded();
-    await expect(badge).toHaveAccessibleName(
-      /Nota A\+\. 0,03 g de CO₂\/visita\. Mais limpa que 95% das páginas testadas/,
-    );
-    expect(carbonApiRequests).toBe(1);
-
-    await page.reload({ waitUntil: "domcontentloaded" });
-    await loadFooter();
-    await badge.scrollIntoViewIfNeeded();
-    await expect(badge).toHaveAccessibleName(/Nota A\+\. 0,03 g de CO₂\/visita/);
-    expect(carbonApiRequests).toBe(1);
-
-    apiAvailable = false;
-    await page.evaluate((key) => {
-      localStorage.setItem(
-        key,
-        JSON.stringify({
-          grade: "B",
-          carbon: 0.12,
-          cleanerThan: 72,
-          measuredAt: Date.now() - 25 * 60 * 60 * 1000,
-          lastAttemptAt: Date.now() - 25 * 60 * 60 * 1000,
-          source: "api",
-        }),
-      );
-    }, cacheKey);
-    await page.reload({ waitUntil: "domcontentloaded" });
-    await loadFooter();
-    await badge.scrollIntoViewIfNeeded();
-    await expect(badge).toHaveAccessibleName(
-      /Nota B\. 0,12 g de CO₂\/visita\. Mais limpa que 72% das páginas testadas/,
-    );
-    await expect(page.getByText(/nova tentativa em até 24 horas/)).toBeAttached();
-    expect(carbonApiRequests).toBe(2);
+    await expect
+      .poll(() =>
+        page.evaluate(() => localStorage.getItem("website-carbon:v2:grade:https://guifer.tech/")),
+      )
+      .toBeNull();
   });
 
   test("infraestrutura comunica estados sem depender somente de cor", async ({ page }) => {
