@@ -71,12 +71,46 @@ export type Database = {
         };
         Relationships: [];
       };
+      website_carbon_cache: {
+        Row: {
+          carbon: number | null;
+          cleaner_than: number | null;
+          grade: string;
+          id: boolean;
+          last_attempt_at: string;
+          measured_at: string;
+          source: string;
+        };
+        Insert: {
+          carbon?: number | null;
+          cleaner_than?: number | null;
+          grade: string;
+          id?: boolean;
+          last_attempt_at?: string;
+          measured_at: string;
+          source: string;
+        };
+        Update: {
+          carbon?: number | null;
+          cleaner_than?: number | null;
+          grade?: string;
+          id?: boolean;
+          last_attempt_at?: string;
+          measured_at?: string;
+          source?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
       app_healthcheck: { Args: never; Returns: string };
+      claim_website_carbon_refresh: {
+        Args: { p_minimum_age_seconds: number };
+        Returns: boolean;
+      };
       consume_scoped_rate_limit: {
         Args: {
           p_global_key_hash: string;

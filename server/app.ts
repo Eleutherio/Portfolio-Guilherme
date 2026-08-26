@@ -4,6 +4,7 @@ import { json } from "./http";
 import { dependencies, infrastructureStatus, live } from "./services/health";
 import { getGithubYearStats } from "./services/github";
 import { handleCoffeeRequest } from "./services/coffee";
+import { getWebsiteCarbonResult } from "./services/website-carbon";
 import type { RequestContext } from "./request-context";
 
 const API_PATHS = new Set([
@@ -13,6 +14,7 @@ const API_PATHS = new Set([
   "/api/contact",
   "/api/github",
   "/api/coffee",
+  "/api/website-carbon",
 ]);
 
 function configuredOrigins(): Set<string> {
@@ -114,6 +116,13 @@ export async function app(request: Request, context: RequestContext = {}): Promi
     response =
       request.method === "GET"
         ? json(await getGithubYearStats(), 200, { "cache-control": "public, max-age=300" })
+        : json({ ok: false }, 405, { allow: "GET" });
+  } else if (pathname === "/api/website-carbon") {
+    response =
+      request.method === "GET"
+        ? json(await getWebsiteCarbonResult(), 200, {
+            "cache-control": "public, max-age=300, stale-while-revalidate=3600",
+          })
         : json({ ok: false }, 405, { allow: "GET" });
   } else {
     response = await handleCoffeeRequest(request, context);

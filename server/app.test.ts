@@ -14,6 +14,7 @@ import { createApiServer } from "./node-server";
 import { ClientAddressError, resolveClientAddress } from "./request-context";
 import { releaseManifestSource } from "./release";
 import { runInfrastructureChecks } from "./services/health";
+import { getWebsiteCarbonResult, type WebsiteCarbonDependencies } from "./services/website-carbon";
 
 const originalAllowedOrigins = process.env.API_ALLOWED_ORIGINS;
 const originalKeepAliveSecret = process.env.KEEP_ALIVE_SECRET;
@@ -116,6 +117,104 @@ test("infrastructure status contains rejected checks", async () => {
 
   assert.equal(status.ok, false);
   assert.equal(status.services.database, "unavailable");
+});
+
+test("Website Carbon serves the shared cache without refreshing before 24 hours", async () => {
+  let badgeRequests = 0;
+  const result = await getWebsiteCarbonResult({
+    claimRefresh: async () => false,
+    readCache: async () => ({
+      grade: "B",
+      carbon: 0.12,
+      cleaner_than: 72,
+      measured_at: "2026-08-25T12:00:00.000Z",
+      source: "api",
+    }),
+    writeCache: async () => {
+      throw new Error("unexpected write");
+    },
+    fetchBadge: async () => {
+      badgeRequests += 1;
+      return { c: 0.03, p: 95 };
+    },
+  });
+
+  assert.equal(badgeRequests, 0);
+  assert.deepEqual(result, {
+    grade: "B",
+    carbon: 0.12,
+    cleanerThan: 72,
+    updatedAt: "2026-08-25T12:00:00.000Z",
+    source: "api",
+  });
+});
+
+test("Website Carbon performs only one refresh for concurrent shared claims", async () => {
+  let claimed = false;
+  let badgeRequests = 0;
+  const dependencies: WebsiteCarbonDependencies = {
+    claimRefresh: async () => {
+      if (claimed) return false;
+      claimed = true;
+      return true;
+    },
+    readCache: async () => ({
+      grade: "A+",
+      carbon: null,
+      cleaner_than: null,
+      measured_at: "2026-08-25T12:00:00.000Z",
+      source: "published",
+    }),
+    writeCache: async (result) => ({
+      grade: result.grade,
+      carbon: result.carbon ?? null,
+      cleaner_than: result.cleanerThan ?? null,
+      measured_at: result.updatedAt,
+      source: result.source,
+    }),
+    fetchBadge: async () => {
+      badgeRequests += 1;
+      return { c: 0.03, p: 95 };
+    },
+  };
+
+  const results = await Promise.all([
+    getWebsiteCarbonResult(dependencies),
+    getWebsiteCarbonResult(dependencies),
+  ]);
+
+  assert.equal(badgeRequests, 1);
+  assert.equal(
+    results.some((result) => result.carbon === 0.03),
+    true,
+  );
+  assert.equal(
+    results.every((result) => result.grade === "A+"),
+    true,
+  );
+});
+
+test("Website Carbon preserves the shared result when the provider fails", async () => {
+  const result = await getWebsiteCarbonResult({
+    claimRefresh: async () => true,
+    readCache: async () => ({
+      grade: "A+",
+      carbon: 0.03,
+      cleaner_than: 95,
+      measured_at: "2026-08-25T12:00:00.000Z",
+      source: "api",
+    }),
+    writeCache: async () => {
+      throw new Error("unexpected write");
+    },
+    fetchBadge: async () => {
+      throw new Error("provider unavailable");
+    },
+  });
+
+  assert.equal(result.grade, "A+");
+  assert.equal(result.carbon, 0.03);
+  assert.equal(result.updatedAt, "2026-08-25T12:00:00.000Z");
 });
 
 test("dependency health check requires the keep-alive secret", async () => {
