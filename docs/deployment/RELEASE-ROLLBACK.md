@@ -57,7 +57,7 @@ O histórico do workflow `Verify production release` é evidência complementar 
 2. Antes de qualquer leitura ou escrita remota, vincule o CLI ao projeto de produção versionado em `supabase/config.toml` e confira o vínculo local:
 
    ```powershell
-   $productionProjectRef = "nqbqeynrudkzyumimpuk"
+   $productionProjectRef = "gpmgmhrencjnxneflqyw"
    npx supabase@2.110.0 link --project-ref $productionProjectRef
    $linkedProjectRef = (Get-Content "supabase/.temp/project-ref" -Raw).Trim()
    if ($linkedProjectRef -ne $productionProjectRef) { throw "O Supabase CLI não está vinculado ao projeto de produção esperado." }
@@ -79,7 +79,7 @@ O histórico do workflow `Verify production release` é evidência complementar 
    Restaure os três arquivos em um banco local descartável ou em um projeto criado para o ensaio e valide contagens e invariantes antes de liberar a produção. Se usar um projeto remoto descartável, troque e confira explicitamente o vínculo antes da restauração:
 
    ```powershell
-   $productionProjectRef = "nqbqeynrudkzyumimpuk"
+   $productionProjectRef = "gpmgmhrencjnxneflqyw"
    $disposableProjectRef = "<project-ref-descartavel>"
    if ($disposableProjectRef -eq $productionProjectRef) { throw "O ensaio de restauração não pode usar produção." }
    npx supabase@2.110.0 link --project-ref $disposableProjectRef
