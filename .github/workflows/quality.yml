@@ -1,0 +1,94 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Static, API and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare diagnostic directory
+        run: mkdir -p .ci-artifacts/quality
+
+      - name: Lint
+        run: set -o pipefail; npm run lint 2>&1 | tee .ci-artifacts/quality/lint.log
+
+      - name: Typecheck
+        run: set -o pipefail; npm run typecheck 2>&1 | tee .ci-artifacts/quality/typecheck.log
+
+      - name: Test API
+        run: set -o pipefail; npm run test:api 2>&1 | tee .ci-artifacts/quality/api.log
+
+      - name: Build API
+        run: set -o pipefail; npm run build:api 2>&1 | tee .ci-artifacts/quality/build-api.log
+
+      - name: Build frontend and check Website Carbon budget
+        run: set -o pipefail; npm run carbon:check 2>&1 | tee .ci-artifacts/quality/carbon.log
+
+      - name: Upload quality diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-diagnostics-${{ github.run_id }}
+          path: .ci-artifacts/quality
+          if-no-files-found: error
+          retention-days: 7
+
+  e2e:
+    name: Playwright accessibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright and Axe
+        run: npm run test:a11y
+
+      - name: Upload Playwright diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-diagnostics-${{ github.run_id }}
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: error
+          retention-days: 7
