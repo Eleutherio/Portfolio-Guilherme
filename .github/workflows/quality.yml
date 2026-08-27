@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   quality:
-    name: Static, API and build
+    name: Static and API
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -47,9 +47,6 @@ jobs:
       - name: Build API
         run: set -o pipefail; npm run build:api 2>&1 | tee .ci-artifacts/quality/build-api.log
 
-      - name: Build frontend and check Website Carbon budget
-        run: set -o pipefail; npm run carbon:check 2>&1 | tee .ci-artifacts/quality/carbon.log
-
       - name: Upload quality diagnostics on failure
         if: failure()
         uses: actions/upload-artifact@v4
@@ -60,7 +57,7 @@ jobs:
           retention-days: 7
 
   e2e:
-    name: Playwright accessibility
+    name: Browser, accessibility and carbon
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -78,6 +75,9 @@ jobs:
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
+
+      - name: Build frontend and check Website Carbon budget
+        run: npm run carbon:check
 
       - name: Run Playwright and Axe
         run: npm run test:a11y
