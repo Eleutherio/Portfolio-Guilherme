@@ -37,6 +37,7 @@ function corsHeaders(request: Request): HeadersInit {
     "access-control-allow-origin": origin,
     "access-control-allow-methods": "GET, POST, OPTIONS",
     "access-control-allow-headers": "content-type",
+    "access-control-expose-headers": "x-request-id",
     "access-control-max-age": "600",
     vary: "Origin",
   };

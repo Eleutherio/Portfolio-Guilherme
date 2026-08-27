@@ -251,6 +251,7 @@ test("allowed browser origin receives CORS headers", async () => {
   );
   assert.equal(response.status, 204);
   assert.equal(response.headers.get("access-control-allow-origin"), "https://guifer.tech");
+  assert.equal(response.headers.get("access-control-expose-headers"), "x-request-id");
   assert.equal(response.headers.get("vary"), "Origin");
 });
 
@@ -630,6 +631,11 @@ test("defensive headers cover success, preflight, client error and server error"
       assert.equal(response.headers.get("cross-origin-opener-policy"), "same-origin");
       assert.equal(response.headers.get("strict-transport-security"), "max-age=31536000");
     }
+
+    assert.match(
+      responses[3].headers.get("x-request-id") ?? "",
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
   } finally {
     console.error = originalConsoleError;
     if (originalClientIpSource === undefined) delete process.env.CLIENT_IP_SOURCE;

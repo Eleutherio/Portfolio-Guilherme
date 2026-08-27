@@ -100,6 +100,7 @@ export async function handleContactRequest(
   context: RequestContext,
 ): Promise<Response> {
   const requestId = crypto.randomUUID();
+  const requestHeaders = { "x-request-id": requestId };
 
   try {
     if (!isAllowedOrigin(request)) throw new InvalidRequestError();
@@ -109,7 +110,10 @@ export async function handleContactRequest(
 
     const rateLimit = await checkContactRateLimit(request, context);
     if (!rateLimit.allowed) {
-      return jsonResponse({ ok: false, code: "rate_limited" }, 429, rateLimitHeaders(rateLimit));
+      return jsonResponse({ ok: false, code: "rate_limited" }, 429, {
+        ...rateLimitHeaders(rateLimit),
+        ...requestHeaders,
+      });
     }
 
     const body = await readBodyWithLimit(request);
@@ -127,7 +131,7 @@ export async function handleContactRequest(
       typeof input.website === "string" &&
       input.website.trim() !== ""
     ) {
-      return jsonResponse({ ok: true }, 202);
+      return jsonResponse({ ok: true }, 202, requestHeaders);
     }
 
     const parsed = contactPayloadSchema.safeParse(input);
@@ -135,12 +139,13 @@ export async function handleContactRequest(
 
     await verifyContactRecaptcha(parsed.data.antiBotToken, request);
     await sendContactEmail(parsed.data, requestId);
-    return jsonResponse({ ok: true }, 202);
+    console.info("[contact] request accepted", { requestId });
+    return jsonResponse({ ok: true }, 202, requestHeaders);
   } catch (error) {
     if (error instanceof InvalidRequestError || error instanceof RecaptchaRejectedError) {
-      return jsonResponse({ ok: false, code: "invalid_request" }, 422);
+      return jsonResponse({ ok: false, code: "invalid_request" }, 422, requestHeaders);
     }
     logFailure(requestId, error);
-    return jsonResponse({ ok: false, code: "server_error" }, 500);
+    return jsonResponse({ ok: false, code: "server_error" }, 500, requestHeaders);
   }
 }
