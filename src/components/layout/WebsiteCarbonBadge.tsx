@@ -10,6 +10,8 @@ import {
 type Language = "pt" | "en";
 
 const PUBLISHED_REPORT_URL = "https://www.websitecarbon.com/website/guifer-tech/";
+const officialCleanerThan = (percentage: number) =>
+  `This is cleaner than ${percentage}% of all web pages globally`;
 const LEGACY_CACHE_KEYS = [
   "website-carbon:grade:https://guifer.tech/",
   "website-carbon:v2:grade:https://guifer.tech/",
@@ -31,14 +33,16 @@ const copy = {
     grade: (grade: CarbonGrade) => `Nota ${grade}`,
     updatedAt: (date: string) => `Atualizado em ${date}`,
     emission: (carbon: string) => `${carbon} g de CO₂/visita`,
-    cleanerThan: (percentage: number) => `Mais limpa que ${percentage}% das páginas testadas`,
+    cleanerThan: (percentage: number) =>
+      `Esta página é mais limpa que ${percentage}% de todas as páginas globalmente`,
     open: "Abrir Website Carbon",
   },
   en: {
     grade: (grade: CarbonGrade) => `Grade ${grade}`,
     updatedAt: (date: string) => `Updated on ${date}`,
     emission: (carbon: string) => `${carbon} g of CO₂/view`,
-    cleanerThan: (percentage: number) => `Cleaner than ${percentage}% of pages tested`,
+    cleanerThan: (percentage: number) =>
+      `This is cleaner than ${percentage}% of all web pages globally`,
     open: "Open Website Carbon",
   },
 } as const;
@@ -91,13 +95,11 @@ export function WebsiteCarbonBadge({ active, lang }: { active: boolean; lang: La
           maximumFractionDigits: 3,
         }).format(result.carbon)
       : null;
-  const measurement =
-    carbon && result.cleanerThan !== undefined
-      ? {
-          emission: labels.emission(carbon),
-          cleanerThan: labels.cleanerThan(result.cleanerThan),
-        }
-      : null;
+  const emission = carbon ? labels.emission(carbon) : null;
+  const cleanerThan = result.cleanerThan ?? WEBSITE_CARBON_SNAPSHOT.cleanerThan;
+  const cleanerThanLabel = cleanerThan !== undefined ? labels.cleanerThan(cleanerThan) : null;
+  const officialCleanerThanLabel =
+    cleanerThan !== undefined ? officialCleanerThan(cleanerThan) : null;
   const updatedAtLabel = labels.updatedAt(formatUpdatedAt(result.updatedAt, lang));
   const gradeStyle = {
     "--carbon-grade": GRADE_COLORS[result.grade],
@@ -109,7 +111,7 @@ export function WebsiteCarbonBadge({ active, lang }: { active: boolean; lang: La
       target="_blank"
       rel="noreferrer noopener"
       data-cursor-open={labels.open}
-      aria-label={`${primary}. ${measurement?.emission ? `${measurement.emission}. ` : ""}${measurement?.cleanerThan ? `${measurement.cleanerThan}. ` : ""}${updatedAtLabel}`}
+      aria-label={`${primary}. ${emission ? `${emission}. ` : ""}${cleanerThanLabel ? `${cleanerThanLabel}. ` : ""}${updatedAtLabel}`}
       className="group inline-flex max-w-full flex-col items-center text-center font-sans text-[10px] leading-[1.15] no-underline"
       style={gradeStyle}
     >
@@ -118,17 +120,18 @@ export function WebsiteCarbonBadge({ active, lang }: { active: boolean; lang: La
           {result.grade}
         </span>
         <span className="inline-flex min-h-8 min-w-[8.6rem] items-center justify-center border-y-2 border-[var(--carbon-grade)] bg-white px-2 py-1 text-[#0e11a8]">
-          {measurement?.emission ?? updatedAtLabel}
+          {emission ?? updatedAtLabel}
         </span>
         <span className="inline-flex min-h-8 items-center justify-center rounded-r-sm border-2 border-l-0 border-[var(--carbon-grade)] bg-[#0e11a8] px-2 py-1 font-bold text-white">
           Website Carbon
         </span>
       </span>
-      {measurement ? (
-        <span aria-live="polite" className="mt-1 text-[10px] text-foreground/85">
-          {measurement.cleanerThan} · {updatedAtLabel}
+      {officialCleanerThanLabel ? (
+        <span aria-live="polite" className="mt-1 font-semibold text-foreground/90">
+          {officialCleanerThanLabel}
         </span>
       ) : null}
+      {emission ? <span className="mt-0.5 text-foreground/75">{updatedAtLabel}</span> : null}
     </a>
   );
 }

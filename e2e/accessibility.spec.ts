@@ -1681,8 +1681,11 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     );
     await badge.scrollIntoViewIfNeeded();
     await expect(badge).toHaveAccessibleName(
-      /Nota C\. 0,20 g de CO₂\/visita\. Mais limpa que 54% das páginas testadas\. Atualizado em 26\/08\/2026/,
+      /Nota C\. 0,20 g de CO₂\/visita\. Esta página é mais limpa que 54% de todas as páginas globalmente\. Atualizado em 26\/08\/2026/,
     );
+    await expect(
+      badge.getByText("This is cleaner than 54% of all web pages globally", { exact: true }),
+    ).toBeVisible();
 
     const gradeColors = {
       "A+": "#00f5bd",
@@ -1710,8 +1713,11 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await loadFooter();
     await badge.scrollIntoViewIfNeeded();
     await expect(badge).toHaveAccessibleName(
-      /Grade F\. 0\.20 g of CO₂\/view\. Cleaner than 54% of pages tested\. Updated on 26\/08\/2026/,
+      /Grade F\. 0\.20 g of CO₂\/view\. This is cleaner than 54% of all web pages globally\. Updated on 26\/08\/2026/,
     );
+    await expect(
+      badge.getByText("This is cleaner than 54% of all web pages globally", { exact: true }),
+    ).toBeVisible();
 
     await openPage(page, "/privacidade", { language: "pt" });
     await expect(page.getByText(/Website Carbon \/ Wholegrain Digital/)).toBeVisible();
@@ -1739,7 +1745,12 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       'footer a[href="https://www.websitecarbon.com/website/guifer-tech/"]',
     );
     await badge.scrollIntoViewIfNeeded();
-    await expect(badge).toHaveAccessibleName(/Nota A\+\. Atualizado em 25\/08\/2026/);
+    await expect(badge).toHaveAccessibleName(
+      /Nota A\+\. Esta página é mais limpa que 97% de todas as páginas globalmente\. Atualizado em 25\/08\/2026/,
+    );
+    await expect(
+      badge.getByText("This is cleaner than 97% of all web pages globally", { exact: true }),
+    ).toBeVisible();
     await expect(badge.locator(":scope > span > span").first()).toHaveText("A+");
     await expect
       .poll(() =>

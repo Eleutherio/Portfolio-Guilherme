@@ -10,6 +10,7 @@ export type WebsiteCarbonResult = {
 
 export const WEBSITE_CARBON_SNAPSHOT: WebsiteCarbonResult = {
   grade: "A+",
+  cleanerThan: 97,
   updatedAt: "2026-08-25T12:00:00.000Z",
   source: "published",
 };
