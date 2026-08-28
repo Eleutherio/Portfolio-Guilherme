@@ -26,8 +26,8 @@
     "images:generate": "node scripts/generate-responsive-images.mjs",
     "fonts:generate": "node scripts/generate-font-subsets.mjs",
     "format": "prettier --write .",
-    "test:a11y": "playwright test e2e/accessibility.spec.ts",
-    "test:a11y:headed": "playwright test e2e/accessibility.spec.ts --headed"
+    "test:a11y": "playwright test e2e",
+    "test:a11y:headed": "playwright test e2e --headed"
   },
   "dependencies": {
     "@fontsource-variable/caveat": "^5.3.0",
