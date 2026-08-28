@@ -116,7 +116,9 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       /Nota C\. 0,20 g de CO₂\/visita\. Esta página é mais limpa que 54% de todas as páginas globalmente\. Atualizado em 26\/08\/2026/,
     );
     await expect(
-      badge.getByText("This is cleaner than 54% of all web pages globally", { exact: true }),
+      badge.getByText("Esta página é mais limpa que 54% de todas as páginas globalmente", {
+        exact: true,
+      }),
     ).toBeVisible();
 
     const gradeColors = {
@@ -181,7 +183,9 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       /Nota A\+\. Esta página é mais limpa que 97% de todas as páginas globalmente\. Atualizado em 25\/08\/2026/,
     );
     await expect(
-      badge.getByText("This is cleaner than 97% of all web pages globally", { exact: true }),
+      badge.getByText("Esta página é mais limpa que 97% de todas as páginas globalmente", {
+        exact: true,
+      }),
     ).toBeVisible();
     await expect(badge.locator(":scope > span > span").first()).toHaveText("A+");
     await expect
