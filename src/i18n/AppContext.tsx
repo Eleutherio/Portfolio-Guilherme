@@ -1,11 +1,5 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, type ReactNode } from "react";
+import { setLanguagePreference, usePreferences } from "@/lib/preferences";
 import { dictionary, type Dict, type Lang } from "./dictionary";
 
 type AppContextValue = {
@@ -16,50 +10,12 @@ type AppContextValue = {
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
-const STORAGE_KEY = "gf-lang";
-
-const listeners = new Set<() => void>();
-
-function readStoredLanguage(): Lang {
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored === "pt" || stored === "en") return stored;
-  } catch {
-    /* ignore unavailable storage */
-  }
-  return "pt";
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  const onStorage = (event: StorageEvent) => {
-    if (event.key === STORAGE_KEY) listener();
-  };
-  window.addEventListener("storage", onStorage);
-  return () => {
-    listeners.delete(listener);
-    window.removeEventListener("storage", onStorage);
-  };
-}
-
-function emitChange() {
-  listeners.forEach((listener) => listener());
-}
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const lang = useSyncExternalStore<Lang>(subscribe, readStoredLanguage, () => "pt");
-
-  useEffect(() => {
-    document.documentElement.lang = lang === "pt" ? "pt-BR" : "en";
-  }, [lang]);
+  const { language: lang } = usePreferences();
 
   const setLang = useCallback((next: Lang) => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      /* ignore */
-    }
-    emitChange();
+    setLanguagePreference(next);
   }, []);
 
   const value: AppContextValue = {
