@@ -84,6 +84,8 @@ Mantenha `CLIENT_IP_SOURCE=render`. Esse valor usa somente `CF-Connecting-IP`, s
 
 O Render usa `GET /health/live` como health check. Essa rota não consulta serviços externos, portanto uma indisponibilidade do Supabase não provoca reinício do processo Node. O endpoint autenticado `/health/dependencies` verifica o banco e se a retenção executou nas últimas 36 horas.
 
+Antes de abrir a porta HTTP, a API valida tipos, limites e presença das variáveis obrigatórias. Uma configuração inválida encerra o processo informando somente os nomes das variáveis afetadas, sem registrar seus valores.
+
 `/health/live` também expõe o SHA não secreto de `RENDER_GIT_COMMIT`, permitindo confirmar qual commit está implantado na API e compará-lo ao alvo registrado para o Render.
 
 O endpoint público `GET /health/status` alimenta os indicadores do rodapé. Ele verifica Supabase, autenticação SMTP da Brevo e disponibilidade do `siteverify` do reCAPTCHA sem expor segredos. Resultados totalmente operacionais ficam em cache por cinco minutos; falhas são reavaliadas após 30 segundos.
@@ -102,6 +104,8 @@ Variáveis de produção:
 
 - `VITE_API_URL=https://SEU-SERVICO.onrender.com`;
 - `VITE_RECAPTCHA_SITE_KEY`.
+
+O Vite valida essas duas variáveis antes de iniciar o servidor de desenvolvimento ou gerar o bundle. `VITE_API_URL` pode ficar vazio somente quando a API estiver disponível na mesma origem.
 
 Os arquivos `_redirects` e `_headers` são copiados de `public/`. O primeiro implementa o fallback da SPA; o segundo adiciona headers de segurança e cache para os assets versionados.
 

@@ -4,6 +4,7 @@ import {
   resolveClientAddress,
   type RequestContext,
 } from "../../server/request-context";
+import { getServerEnvironment } from "../../server/env";
 
 export type RateLimitResult = {
   allowed: boolean;
@@ -25,21 +26,14 @@ export class RateLimitError extends Error {
   }
 }
 
-function readInteger(name: string, fallback: number, maximum: number): number {
-  const parsed = Number.parseInt(process.env[name] ?? "", 10);
-  if (!Number.isInteger(parsed) || parsed <= 0) return fallback;
-  return Math.min(parsed, maximum);
-}
-
 function getRateLimitConfig() {
-  const secret = process.env.CONTACT_RATE_LIMIT_SECRET;
-  if (!secret || secret.length < 32) throw new RateLimitError();
+  const environment = getServerEnvironment();
 
   return {
-    secret,
-    windowSeconds: readInteger("CONTACT_RATE_LIMIT_WINDOW_SECONDS", 900, 86_400),
-    perIp: readInteger("CONTACT_RATE_LIMIT_IP_MAX", 5, 1_000),
-    global: readInteger("CONTACT_RATE_LIMIT_GLOBAL_MAX", 100, 100_000),
+    secret: environment.CONTACT_RATE_LIMIT_SECRET,
+    windowSeconds: environment.CONTACT_RATE_LIMIT_WINDOW_SECONDS,
+    perIp: environment.CONTACT_RATE_LIMIT_IP_MAX,
+    global: environment.CONTACT_RATE_LIMIT_GLOBAL_MAX,
   };
 }
 

@@ -1,6 +1,7 @@
 import nodemailer, { type SendMailOptions, type Transporter } from "nodemailer";
 import { z } from "zod";
 import { contactPayloadSchema, type ContactPayload } from "@/lib/contact-contract";
+import { getServerEnvironment } from "../../server/env";
 
 function hasControlCharacters(value: string): boolean {
   return Array.from(value).some((character) => {
@@ -38,13 +39,14 @@ export class EmailDeliveryError extends Error {
 }
 
 function getEmailConfig() {
+  const environment = getServerEnvironment();
   const result = emailConfigSchema.safeParse({
-    host: process.env.BREVO_SMTP_HOST ?? "smtp-relay.brevo.com",
-    port: Number.parseInt(process.env.BREVO_SMTP_PORT ?? "2525", 10),
-    user: process.env.BREVO_SMTP_USER,
-    key: process.env.BREVO_SMTP_KEY,
-    from: process.env.CONTACT_EMAIL_FROM,
-    to: process.env.CONTACT_EMAIL_TO,
+    host: environment.BREVO_SMTP_HOST,
+    port: environment.BREVO_SMTP_PORT,
+    user: environment.BREVO_SMTP_USER,
+    key: environment.BREVO_SMTP_KEY,
+    from: environment.CONTACT_EMAIL_FROM,
+    to: environment.CONTACT_EMAIL_TO,
   });
 
   if (!result.success) {

@@ -1,11 +1,8 @@
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import {
-  checkScopedRateLimit,
-  RateLimitError,
-  rateLimitHeaders,
-} from "@/lib/contact-rate-limit.server";
+import { checkScopedRateLimit, rateLimitHeaders } from "@/lib/contact-rate-limit.server";
 import { json, readJsonBody } from "../http";
+import { getServerEnvironment } from "../env";
 import type { RequestContext } from "../request-context";
 
 const coffeePayloadSchema = z.object({ visitorId: z.string().uuid() }).strict();
@@ -30,8 +27,7 @@ export async function handleCoffeeRequest(
     const parsed = coffeePayloadSchema.safeParse(await readJsonBody(request, 1024));
     if (!parsed.success) return json({ ok: false }, 422);
 
-    const secret = process.env.COFFEE_RATE_LIMIT_SECRET ?? process.env.CONTACT_RATE_LIMIT_SECRET;
-    if (!secret) throw new RateLimitError();
+    const secret = getServerEnvironment().COFFEE_RATE_LIMIT_SECRET;
     const rateLimit = await checkScopedRateLimit(
       request,
       {

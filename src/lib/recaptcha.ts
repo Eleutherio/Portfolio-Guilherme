@@ -66,7 +66,7 @@ function loadRecaptcha(siteKey: string): Promise<void> {
 }
 
 export async function executeContactRecaptcha(): Promise<string> {
-  const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+  const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY?.trim();
   if (!siteKey) throw new Error("Missing reCAPTCHA site key");
 
   await loadRecaptcha(siteKey);

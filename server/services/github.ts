@@ -1,3 +1,5 @@
+import { getServerEnvironment } from "../env";
+
 type YearStats = { total: number; year: number } | null;
 
 let cache: { value: YearStats; expires: number } | null = null;
@@ -6,7 +8,7 @@ export async function getGithubYearStats(): Promise<YearStats> {
   const now = Date.now();
   if (cache && cache.expires > now) return cache.value;
 
-  const token = process.env.GITHUB_TOKEN;
+  const token = getServerEnvironment().GITHUB_TOKEN;
   if (!token) return null;
 
   const year = new Date().getUTCFullYear();

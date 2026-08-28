@@ -60,6 +60,9 @@ jobs:
     name: Browser, accessibility and carbon
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      VITE_API_URL: http://127.0.0.1:8787
+      VITE_RECAPTCHA_SITE_KEY: ci-build-site-key
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

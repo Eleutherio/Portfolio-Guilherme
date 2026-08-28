@@ -40,6 +40,12 @@ services:
         sync: false
       - key: CONTACT_RATE_LIMIT_SECRET
         generateValue: true
+      - key: CONTACT_RATE_LIMIT_WINDOW_SECONDS
+        value: "900"
+      - key: CONTACT_RATE_LIMIT_IP_MAX
+        value: "5"
+      - key: CONTACT_RATE_LIMIT_GLOBAL_MAX
+        value: "100"
       - key: COFFEE_RATE_LIMIT_SECRET
         generateValue: true
       - key: KEEP_ALIVE_SECRET

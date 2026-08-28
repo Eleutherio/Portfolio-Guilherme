@@ -15,6 +15,7 @@ import {
   verifyContactRecaptcha,
 } from "@/lib/contact-recaptcha.server";
 import type { RequestContext } from "../../server/request-context";
+import { getServerEnvironment } from "../../server/env";
 
 class InvalidRequestError extends Error {
   constructor() {
@@ -39,10 +40,7 @@ function isAllowedOrigin(request: Request): boolean {
   if (!origin) return true;
 
   const allowed = new Set([new URL(request.url).origin]);
-  for (const configured of (process.env.CONTACT_ALLOWED_ORIGINS ?? "").split(",")) {
-    const value = configured.trim();
-    if (value) allowed.add(value);
-  }
+  for (const configured of getServerEnvironment().CONTACT_ALLOWED_ORIGINS) allowed.add(configured);
   return allowed.has(origin);
 }
 

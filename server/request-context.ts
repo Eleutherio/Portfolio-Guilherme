@@ -1,4 +1,5 @@
 import { isIP } from "node:net";
+import { getServerEnvironment } from "./env";
 
 export type RequestContext = {
   peerAddress?: string | null;
@@ -19,10 +20,7 @@ function validAddress(value: string | null | undefined): string | null {
 }
 
 function configuredSource(): ClientIpSource {
-  const fallback = process.env.RENDER === "true" ? "render" : "direct";
-  const source = (process.env.CLIENT_IP_SOURCE ?? fallback).trim().toLowerCase();
-  if (source === "direct" || source === "render") return source;
-  throw new ClientAddressError();
+  return getServerEnvironment().CLIENT_IP_SOURCE;
 }
 
 export function resolveClientAddress(
