@@ -2,9 +2,10 @@ import { handleContactRequest } from "@/lib/contact-handler.server";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { json } from "./http";
 import { dependencies, infrastructureStatus, live } from "./services/health";
-import { getGithubYearStats } from "./services/github";
+import { getGithubYearStats, type GithubYearStats } from "./services/github";
 import { handleCoffeeRequest } from "./services/coffee";
 import { getWebsiteCarbonResult } from "./services/website-carbon";
+import { getServerEnvironment } from "./env";
 import type { RequestContext } from "./request-context";
 
 const API_PATHS = new Set([
@@ -17,17 +18,12 @@ const API_PATHS = new Set([
   "/api/website-carbon",
 ]);
 
+export function githubStatsPayload(stats: GithubYearStats) {
+  return stats ? { status: "ready" as const, ...stats } : { status: "unavailable" as const };
+}
+
 function configuredOrigins(): Set<string> {
-  const origins = new Set<string>();
-  for (const value of (
-    process.env.API_ALLOWED_ORIGINS ??
-    process.env.CONTACT_ALLOWED_ORIGINS ??
-    ""
-  ).split(",")) {
-    const origin = value.trim();
-    if (origin) origins.add(origin);
-  }
-  return origins;
+  return new Set(getServerEnvironment().API_ALLOWED_ORIGINS);
 }
 
 function corsHeaders(request: Request): HeadersInit {
@@ -49,7 +45,7 @@ function isAllowedRequestOrigin(request: Request): boolean {
 }
 
 function isKeepAliveAuthorized(request: Request): boolean {
-  const expected = process.env.KEEP_ALIVE_SECRET;
+  const expected = getServerEnvironment().KEEP_ALIVE_SECRET;
   const authorization = request.headers.get("authorization");
   if (!expected || expected.length < 32 || !authorization?.startsWith("Bearer ")) return false;
 
@@ -114,10 +110,14 @@ export async function app(request: Request, context: RequestContext = {}): Promi
         ? await handleContactRequest(request, context)
         : json({ ok: false, code: "method_not_allowed" }, 405, { allow: "POST" });
   } else if (pathname === "/api/github") {
-    response =
-      request.method === "GET"
-        ? json(await getGithubYearStats(), 200, { "cache-control": "public, max-age=300" })
-        : json({ ok: false }, 405, { allow: "GET" });
+    if (request.method === "GET") {
+      const stats = await getGithubYearStats();
+      response = json(githubStatsPayload(stats), 200, {
+        "cache-control": stats ? "public, max-age=300" : "public, max-age=60",
+      });
+    } else {
+      response = json({ ok: false }, 405, { allow: "GET" });
+    }
   } else if (pathname === "/api/website-carbon") {
     response =
       request.method === "GET"

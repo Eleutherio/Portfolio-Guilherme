@@ -3,22 +3,18 @@ import { readFile } from "node:fs/promises";
 import { type AddressInfo } from "node:net";
 import { createConnection } from "node:net";
 import { once } from "node:events";
-import { after, before, test } from "node:test";
+import { beforeEach, test } from "node:test";
 import type { ContactPayload } from "@/lib/contact-contract";
 import { buildContactEmail, EmailDeliveryError } from "@/lib/contact-email.server";
-import { verifyContactRecaptchaWithSecrets } from "@/lib/contact-recaptcha.server";
 import { checkScopedRateLimit, rateLimitHeaders } from "@/lib/contact-rate-limit.server";
-import { app } from "./app";
+import { app, githubStatsPayload } from "./app";
 import { readJsonBody } from "./http";
 import { createApiServer } from "./node-server";
 import { ClientAddressError, resolveClientAddress } from "./request-context";
 import { releaseManifestSource } from "./release";
 import { runInfrastructureChecks } from "./services/health";
 import { getWebsiteCarbonResult, type WebsiteCarbonDependencies } from "./services/website-carbon";
-
-const originalAllowedOrigins = process.env.API_ALLOWED_ORIGINS;
-const originalKeepAliveSecret = process.env.KEEP_ALIVE_SECRET;
-const originalRenderGitCommit = process.env.RENDER_GIT_COMMIT;
+import { configureTestServerEnvironment } from "./test-support/environment";
 
 async function withHttpServer(
   handler: Parameters<typeof createApiServer>[0],
@@ -50,21 +46,14 @@ async function sendRawHttp(port: number, payload: string): Promise<string> {
   });
 }
 
-before(() => {
-  process.env.API_ALLOWED_ORIGINS = "https://guifer.tech";
-});
-
-after(() => {
-  if (originalAllowedOrigins === undefined) delete process.env.API_ALLOWED_ORIGINS;
-  else process.env.API_ALLOWED_ORIGINS = originalAllowedOrigins;
-  if (originalKeepAliveSecret === undefined) delete process.env.KEEP_ALIVE_SECRET;
-  else process.env.KEEP_ALIVE_SECRET = originalKeepAliveSecret;
-  if (originalRenderGitCommit === undefined) delete process.env.RENDER_GIT_COMMIT;
-  else process.env.RENDER_GIT_COMMIT = originalRenderGitCommit;
+beforeEach(() => {
+  configureTestServerEnvironment();
 });
 
 test("live health check is public and independent from dependencies", async () => {
-  process.env.RENDER_GIT_COMMIT = "0123456789ABCDEF0123456789ABCDEF01234567";
+  configureTestServerEnvironment({
+    RENDER_GIT_COMMIT: "0123456789ABCDEF0123456789ABCDEF01234567",
+  });
   const response = await app(new Request("https://api.example.com/health/live"));
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), {
@@ -76,7 +65,7 @@ test("live health check is public and independent from dependencies", async () =
 });
 
 test("live health check does not expose malformed release metadata", async () => {
-  process.env.RENDER_GIT_COMMIT = "not-a-commit";
+  configureTestServerEnvironment({ RENDER_GIT_COMMIT: "not-a-commit" });
   const response = await app(new Request("https://api.example.com/health/live"));
   assert.equal((await response.json()).release, "local");
 });
@@ -117,6 +106,15 @@ test("infrastructure status contains rejected checks", async () => {
 
   assert.equal(status.ok, false);
   assert.equal(status.services.database, "unavailable");
+});
+
+test("GitHub API distinguishes a valid zero from provider unavailability", () => {
+  assert.deepEqual(githubStatsPayload({ total: 0, year: 2026 }), {
+    status: "ready",
+    total: 0,
+    year: 2026,
+  });
+  assert.deepEqual(githubStatsPayload(null), { status: "unavailable" });
 });
 
 test("Website Carbon serves the shared cache without refreshing before 24 hours", async () => {
@@ -232,13 +230,14 @@ test("infrastructure status only accepts GET", async () => {
 });
 
 test("dependency health check rejects an invalid bearer token", async () => {
-  process.env.KEEP_ALIVE_SECRET = "correct-test-secret-with-at-least-32-characters";
+  configureTestServerEnvironment({
+    KEEP_ALIVE_SECRET: "correct-test-secret-with-at-least-32-characters",
+  });
   const response = await app(
     new Request("https://api.example.com/health/dependencies", {
       headers: { authorization: "Bearer invalid-test-secret-with-at-least-32-characters" },
     }),
   );
-  delete process.env.KEEP_ALIVE_SECRET;
   assert.equal(response.status, 401);
 });
 
@@ -565,6 +564,21 @@ test("atomic rate-limit migration locks global state before creating an IP bucke
   assert.doesNotMatch(migration, /DROP FUNCTION public\.consume_contact_rate_limit/);
 });
 
+test("rate-limit cleanup migration removes only the legacy RPC", async () => {
+  const migration = await readFile(
+    new URL(
+      "../supabase/migrations/20260830003000_remove_legacy_contact_rate_limit.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+
+  assert.equal(
+    migration.trim().replace(/\s+/g, " "),
+    "DROP FUNCTION IF EXISTS public.consume_contact_rate_limit(TEXT, INTEGER, INTEGER);",
+  );
+});
+
 test("API responses include the defensive header baseline", async () => {
   const response = await app(new Request("https://api.example.com/unknown"));
 
@@ -594,12 +608,12 @@ test("Pages headers enforce the CSP and isolation policy required by the fronten
 });
 
 test("defensive headers cover success, preflight, client error and server error", async () => {
-  const originalClientIpSource = process.env.CLIENT_IP_SOURCE;
-  const originalRateLimitSecret = process.env.CONTACT_RATE_LIMIT_SECRET;
   const originalConsoleError = console.error;
 
-  process.env.CLIENT_IP_SOURCE = "render";
-  process.env.CONTACT_RATE_LIMIT_SECRET = "test-rate-limit-secret-with-32-characters";
+  configureTestServerEnvironment({
+    CLIENT_IP_SOURCE: "render",
+    CONTACT_RATE_LIMIT_SECRET: "test-rate-limit-secret-with-32-characters",
+  });
   console.error = () => undefined;
 
   try {
@@ -638,10 +652,7 @@ test("defensive headers cover success, preflight, client error and server error"
     );
   } finally {
     console.error = originalConsoleError;
-    if (originalClientIpSource === undefined) delete process.env.CLIENT_IP_SOURCE;
-    else process.env.CLIENT_IP_SOURCE = originalClientIpSource;
-    if (originalRateLimitSecret === undefined) delete process.env.CONTACT_RATE_LIMIT_SECRET;
-    else process.env.CONTACT_RATE_LIMIT_SECRET = originalRateLimitSecret;
+    configureTestServerEnvironment();
   }
 });
 
@@ -681,34 +692,4 @@ test("contact email rejects control-character header injection", () => {
       ),
     EmailDeliveryError,
   );
-});
-
-test("reCAPTCHA accepts the previous secret during a controlled rotation", async () => {
-  const usedSecrets: string[] = [];
-  const fetcher: typeof fetch = async (_input, init) => {
-    const body = init?.body as URLSearchParams;
-    const secret = body.get("secret") ?? "";
-    usedSecrets.push(secret);
-
-    if (secret === "new-secret") {
-      return Response.json({ success: false, "error-codes": ["invalid-input-response"] });
-    }
-
-    return Response.json({
-      success: true,
-      action: "contact_submit",
-      score: 0.9,
-      hostname: "api.example.com",
-      challenge_ts: new Date().toISOString(),
-    });
-  };
-
-  await verifyContactRecaptchaWithSecrets(
-    "valid-token",
-    new Request("https://api.example.com/api/contact"),
-    ["new-secret", "previous-secret"],
-    fetcher,
-  );
-
-  assert.deepEqual(usedSecrets, ["new-secret", "previous-secret"]);
 });

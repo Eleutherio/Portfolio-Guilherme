@@ -20,7 +20,7 @@ npm run security:ip-spoof
 Remove-Item Env:IP_SPOOF_TEST_API_URL
 ```
 
-O teste envia apenas JSON inválido, alterna valores reservados de documentação em `CF-Connecting-IP` e `X-Forwarded-For` e deve receber `422` antes de `429`. Antes da rotação, ele repete um valor fixo para comprovar que a origem de execução mantém um bucket estável e evitar falso positivo por egress variável. Ele não envia e-mail, mas consome temporariamente o rate limit do IP executor.
+O teste envia apenas JSON inválido. Primeiro, repete um valor reservado em `X-Forwarded-For` para comprovar que a origem de execução mantém um bucket estável e atingir o limite por IP. Em seguida, troca esse header público e exige que o mesmo bucket permaneça limitado. Por fim, tenta forjar `CF-Connecting-IP`: a prova só passa se a borda Cloudflare bloquear a tentativa ou se a aplicação continuar no bucket real já esgotado, evidenciando a sobrescrita do valor. Ele não envia e-mail, mas consome temporariamente o rate limit do IP executor.
 
 Depois de aplicar a migration atômica no Supabase, carregue `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` somente no processo local e execute:
 
@@ -30,7 +30,9 @@ npm run security:rate-limit-atomic
 
 O teste usa hashes aleatórios isolados e cobre duas disputas concorrentes: IPs distintos com capacidade global 5, exigindo 5 permissões, 15 bloqueios globais e 6 linhas; e uma única chave IP com limite 5, exigindo 5 permissões e 15 bloqueios por IP. Uma chamada posterior com outro IP confirma no banco que os bloqueios por IP não consumiram capacidade global. O `finally` remove exclusivamente as chaves do teste. Nenhum IP ou dado de contato é usado.
 
-Aplique primeiro a migration e depois publique a nova API. A RPC anterior permanece temporariamente disponível apenas para `service_role`, sem uso pelo código novo, para preservar o serviço durante esse intervalo. Depois de confirmar o novo deploy e o teste atômico, remova `consume_contact_rate_limit` em uma migration de limpeza.
+Aplique primeiro a migration atômica e depois publique a nova API. A RPC anterior permanece temporariamente disponível apenas para `service_role`, sem uso pelo código novo, para preservar o serviço durante esse intervalo. Depois de confirmar o novo deploy e o teste atômico, aplique `20260830003000_remove_legacy_contact_rate_limit.sql`, que remove somente `consume_contact_rate_limit`. Não aplique a expansão e a limpeza juntas enquanto uma API anterior a `55572f0` estiver publicada.
+
+Depois da limpeza, `55572f0` passa a ser o piso de rollback do Render. Voltar para um SHA anterior exige aplicar primeiro uma migration compensatória que recrie temporariamente `consume_contact_rate_limit`; isso restaura compatibilidade, mas também reintroduz o contrato não atômico até a API atual ser republicada.
 
 ## Headers defensivos
 

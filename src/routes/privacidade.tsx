@@ -1,18 +1,15 @@
 import { createFileRoute, lazyRouteComponent } from "@tanstack/react-router";
-
-const TITLE = "Privacidade — Guilherme Ferreira Eleutherio";
-const DESCRIPTION =
-  "Aviso de privacidade do guifer.tech: dados tratados, finalidades, bases legais, fornecedores, retenção e direitos.";
+import { absoluteSiteUrl, socialImageMeta } from "@/lib/seo";
 
 export const Route = createFileRoute("/privacidade")({
   head: () => ({
     meta: [
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: absoluteSiteUrl("/privacidade") },
+      ...socialImageMeta("/social/guifer-tech.jpg"),
+      { name: "twitter:card", content: "summary" },
     ],
-    links: [{ rel: "canonical", href: "/privacidade" }],
+    links: [{ rel: "canonical", href: absoluteSiteUrl("/privacidade") }],
   }),
   component: lazyRouteComponent(() => import("@/pages/PrivacyPage"), "PrivacyPage"),
 });

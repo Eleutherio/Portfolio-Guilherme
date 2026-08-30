@@ -3,6 +3,7 @@ import { HeadContent, Outlet, createRootRoute, useRouter } from "@tanstack/react
 import { useApp } from "@/i18n/AppContext";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
 import { DeferredCustomCursor } from "@/components/layout/DeferredCustomCursor";
+import { DocumentMetadata } from "@/components/layout/DocumentMetadata";
 
 function NotFoundComponent() {
   const { t } = useApp();
@@ -71,39 +72,13 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-const PERSON_JSONLD = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  name: "Guilherme Ferreira",
-  jobTitle: "Full Stack Software Developer",
-  url: "/",
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "Porto Alegre",
-    addressRegion: "RS",
-    addressCountry: "BR",
-  },
-  knowsAbout: [
-    "Software Architecture",
-    "Full Stack Development",
-    "React",
-    "TypeScript",
-    "Java",
-    "Spring Boot",
-  ],
-};
-
 export const Route = createRootRoute({
   head: () => ({
     meta: [
-      { title: "Guilherme Ferreira Eleutherio — Full-stack Developer" },
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { name: "theme-color", content: "#0a0a14" },
       { name: "author", content: "Guilherme Ferreira" },
       { property: "og:site_name", content: "Guilherme Ferreira" },
-      { property: "og:locale", content: "pt_BR" },
-      { "script:ld+json": PERSON_JSONLD },
     ],
   }),
   component: RootComponent,
@@ -115,6 +90,7 @@ function RootComponent() {
   return (
     <>
       <HeadContent />
+      <DocumentMetadata />
       <GlobalSkipLink />
       <Outlet />
       <AccessibilityWidget />

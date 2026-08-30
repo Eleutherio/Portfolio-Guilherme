@@ -1,3 +1,5 @@
+import { getServerEnvironment } from "./env";
+
 const FULL_GIT_SHA = /^[a-f0-9]{40}$/;
 
 export function normalizeReleaseCommit(value: string | undefined): string {
@@ -10,5 +12,5 @@ export function releaseManifestSource(value: string | undefined): string {
 }
 
 export function apiReleaseCommit(): string {
-  return normalizeReleaseCommit(process.env.RENDER_GIT_COMMIT);
+  return normalizeReleaseCommit(getServerEnvironment().RENDER_GIT_COMMIT);
 }

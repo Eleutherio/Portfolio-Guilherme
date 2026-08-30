@@ -1,6 +1,7 @@
 import nodemailer, { type SendMailOptions, type Transporter } from "nodemailer";
 import { z } from "zod";
 import { contactPayloadSchema, type ContactPayload } from "@/lib/contact-contract";
+import { getServerEnvironment } from "../../server/env";
 
 function hasControlCharacters(value: string): boolean {
   return Array.from(value).some((character) => {
@@ -25,7 +26,11 @@ const emailConfigSchema = z.object({
   to: z.string().email().max(255),
 });
 
-type EmailConfig = z.infer<typeof emailConfigSchema>;
+export type EmailConfig = z.infer<typeof emailConfigSchema>;
+type EmailTransport = {
+  sendMail: (options: SendMailOptions) => Promise<unknown>;
+  verify: () => Promise<boolean>;
+};
 
 let transporter: Transporter | undefined;
 let transporterConfigKey = "";
@@ -38,13 +43,14 @@ export class EmailDeliveryError extends Error {
 }
 
 function getEmailConfig() {
+  const environment = getServerEnvironment();
   const result = emailConfigSchema.safeParse({
-    host: process.env.BREVO_SMTP_HOST ?? "smtp-relay.brevo.com",
-    port: Number.parseInt(process.env.BREVO_SMTP_PORT ?? "2525", 10),
-    user: process.env.BREVO_SMTP_USER,
-    key: process.env.BREVO_SMTP_KEY,
-    from: process.env.CONTACT_EMAIL_FROM,
-    to: process.env.CONTACT_EMAIL_TO,
+    host: environment.BREVO_SMTP_HOST,
+    port: environment.BREVO_SMTP_PORT,
+    user: environment.BREVO_SMTP_USER,
+    key: environment.BREVO_SMTP_KEY,
+    from: environment.CONTACT_EMAIL_FROM,
+    to: environment.CONTACT_EMAIL_TO,
   });
 
   if (!result.success) {
@@ -57,24 +63,28 @@ function getEmailConfig() {
 function getTransporter(config: EmailConfig): Transporter {
   const configKey = `${config.host}:${config.port}:${config.user}:${config.key}`;
   if (!transporter || transporterConfigKey !== configKey) {
-    transporter = nodemailer.createTransport({
-      host: config.host,
-      port: config.port,
-      secure: config.port === 465,
-      requireTLS: config.port !== 465,
-      auth: {
-        user: config.user,
-        pass: config.key,
-      },
-      connectionTimeout: 10_000,
-      greetingTimeout: 10_000,
-      socketTimeout: 15_000,
-      disableFileAccess: true,
-      disableUrlAccess: true,
-    });
+    transporter = nodemailer.createTransport(createEmailTransportOptions(config));
     transporterConfigKey = configKey;
   }
   return transporter;
+}
+
+export function createEmailTransportOptions(config: EmailConfig) {
+  return {
+    host: config.host,
+    port: config.port,
+    secure: config.port === 465,
+    requireTLS: config.port !== 465,
+    auth: {
+      user: config.user,
+      pass: config.key,
+    },
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 15_000,
+    disableFileAccess: true,
+    disableUrlAccess: true,
+  };
 }
 
 export function escapeHtml(value: string): string {
@@ -159,20 +169,26 @@ export function buildContactEmail(
   };
 }
 
-export async function sendContactEmail(payload: ContactPayload, requestId: string): Promise<void> {
+export async function sendContactEmail(
+  payload: ContactPayload,
+  requestId: string,
+  transport?: EmailTransport,
+): Promise<void> {
   const config = getEmailConfig();
 
   try {
-    await getTransporter(config).sendMail(buildContactEmail(payload, requestId, config));
+    await (transport ?? getTransporter(config)).sendMail(
+      buildContactEmail(payload, requestId, config),
+    );
   } catch {
     throw new EmailDeliveryError();
   }
 }
 
-export async function isEmailTransportAvailable(): Promise<boolean> {
+export async function isEmailTransportAvailable(transport?: EmailTransport): Promise<boolean> {
   try {
     const config = getEmailConfig();
-    return await getTransporter(config).verify();
+    return await (transport ?? getTransporter(config)).verify();
   } catch {
     return false;
   }

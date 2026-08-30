@@ -3,6 +3,9 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CaseTemplate } from "@/components/project-case/CaseTemplate";
 import { MotionBoundary } from "@/components/MotionBoundary";
+import { absoluteSiteUrl, socialImageMeta } from "@/lib/seo";
+import { useApp } from "@/i18n/AppContext";
+import { useDocumentPageMetadata } from "@/components/layout/DocumentMetadata";
 
 export const Route = createFileRoute("/projetos/$slug")({
   loader: async ({ params }) => {
@@ -14,24 +17,30 @@ export const Route = createFileRoute("/projetos/$slug")({
   head: ({ loaderData }) => {
     if (!loaderData) return { meta: [] };
     const { summary } = loaderData;
-    const pt = summary.locale.pt;
+    const pageUrl = absoluteSiteUrl(`/projetos/${summary.slug}`);
     return {
       meta: [
-        { title: `${pt.title} — Guilherme Ferreira` },
-        { name: "description", content: pt.cardSummary },
-        { property: "og:title", content: `${pt.title} — Guilherme Ferreira` },
-        { property: "og:description", content: pt.cardSummary },
         { property: "og:type", content: "article" },
-        { property: "og:image", content: summary.coverSrc },
+        { property: "og:url", content: pageUrl },
+        ...socialImageMeta(`/social/${summary.slug}.jpg`),
         { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:image", content: summary.coverSrc },
       ],
+      links: [{ rel: "canonical", href: pageUrl }],
     };
   },
   component: ProjectCase,
 });
 
 function ProjectCase() {
+  const { lang } = useApp();
+  const { summary } = Route.useLoaderData();
+  const locale = summary.locale[lang];
+  useDocumentPageMetadata({
+    title: `${locale.title} — Guilherme Ferreira`,
+    description: locale.cardSummary,
+    imageAlt: `${locale.title} — guifer.tech`,
+  });
+
   return (
     <MotionBoundary>
       <div className="portfolio-visual project-case-visual flex min-h-dvh flex-col bg-background">

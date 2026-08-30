@@ -147,6 +147,8 @@ Se qualquer etapa falhar antes da troca do Render, não avance. O Pages pode ser
 4. Execute `npm run release:verify` com os SHAs efetivos de cada plataforma, depois health, domínio e um smoke que não produza dados. Só execute contato real se o incidente envolver esse fluxo.
 5. Corrija a causa em um novo commit. Não force `main` para trás nem reescreva histórico compartilhado.
 
+Após aplicar `20260830003000_remove_legacy_contact_rate_limit.sql`, não reverta o Render para um SHA anterior a `55572f0`. Esses artefatos ainda chamam a RPC removida e fariam contato e café responderem `500`. Se um incidente exigir esse retorno, avance primeiro o banco com uma migration compensatória que recrie a assinatura legada; nunca edite nem marque a migration de limpeza como desfeita.
+
 ## Rollback de banco
 
 - Migration aditiva e compatível: mantenha o schema avançado e reverta apenas Pages/Render. Esta é a resposta preferencial.

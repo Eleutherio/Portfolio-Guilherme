@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { RECAPTCHA_ACTION } from "@/lib/contact-contract";
+import { getServerEnvironment } from "../../server/env";
 
 const VERIFY_ENDPOINT = "https://www.google.com/recaptcha/api/siteverify";
 const VERIFY_TIMEOUT_MS = 7_000;
@@ -33,15 +34,13 @@ export class RecaptchaUnavailableError extends Error {
 }
 
 function readMinimumScore(): number {
-  const parsed = Number.parseFloat(process.env.RECAPTCHA_MIN_SCORE ?? "0.5");
-  return Number.isFinite(parsed) && parsed >= 0 && parsed <= 1 ? parsed : 0.5;
+  return getServerEnvironment().RECAPTCHA_MIN_SCORE;
 }
 
 function getAllowedHostnames(request: Request): Set<string> {
   const allowed = new Set([new URL(request.url).hostname.toLowerCase()]);
-  for (const configured of (process.env.RECAPTCHA_ALLOWED_HOSTNAMES ?? "").split(",")) {
-    const hostname = configured.trim().toLowerCase();
-    if (hostname) allowed.add(hostname);
+  for (const configured of getServerEnvironment().RECAPTCHA_ALLOWED_HOSTNAMES) {
+    allowed.add(configured.toLowerCase());
   }
   return allowed;
 }
@@ -55,10 +54,8 @@ function isRecentChallenge(timestamp: string | undefined): boolean {
 }
 
 function configuredSecrets(): string[] {
-  const primary = process.env.RECAPTCHA_SECRET_KEY?.trim();
-  if (!primary) return [];
-
-  const previous = process.env.RECAPTCHA_SECRET_KEY_PREVIOUS?.trim();
+  const { RECAPTCHA_SECRET_KEY: primary, RECAPTCHA_SECRET_KEY_PREVIOUS: previous } =
+    getServerEnvironment();
   return previous && previous !== primary ? [primary, previous] : [primary];
 }
 
@@ -83,6 +80,7 @@ export async function verifyContactRecaptchaWithSecrets(
   request: Request,
   secrets: string[],
   fetcher: typeof fetch = fetch,
+  timeoutMs = VERIFY_TIMEOUT_MS,
 ): Promise<void> {
   if (secrets.length === 0) throw new RecaptchaUnavailableError();
 
@@ -94,7 +92,7 @@ export async function verifyContactRecaptchaWithSecrets(
         method: "POST",
         headers: { "content-type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ secret, response: token }),
-        signal: AbortSignal.timeout(VERIFY_TIMEOUT_MS),
+        signal: AbortSignal.timeout(timeoutMs),
       });
     } catch {
       continue;
@@ -118,8 +116,7 @@ export async function verifyContactRecaptcha(token: string, request: Request): P
 }
 
 export async function isRecaptchaServiceAvailable(): Promise<boolean> {
-  const secret = process.env.RECAPTCHA_SECRET_KEY;
-  if (!secret) return false;
+  const secret = getServerEnvironment().RECAPTCHA_SECRET_KEY;
 
   try {
     const response = await fetch(VERIFY_ENDPOINT, {

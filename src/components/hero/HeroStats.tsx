@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { GitCommit } from "lucide-react";
-import {
-  fetchCoffeeCount,
-  fetchGithubYearStats,
-  submitCoffeeTap,
-  type GithubYearStats,
-} from "@/lib/api-client";
+import { fetchCoffeeCount, fetchGithubYearStats, submitCoffeeTap } from "@/lib/api-client";
 import { useApp } from "@/i18n/AppContext";
 import { CoffeeIcon, type CoffeeState } from "@/components/hero/CoffeeIcon";
 
 const VISITOR_KEY = "gf_visitor_id";
 const TAPPED_KEY = "gf_coffee_tapped";
+
+type RemoteValue<T> =
+  { status: "loading" } | { status: "ready"; value: T } | { status: "unavailable" };
 
 function ensureVisitorId(): string {
   if (typeof window === "undefined") return "";
@@ -29,8 +27,10 @@ export function HeroStats() {
   const [tapped, setTapped] = useState(false);
   const [visitorId, setVisitorId] = useState("");
   const [coffeeState, setCoffeeState] = useState<CoffeeState>("idle");
-  const [githubStats, setGithubStats] = useState<GithubYearStats>(null);
-  const [coffeeCount, setCoffeeCount] = useState(0);
+  const [githubStats, setGithubStats] = useState<RemoteValue<{ total: number; year: number }>>({
+    status: "loading",
+  });
+  const [coffeeCount, setCoffeeCount] = useState<RemoteValue<number>>({ status: "loading" });
   const [tapPending, setTapPending] = useState(false);
   const timersRef = useRef<Array<ReturnType<typeof setTimeout>>>([]);
 
@@ -41,14 +41,23 @@ export function HeroStats() {
 
     void fetchGithubYearStats()
       .then((result) => {
-        if (active) setGithubStats(result);
+        if (!active) return;
+        setGithubStats(
+          result.status === "ready"
+            ? { status: "ready", value: result }
+            : { status: "unavailable" },
+        );
       })
-      .catch(() => {});
+      .catch(() => {
+        if (active) setGithubStats({ status: "unavailable" });
+      });
     void fetchCoffeeCount()
       .then((result) => {
-        if (active) setCoffeeCount(result.count);
+        if (active) setCoffeeCount({ status: "ready", value: result.count });
       })
-      .catch(() => {});
+      .catch(() => {
+        if (active) setCoffeeCount({ status: "unavailable" });
+      });
 
     const timers = timersRef.current;
     return () => {
@@ -62,18 +71,17 @@ export function HeroStats() {
     setCoffeeState("filling");
     const t1 = setTimeout(() => setCoffeeState("tipping"), 350);
     const t2 = setTimeout(() => {
-      setCoffeeCount((current) => current + 1);
       setTapPending(true);
       void submitCoffeeTap(visitorId)
         .then((result) => {
-          setCoffeeCount(result.count);
+          setCoffeeCount({ status: "ready", value: result.count });
           window.localStorage.setItem(TAPPED_KEY, "1");
           setTapped(true);
         })
         .catch(() => {
           void fetchCoffeeCount()
-            .then((result) => setCoffeeCount(result.count))
-            .catch(() => {});
+            .then((result) => setCoffeeCount({ status: "ready", value: result.count }))
+            .catch(() => setCoffeeCount({ status: "unavailable" }));
         })
         .finally(() => setTapPending(false));
     }, 550);
@@ -91,18 +99,24 @@ export function HeroStats() {
         className="group inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
       >
         <GitCommit className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
-        <span>
-          <span className="tabular-nums text-foreground">
-            {githubStats ? githubStats.total.toLocaleString(locale) : "—"}
-          </span>{" "}
-          {s.commitsLabel}
-        </span>
+        {githubStats.status === "ready" ? (
+          <span>
+            <span className="tabular-nums text-foreground">
+              {githubStats.value.total.toLocaleString(locale)}
+            </span>{" "}
+            {s.commitsLabel}
+          </span>
+        ) : (
+          <span aria-live="polite">
+            {githubStats.status === "loading" ? s.commitsLoading : s.commitsUnavailable}
+          </span>
+        )}
       </a>
       <span aria-hidden="true" className="text-muted-foreground/50">
         ·
       </span>
       <span className="tabular-nums text-foreground">
-        {githubStats ? githubStats.year : new Date().getFullYear()}
+        {githubStats.status === "ready" ? githubStats.value.year : new Date().getFullYear()}
       </span>
       <span aria-hidden="true" className="text-muted-foreground/50">
         ·
@@ -120,14 +134,20 @@ export function HeroStats() {
         <span className="text-accent">
           <CoffeeIcon state={coffeeState} />
         </span>
-        <span className="inline-flex items-baseline gap-1">
-          <span className="relative inline-block min-w-[1ch] overflow-hidden tabular-nums text-foreground">
-            <span key={coffeeCount} className="coffee-count-reveal inline-block">
-              {coffeeCount.toLocaleString(locale)}
+        {coffeeCount.status === "ready" ? (
+          <span className="inline-flex items-baseline gap-1">
+            <span className="relative inline-block min-w-[1ch] overflow-hidden tabular-nums text-foreground">
+              <span key={coffeeCount.value} className="coffee-count-reveal inline-block">
+                {coffeeCount.value.toLocaleString(locale)}
+              </span>
             </span>
+            <span>{coffeeCount.value === 1 ? s.coffeeSingular : s.coffeePlural}</span>
           </span>
-          <span>{coffeeCount === 1 ? s.coffeeSingular : s.coffeePlural}</span>
-        </span>
+        ) : (
+          <span aria-live="polite">
+            {coffeeCount.status === "loading" ? s.coffeeLoading : s.coffeeUnavailable}
+          </span>
+        )}
       </button>
     </div>
   );

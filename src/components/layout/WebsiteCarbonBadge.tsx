@@ -10,8 +10,6 @@ import {
 type Language = "pt" | "en";
 
 const PUBLISHED_REPORT_URL = "https://www.websitecarbon.com/website/guifer-tech/";
-const officialCleanerThan = (percentage: number) =>
-  `This is cleaner than ${percentage}% of all web pages globally`;
 const LEGACY_CACHE_KEYS = [
   "website-carbon:grade:https://guifer.tech/",
   "website-carbon:v2:grade:https://guifer.tech/",
@@ -98,8 +96,6 @@ export function WebsiteCarbonBadge({ active, lang }: { active: boolean; lang: La
   const emission = carbon ? labels.emission(carbon) : null;
   const cleanerThan = result.cleanerThan ?? WEBSITE_CARBON_SNAPSHOT.cleanerThan;
   const cleanerThanLabel = cleanerThan !== undefined ? labels.cleanerThan(cleanerThan) : null;
-  const officialCleanerThanLabel =
-    cleanerThan !== undefined ? officialCleanerThan(cleanerThan) : null;
   const updatedAtLabel = labels.updatedAt(formatUpdatedAt(result.updatedAt, lang));
   const gradeStyle = {
     "--carbon-grade": GRADE_COLORS[result.grade],
@@ -126,9 +122,9 @@ export function WebsiteCarbonBadge({ active, lang }: { active: boolean; lang: La
           Website Carbon
         </span>
       </span>
-      {officialCleanerThanLabel ? (
+      {cleanerThanLabel ? (
         <span aria-live="polite" className="mt-1 font-semibold text-foreground/90">
-          {officialCleanerThanLabel}
+          {cleanerThanLabel}
         </span>
       ) : null}
       {emission ? <span className="mt-0.5 text-foreground/75">{updatedAtLabel}</span> : null}

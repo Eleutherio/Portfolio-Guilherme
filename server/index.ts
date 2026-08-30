@@ -1,12 +1,12 @@
 import { createApiServer } from "./node-server";
+import { initializeServerEnvironment } from "./env";
 
-const port = Number.parseInt(process.env.PORT ?? "8787", 10);
-const host = process.env.HOST ?? "0.0.0.0";
+const environment = initializeServerEnvironment();
 
 const server = createApiServer();
 
-server.listen(port, host, () => {
-  console.info(`[startup] guifer-api listening on http://${host}:${port}`);
+server.listen(environment.PORT, environment.HOST, () => {
+  console.info(`[startup] guifer-api listening on http://${environment.HOST}:${environment.PORT}`);
 });
 
 function shutdown(signal: string) {

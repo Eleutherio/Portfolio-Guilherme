@@ -11,7 +11,8 @@ async function readJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
 
-export type GithubYearStats = { total: number; year: number } | null;
+export type GithubYearStats =
+  { status: "ready"; total: number; year: number } | { status: "unavailable" };
 export type CoffeeCount = { count: number };
 export type { WebsiteCarbonResult } from "@/lib/website-carbon";
 
@@ -20,7 +21,19 @@ export async function fetchGithubYearStats(): Promise<GithubYearStats> {
     headers: { accept: "application/json" },
     signal: AbortSignal.timeout(10_000),
   });
-  return readJson<GithubYearStats>(response);
+  const payload = await readJson<{
+    status?: unknown;
+    total?: unknown;
+    year?: unknown;
+  } | null>(response);
+  if (
+    Number.isInteger(payload?.total) &&
+    Number(payload?.total) >= 0 &&
+    Number.isInteger(payload?.year)
+  ) {
+    return { status: "ready", total: Number(payload?.total), year: Number(payload?.year) };
+  }
+  return { status: "unavailable" };
 }
 
 export async function fetchCoffeeCount(): Promise<CoffeeCount> {

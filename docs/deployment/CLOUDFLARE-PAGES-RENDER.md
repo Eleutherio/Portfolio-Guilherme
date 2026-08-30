@@ -84,6 +84,8 @@ Mantenha `CLIENT_IP_SOURCE=render`. Esse valor usa somente `CF-Connecting-IP`, s
 
 O Render usa `GET /health/live` como health check. Essa rota não consulta serviços externos, portanto uma indisponibilidade do Supabase não provoca reinício do processo Node. O endpoint autenticado `/health/dependencies` verifica o banco e se a retenção executou nas últimas 36 horas.
 
+Antes de abrir a porta HTTP, a API valida tipos, limites e presença das variáveis obrigatórias. Uma configuração inválida encerra o processo informando somente os nomes das variáveis afetadas, sem registrar seus valores.
+
 `/health/live` também expõe o SHA não secreto de `RENDER_GIT_COMMIT`, permitindo confirmar qual commit está implantado na API e compará-lo ao alvo registrado para o Render.
 
 O endpoint público `GET /health/status` alimenta os indicadores do rodapé. Ele verifica Supabase, autenticação SMTP da Brevo e disponibilidade do `siteverify` do reCAPTCHA sem expor segredos. Resultados totalmente operacionais ficam em cache por cinco minutos; falhas são reavaliadas após 30 segundos.
@@ -103,7 +105,17 @@ Variáveis de produção:
 - `VITE_API_URL=https://SEU-SERVICO.onrender.com`;
 - `VITE_RECAPTCHA_SITE_KEY`.
 
-Os arquivos `_redirects` e `_headers` são copiados de `public/`. O primeiro implementa o fallback da SPA; o segundo adiciona headers de segurança e cache para os assets versionados.
+O Vite valida essas duas variáveis antes de iniciar o servidor de desenvolvimento ou gerar o bundle. `VITE_API_URL` pode ficar vazio somente quando a API estiver disponível na mesma origem.
+
+O arquivo `_headers` é copiado de `public/` e adiciona headers de segurança e cache para os assets versionados. O build não publica `_redirects`: depois do Vite, `scripts/generate-static-route-heads.mjs` gera um arquivo HTML para cada rota indexável. O Pages resolve essas rotas com clean URLs, preservando metadados sociais no HTML bruto e atualização direta sem depender de fallback global da SPA.
+
+Os hosts alternativos são canonicalizados na borda por uma Bulk Redirect List da conta Cloudflare, porque o `_redirects` do Pages não suporta regras por hostname:
+
+- lista `guifer_canonical_hosts`, ativada pelo ruleset `Canonical host redirects`;
+- `www.guifer.tech` e `portfolio-guilherme-et1.pages.dev` respondem `301` para `https://guifer.tech`;
+- subpath, sufixo do caminho e query string são preservados; subdomínios de preview não são incluídos.
+
+Ao alterar domínio, projeto Pages ou conta Cloudflare, atualize a lista e valide os dois hosts com uma rota interna e query de prova antes de remover a configuração anterior.
 
 O build gera `/release.json` a partir de `CF_PAGES_COMMIT_SHA`. Esse manifesto não contém segredo e é servido sem cache para a verificação pós-deploy.
 
@@ -128,7 +140,7 @@ Após cada deploy:
 1. confirme `GET /health/live` com status `200`;
 2. confirme `GET /health/status` com status `200` e revise os estados individuais;
 3. execute manualmente o workflow de keep-alive;
-4. abra todas as rotas diretamente e atualize a página para validar o fallback da SPA;
+4. abra todas as rotas indexáveis diretamente e atualize a página para validar os HTMLs estáticos gerados e as clean URLs;
 5. envie um contato real e confirme entrega, Reply-To e ausência de dados pessoais nos logs;
 6. valide café e métricas do GitHub;
 7. confirme `robots.txt`, `sitemap.xml`, currículo e headers HTTP;
@@ -142,7 +154,7 @@ Após cada deploy:
 - O Render Free pode suspender um serviço após 15 minutos sem tráfego e pode reiniciá-lo independentemente do keep-alive.
 - Manter uma instância ativa consome as horas gratuitas mensais do workspace.
 - O Supabase Free pode pausar projetos com pouca atividade; a chamada a `app_healthcheck()` existe para produzir atividade real de banco.
-- A rota inexistente de uma SPA estática é renderizada corretamente no cliente, mas o fallback do Pages responde HTTP `200`, não `404`.
+- Uma rota inexistente acessada por navegação interna é tratada pelo roteador do cliente. No acesso direto, sem `_redirects` global, o Pages pode responder sua página `404` de plataforma; qualquer contrato de 404 customizado na borda exige implementação separada.
 
 ## Referências operacionais
 
