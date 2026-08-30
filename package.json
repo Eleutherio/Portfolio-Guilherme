@@ -8,7 +8,7 @@
     "dev": "vite dev --host 0.0.0.0",
     "dev:api": "tsx watch server/index.ts",
     "build": "npm run build:pages && npm run build:api",
-    "build:pages": "vite build && node scripts/generate-static-route-heads.mjs",
+    "build:pages": "vite build && node scripts/generate-static-route-heads.mjs && node scripts/verify-static-route-heads.mjs",
     "build:api": "vite build --config vite.api.config.ts",
     "build:dev": "vite build --mode development",
     "start:api": "node dist-api/server.js",
