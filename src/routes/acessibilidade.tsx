@@ -1,4 +1,5 @@
 import { createFileRoute, lazyRouteComponent } from "@tanstack/react-router";
+import { absoluteSiteUrl } from "@/lib/seo";
 
 const TITLE = "Acessibilidade — Guilherme Ferreira Eleutherio";
 const DESCRIPTION =
@@ -11,8 +12,13 @@ export const Route = createFileRoute("/acessibilidade")({
       { name: "description", content: DESCRIPTION },
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: absoluteSiteUrl("/acessibilidade") },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: TITLE },
+      { name: "twitter:description", content: DESCRIPTION },
     ],
-    links: [{ rel: "canonical", href: "/acessibilidade" }],
+    links: [{ rel: "canonical", href: absoluteSiteUrl("/acessibilidade") }],
   }),
   component: lazyRouteComponent(() => import("@/pages/AccessibilityPage"), "AccessibilityPage"),
 });

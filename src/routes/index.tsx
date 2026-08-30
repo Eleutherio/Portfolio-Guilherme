@@ -4,6 +4,7 @@ import { DeferredBackToTop } from "@/components/layout/DeferredBackToTop";
 import { DeferredSection } from "@/components/sections/DeferredSection";
 
 import { Hero } from "@/components/sections/Hero";
+import { absoluteSiteUrl } from "@/lib/seo";
 
 const loadAbout = () => import("@/components/sections/About").then((m) => ({ default: m.About }));
 const loadTestimonials = () =>
@@ -27,12 +28,12 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "/" },
+      { property: "og:url", content: absoluteSiteUrl() },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESCRIPTION },
     ],
-    links: [{ rel: "canonical", href: "/" }],
+    links: [{ rel: "canonical", href: absoluteSiteUrl() }],
   }),
   component: Index,
 });

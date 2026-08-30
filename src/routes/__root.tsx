@@ -3,6 +3,7 @@ import { HeadContent, Outlet, createRootRoute, useRouter } from "@tanstack/react
 import { useApp } from "@/i18n/AppContext";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
 import { DeferredCustomCursor } from "@/components/layout/DeferredCustomCursor";
+import { absoluteSiteUrl } from "@/lib/seo";
 
 function NotFoundComponent() {
   const { t } = useApp();
@@ -76,7 +77,7 @@ const PERSON_JSONLD = {
   "@type": "Person",
   name: "Guilherme Ferreira",
   jobTitle: "Full Stack Software Developer",
-  url: "/",
+  url: absoluteSiteUrl(),
   address: {
     "@type": "PostalAddress",
     addressLocality: "Porto Alegre",
@@ -93,6 +94,8 @@ const PERSON_JSONLD = {
   ],
 };
 
+const PERSON_JSONLD_CONTENT = JSON.stringify(PERSON_JSONLD).replaceAll("<", "\\u003c");
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -103,7 +106,6 @@ export const Route = createRootRoute({
       { name: "author", content: "Guilherme Ferreira" },
       { property: "og:site_name", content: "Guilherme Ferreira" },
       { property: "og:locale", content: "pt_BR" },
-      { "script:ld+json": PERSON_JSONLD },
     ],
   }),
   component: RootComponent,
@@ -115,6 +117,10 @@ function RootComponent() {
   return (
     <>
       <HeadContent />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: PERSON_JSONLD_CONTENT }}
+      />
       <GlobalSkipLink />
       <Outlet />
       <AccessibilityWidget />

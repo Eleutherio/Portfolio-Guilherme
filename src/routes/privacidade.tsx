@@ -1,4 +1,5 @@
 import { createFileRoute, lazyRouteComponent } from "@tanstack/react-router";
+import { absoluteSiteUrl } from "@/lib/seo";
 
 const TITLE = "Privacidade — Guilherme Ferreira Eleutherio";
 const DESCRIPTION =
@@ -11,8 +12,13 @@ export const Route = createFileRoute("/privacidade")({
       { name: "description", content: DESCRIPTION },
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: absoluteSiteUrl("/privacidade") },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: TITLE },
+      { name: "twitter:description", content: DESCRIPTION },
     ],
-    links: [{ rel: "canonical", href: "/privacidade" }],
+    links: [{ rel: "canonical", href: absoluteSiteUrl("/privacidade") }],
   }),
   component: lazyRouteComponent(() => import("@/pages/PrivacyPage"), "PrivacyPage"),
 });
