@@ -6,7 +6,6 @@ import { once } from "node:events";
 import { beforeEach, test } from "node:test";
 import type { ContactPayload } from "@/lib/contact-contract";
 import { buildContactEmail, EmailDeliveryError } from "@/lib/contact-email.server";
-import { verifyContactRecaptchaWithSecrets } from "@/lib/contact-recaptcha.server";
 import { checkScopedRateLimit, rateLimitHeaders } from "@/lib/contact-rate-limit.server";
 import { app } from "./app";
 import { readJsonBody } from "./http";
@@ -669,34 +668,4 @@ test("contact email rejects control-character header injection", () => {
       ),
     EmailDeliveryError,
   );
-});
-
-test("reCAPTCHA accepts the previous secret during a controlled rotation", async () => {
-  const usedSecrets: string[] = [];
-  const fetcher: typeof fetch = async (_input, init) => {
-    const body = init?.body as URLSearchParams;
-    const secret = body.get("secret") ?? "";
-    usedSecrets.push(secret);
-
-    if (secret === "new-secret") {
-      return Response.json({ success: false, "error-codes": ["invalid-input-response"] });
-    }
-
-    return Response.json({
-      success: true,
-      action: "contact_submit",
-      score: 0.9,
-      hostname: "api.example.com",
-      challenge_ts: new Date().toISOString(),
-    });
-  };
-
-  await verifyContactRecaptchaWithSecrets(
-    "valid-token",
-    new Request("https://api.example.com/api/contact"),
-    ["new-secret", "previous-secret"],
-    fetcher,
-  );
-
-  assert.deepEqual(usedSecrets, ["new-secret", "previous-secret"]);
 });

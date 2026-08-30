@@ -17,6 +17,14 @@ export type InfrastructureStatus = {
   };
 };
 
+export type DependencyHealthChecks = {
+  database: () => PromiseLike<{ error: unknown }>;
+  retention: () => PromiseLike<{
+    data: Array<{ is_current?: boolean; last_run_at?: string | null }> | null;
+    error: unknown;
+  }>;
+};
+
 type InfrastructureChecks = {
   database: () => Promise<boolean>;
   smtp: () => Promise<boolean>;
@@ -87,13 +95,20 @@ export async function infrastructureStatus(): Promise<Response> {
   });
 }
 
-export async function dependencies(): Promise<Response> {
+const defaultDependencyHealthChecks: DependencyHealthChecks = {
+  database: () => supabaseAdmin.rpc("app_healthcheck"),
+  retention: () => supabaseAdmin.rpc("get_privacy_retention_status"),
+};
+
+export async function dependencies(
+  checks: DependencyHealthChecks = defaultDependencyHealthChecks,
+): Promise<Response> {
   const startedAt = performance.now();
   try {
-    const database = await supabaseAdmin.rpc("app_healthcheck");
+    const database = await checks.database();
     if (database.error) throw database.error;
 
-    const retention = await supabaseAdmin.rpc("get_privacy_retention_status");
+    const retention = await checks.retention();
     const retentionStatus = retention.data?.[0];
     if (retention.error || !retentionStatus?.is_current) {
       return json({ ok: false, database: "available", privacyRetention: "stale" }, 503, {

@@ -80,6 +80,7 @@ export async function verifyContactRecaptchaWithSecrets(
   request: Request,
   secrets: string[],
   fetcher: typeof fetch = fetch,
+  timeoutMs = VERIFY_TIMEOUT_MS,
 ): Promise<void> {
   if (secrets.length === 0) throw new RecaptchaUnavailableError();
 
@@ -91,7 +92,7 @@ export async function verifyContactRecaptchaWithSecrets(
         method: "POST",
         headers: { "content-type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ secret, response: token }),
-        signal: AbortSignal.timeout(VERIFY_TIMEOUT_MS),
+        signal: AbortSignal.timeout(timeoutMs),
       });
     } catch {
       continue;
