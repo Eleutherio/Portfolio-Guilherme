@@ -109,6 +109,14 @@ O Vite valida essas duas variáveis antes de iniciar o servidor de desenvolvimen
 
 Os arquivos `_redirects` e `_headers` são copiados de `public/`. O primeiro implementa o fallback da SPA; o segundo adiciona headers de segurança e cache para os assets versionados.
 
+Os hosts alternativos são canonicalizados na borda por uma Bulk Redirect List da conta Cloudflare, porque o `_redirects` do Pages não suporta regras por hostname:
+
+- lista `guifer_canonical_hosts`, ativada pelo ruleset `Canonical host redirects`;
+- `www.guifer.tech` e `portfolio-guilherme-et1.pages.dev` respondem `301` para `https://guifer.tech`;
+- subpath, sufixo do caminho e query string são preservados; subdomínios de preview não são incluídos.
+
+Ao alterar domínio, projeto Pages ou conta Cloudflare, atualize a lista e valide os dois hosts com uma rota interna e query de prova antes de remover a configuração anterior.
+
 O build gera `/release.json` a partir de `CF_PAGES_COMMIT_SHA`. Esse manifesto não contém segredo e é servido sem cache para a verificação pós-deploy.
 
 ## 6. Keep-alive no GitHub Actions
