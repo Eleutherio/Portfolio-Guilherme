@@ -300,4 +300,57 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await expect(page.getByRole("button", { name: "enviar mensagem" })).toBeEnabled();
     await runAxe(page, testInfo, "contact-recaptcha-unavailable");
   });
+
+  test("nova tentativa substitui o script expirado do reCAPTCHA e envia sem recarregar", async ({
+    page,
+  }) => {
+    await page.clock.install();
+    let scriptRequests = 0;
+    let contactRequests = 0;
+    await page.route("https://www.google.com/recaptcha/**", async (route) => {
+      scriptRequests += 1;
+      if (scriptRequests === 1) {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/javascript",
+          body: `window.grecaptcha = {
+            ready: () => {},
+            execute: async () => "token-that-must-not-be-used"
+          };`,
+        });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: "application/javascript",
+        body: `window.grecaptcha = {
+          ready: (callback) => callback(),
+          execute: async () => "playwright-retry-token"
+        };`,
+      });
+    });
+    await page.route("**/api/contact", async (route) => {
+      contactRequests += 1;
+      await route.fulfill({
+        status: 202,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true }),
+      });
+    });
+
+    await openPage(page, "/");
+    await fillValidContactForm(page);
+    const submit = page.getByRole("button", { name: "enviar mensagem" });
+
+    await submit.click();
+    await expect(page.locator("#google-recaptcha-v3")).toHaveCount(1);
+    await page.clock.fastForward(10_100);
+    await expect(page.getByRole("status")).toContainText("algo deu errado");
+    await expect(page.locator("#google-recaptcha-v3")).toHaveCount(0);
+
+    await submit.click();
+    await expect(page.getByRole("status")).toContainText("mensagem enviada");
+    expect(scriptRequests).toBe(2);
+    expect(contactRequests).toBe(1);
+  });
 });
