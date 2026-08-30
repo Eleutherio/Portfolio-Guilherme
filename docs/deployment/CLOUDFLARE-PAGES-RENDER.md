@@ -107,7 +107,7 @@ Variáveis de produção:
 
 O Vite valida essas duas variáveis antes de iniciar o servidor de desenvolvimento ou gerar o bundle. `VITE_API_URL` pode ficar vazio somente quando a API estiver disponível na mesma origem.
 
-Os arquivos `_redirects` e `_headers` são copiados de `public/`. O primeiro implementa o fallback da SPA; o segundo adiciona headers de segurança e cache para os assets versionados.
+O arquivo `_headers` é copiado de `public/` e adiciona headers de segurança e cache para os assets versionados. O build não publica `_redirects`: depois do Vite, `scripts/generate-static-route-heads.mjs` gera um arquivo HTML para cada rota indexável. O Pages resolve essas rotas com clean URLs, preservando metadados sociais no HTML bruto e atualização direta sem depender de fallback global da SPA.
 
 Os hosts alternativos são canonicalizados na borda por uma Bulk Redirect List da conta Cloudflare, porque o `_redirects` do Pages não suporta regras por hostname:
 
@@ -140,7 +140,7 @@ Após cada deploy:
 1. confirme `GET /health/live` com status `200`;
 2. confirme `GET /health/status` com status `200` e revise os estados individuais;
 3. execute manualmente o workflow de keep-alive;
-4. abra todas as rotas diretamente e atualize a página para validar o fallback da SPA;
+4. abra todas as rotas indexáveis diretamente e atualize a página para validar os HTMLs estáticos gerados e as clean URLs;
 5. envie um contato real e confirme entrega, Reply-To e ausência de dados pessoais nos logs;
 6. valide café e métricas do GitHub;
 7. confirme `robots.txt`, `sitemap.xml`, currículo e headers HTTP;
@@ -154,7 +154,7 @@ Após cada deploy:
 - O Render Free pode suspender um serviço após 15 minutos sem tráfego e pode reiniciá-lo independentemente do keep-alive.
 - Manter uma instância ativa consome as horas gratuitas mensais do workspace.
 - O Supabase Free pode pausar projetos com pouca atividade; a chamada a `app_healthcheck()` existe para produzir atividade real de banco.
-- A rota inexistente de uma SPA estática é renderizada corretamente no cliente, mas o fallback do Pages responde HTTP `200`, não `404`.
+- Uma rota inexistente acessada por navegação interna é tratada pelo roteador do cliente. No acesso direto, sem `_redirects` global, o Pages pode responder sua página `404` de plataforma; qualquer contrato de 404 customizado na borda exige implementação separada.
 
 ## Referências operacionais
 
