@@ -60,9 +60,20 @@ test("GitHub caches provider failures for only one minute", async () => {
       const signal = init?.signal;
       if (signal) observedSignals.push(signal);
       return new Promise<Response>((_resolve, reject) => {
-        signal?.addEventListener("abort", () => reject(signal.reason), {
-          once: true,
-        });
+        const guard = setTimeout(
+          () => reject(new Error("GitHub timeout signal was not dispatched")),
+          1_000,
+        );
+        const rejectOnAbort = () => {
+          clearTimeout(guard);
+          reject(signal?.reason ?? new Error("GitHub request aborted"));
+        };
+
+        if (!signal || signal.aborted) {
+          rejectOnAbort();
+          return;
+        }
+        signal.addEventListener("abort", rejectOnAbort, { once: true });
       });
     },
     () => currentTime,
