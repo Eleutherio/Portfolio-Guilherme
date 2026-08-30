@@ -7,7 +7,7 @@ import { beforeEach, test } from "node:test";
 import type { ContactPayload } from "@/lib/contact-contract";
 import { buildContactEmail, EmailDeliveryError } from "@/lib/contact-email.server";
 import { checkScopedRateLimit, rateLimitHeaders } from "@/lib/contact-rate-limit.server";
-import { app } from "./app";
+import { app, githubStatsPayload } from "./app";
 import { readJsonBody } from "./http";
 import { createApiServer } from "./node-server";
 import { ClientAddressError, resolveClientAddress } from "./request-context";
@@ -106,6 +106,15 @@ test("infrastructure status contains rejected checks", async () => {
 
   assert.equal(status.ok, false);
   assert.equal(status.services.database, "unavailable");
+});
+
+test("GitHub API distinguishes a valid zero from provider unavailability", () => {
+  assert.deepEqual(githubStatsPayload({ total: 0, year: 2026 }), {
+    status: "ready",
+    total: 0,
+    year: 2026,
+  });
+  assert.deepEqual(githubStatsPayload(null), { status: "unavailable" });
 });
 
 test("Website Carbon serves the shared cache without refreshing before 24 hours", async () => {

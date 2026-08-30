@@ -59,11 +59,15 @@ export const dictionary = {
       ],
       stats: {
         commitsLabel: "commits",
+        commitsLoading: "carregando commits",
+        commitsUnavailable: "commits indisponíveis",
         coffeeOffer: "Oferecer um café",
         coffeeThanks: "Obrigado pelo café",
         coffeeThanksIcon: "Obrigado pelo café ☕",
         coffeeSingular: "café",
         coffeePlural: "cafés",
+        coffeeLoading: "carregando cafés",
+        coffeeUnavailable: "cafés indisponíveis",
       },
     },
 
@@ -531,11 +535,15 @@ export const dictionary = {
       ],
       stats: {
         commitsLabel: "commits",
+        commitsLoading: "loading commits",
+        commitsUnavailable: "commits unavailable",
         coffeeOffer: "Buy me a coffee",
         coffeeThanks: "Thanks for the coffee",
         coffeeThanksIcon: "Thanks for the coffee ☕",
         coffeeSingular: "coffee",
         coffeePlural: "coffees",
+        coffeeLoading: "loading coffees",
+        coffeeUnavailable: "coffees unavailable",
       },
     },
 

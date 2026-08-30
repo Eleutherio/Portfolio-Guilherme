@@ -1,6 +1,6 @@
 import { getServerEnvironment } from "../env";
 
-type YearStats = { total: number; year: number } | null;
+export type GithubYearStats = { total: number; year: number } | null;
 
 export type GithubYearStatsDependencies = {
   fetcher: typeof fetch;
@@ -8,7 +8,7 @@ export type GithubYearStatsDependencies = {
   timeoutMs: number;
 };
 
-let cache: { value: YearStats; expires: number } | null = null;
+let cache: { value: GithubYearStats; expires: number } | null = null;
 
 const defaultDependencies: GithubYearStatsDependencies = {
   fetcher: fetch,
@@ -22,7 +22,7 @@ export function resetGithubYearStatsCache(): void {
 
 export async function getGithubYearStats(
   dependencies: GithubYearStatsDependencies = defaultDependencies,
-): Promise<YearStats> {
+): Promise<GithubYearStats> {
   const now = dependencies.now();
   if (cache && cache.expires > now) return cache.value;
 

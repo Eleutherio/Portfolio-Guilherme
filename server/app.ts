@@ -2,7 +2,7 @@ import { handleContactRequest } from "@/lib/contact-handler.server";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { json } from "./http";
 import { dependencies, infrastructureStatus, live } from "./services/health";
-import { getGithubYearStats } from "./services/github";
+import { getGithubYearStats, type GithubYearStats } from "./services/github";
 import { handleCoffeeRequest } from "./services/coffee";
 import { getWebsiteCarbonResult } from "./services/website-carbon";
 import { getServerEnvironment } from "./env";
@@ -17,6 +17,10 @@ const API_PATHS = new Set([
   "/api/coffee",
   "/api/website-carbon",
 ]);
+
+export function githubStatsPayload(stats: GithubYearStats) {
+  return stats ? { status: "ready" as const, ...stats } : { status: "unavailable" as const };
+}
 
 function configuredOrigins(): Set<string> {
   return new Set(getServerEnvironment().API_ALLOWED_ORIGINS);
@@ -106,10 +110,14 @@ export async function app(request: Request, context: RequestContext = {}): Promi
         ? await handleContactRequest(request, context)
         : json({ ok: false, code: "method_not_allowed" }, 405, { allow: "POST" });
   } else if (pathname === "/api/github") {
-    response =
-      request.method === "GET"
-        ? json(await getGithubYearStats(), 200, { "cache-control": "public, max-age=300" })
-        : json({ ok: false }, 405, { allow: "GET" });
+    if (request.method === "GET") {
+      const stats = await getGithubYearStats();
+      response = json(githubStatsPayload(stats), 200, {
+        "cache-control": stats ? "public, max-age=300" : "public, max-age=60",
+      });
+    } else {
+      response = json({ ok: false }, 405, { allow: "GET" });
+    }
   } else if (pathname === "/api/website-carbon") {
     response =
       request.method === "GET"
