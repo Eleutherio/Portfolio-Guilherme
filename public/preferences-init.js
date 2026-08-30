@@ -18,4 +18,9 @@
   root.classList.remove("dark", "light");
   root.classList.add(theme);
   root.style.colorScheme = theme;
+
+  var themeColor = document.querySelector('meta[name="theme-color"]');
+  if (themeColor) {
+    themeColor.setAttribute("content", theme === "dark" ? "#0e131b" : "#f7f6f2");
+  }
 })();

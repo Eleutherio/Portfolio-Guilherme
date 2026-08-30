@@ -4,7 +4,7 @@ import { DeferredBackToTop } from "@/components/layout/DeferredBackToTop";
 import { DeferredSection } from "@/components/sections/DeferredSection";
 
 import { Hero } from "@/components/sections/Hero";
-import { absoluteSiteUrl } from "@/lib/seo";
+import { absoluteSiteUrl, socialImageMeta } from "@/lib/seo";
 
 const loadAbout = () => import("@/components/sections/About").then((m) => ({ default: m.About }));
 const loadTestimonials = () =>
@@ -16,22 +16,13 @@ const loadTimeline = () =>
 const loadContact = () =>
   import("@/components/sections/Contact").then((m) => ({ default: m.Contact }));
 const loadFooter = () => import("@/components/layout/Footer").then((m) => ({ default: m.Footer }));
-const TITLE = "Guilherme Ferreira Eleutherio — Full-stack Developer";
-const DESCRIPTION =
-  "Full-stack developer focused on secure, scalable and maintainable web applications using React, TypeScript, Django and PostgreSQL.";
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
       { property: "og:url", content: absoluteSiteUrl() },
+      ...socialImageMeta("/social/guifer-tech.jpg"),
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: TITLE },
-      { name: "twitter:description", content: DESCRIPTION },
     ],
     links: [{ rel: "canonical", href: absoluteSiteUrl() }],
   }),

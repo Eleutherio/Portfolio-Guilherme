@@ -7,24 +7,15 @@ import { NextSteps } from "@/components/sections/NextSteps";
 import { useApp } from "@/i18n/AppContext";
 import firstAboutAlbumImage from "@/assets/about/unisinos-campus.jpg";
 import { MotionBoundary } from "@/components/MotionBoundary";
-import { absoluteSiteUrl } from "@/lib/seo";
-
-const TITLE = "Sobre — Guilherme Ferreira Eleutherio";
-const DESCRIPTION =
-  "A pessoa por trás do código: trajetória, formação e experiências que orientam meu trabalho como desenvolvedor de software.";
+import { absoluteSiteUrl, socialImageMeta } from "@/lib/seo";
 
 export const Route = createFileRoute("/sobre")({
   head: () => ({
     meta: [
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "profile" },
       { property: "og:url", content: absoluteSiteUrl("/sobre") },
+      ...socialImageMeta("/social/guifer-tech.jpg"),
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: TITLE },
-      { name: "twitter:description", content: DESCRIPTION },
     ],
     links: [
       { rel: "canonical", href: absoluteSiteUrl("/sobre") },
