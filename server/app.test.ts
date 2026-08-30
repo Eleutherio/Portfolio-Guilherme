@@ -564,6 +564,21 @@ test("atomic rate-limit migration locks global state before creating an IP bucke
   assert.doesNotMatch(migration, /DROP FUNCTION public\.consume_contact_rate_limit/);
 });
 
+test("rate-limit cleanup migration removes only the legacy RPC", async () => {
+  const migration = await readFile(
+    new URL(
+      "../supabase/migrations/20260830003000_remove_legacy_contact_rate_limit.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+
+  assert.equal(
+    migration.trim().replace(/\s+/g, " "),
+    "DROP FUNCTION IF EXISTS public.consume_contact_rate_limit(TEXT, INTEGER, INTEGER);",
+  );
+});
+
 test("API responses include the defensive header baseline", async () => {
   const response = await app(new Request("https://api.example.com/unknown"));
 
