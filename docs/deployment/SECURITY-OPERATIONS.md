@@ -20,7 +20,7 @@ npm run security:ip-spoof
 Remove-Item Env:IP_SPOOF_TEST_API_URL
 ```
 
-O teste envia apenas JSON inválido, alterna valores reservados de documentação em `CF-Connecting-IP` e `X-Forwarded-For` e deve receber `422` antes de `429`. Antes da rotação, ele repete um valor fixo para comprovar que a origem de execução mantém um bucket estável e evitar falso positivo por egress variável. Ele não envia e-mail, mas consome temporariamente o rate limit do IP executor.
+O teste envia apenas JSON inválido. Primeiro, repete um valor reservado em `X-Forwarded-For` para comprovar que a origem de execução mantém um bucket estável e atingir o limite por IP. Em seguida, troca esse header público e exige que o mesmo bucket permaneça limitado. Por fim, tenta forjar `CF-Connecting-IP`: a prova só passa se a borda Cloudflare bloquear a tentativa ou se a aplicação continuar no bucket real já esgotado, evidenciando a sobrescrita do valor. Ele não envia e-mail, mas consome temporariamente o rate limit do IP executor.
 
 Depois de aplicar a migration atômica no Supabase, carregue `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` somente no processo local e execute:
 

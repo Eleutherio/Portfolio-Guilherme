@@ -69,13 +69,39 @@ async function checkResponse(label, path, expectedStatus, init) {
   return response;
 }
 
+async function checkLiveWithColdStartRetry() {
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    let response;
+    try {
+      response = await timedFetch("API 2xx", new URL("/health/live", apiUrl));
+    } catch (error) {
+      const timedOut = error instanceof Error && error.cause?.name === "TimeoutError";
+      if (!timedOut || attempt === 4) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 2_000));
+      continue;
+    }
+
+    if ([502, 503, 504].includes(response.status) && attempt < 4) {
+      await new Promise((resolve) => setTimeout(resolve, 2_000));
+      continue;
+    }
+    if (response.status !== 200) {
+      throw new Error(`API 2xx: expected 200, received ${response.status}`);
+    }
+    assertHeaders("API 2xx", response, apiHeaders);
+    return response;
+  }
+
+  throw new Error("API 2xx: unavailable after cold-start retries");
+}
+
 const frontend = await timedFetch("frontend", siteUrl);
 if (frontend.status !== 200) {
   throw new Error(`frontend: expected 200, received ${frontend.status}`);
 }
 assertHeaders("frontend", frontend, frontendHeaders);
 
-await checkResponse("API 2xx", "/health/live", 200);
+await checkLiveWithColdStartRetry();
 await checkResponse("API 404", "/security-check-not-found", 404);
 await checkResponse("API 403", "/health/live", 403, {
   headers: { origin: "https://example.invalid" },
@@ -161,7 +187,14 @@ try {
     (request) => request.url().endsWith("/api/contact") && request.method() === "POST",
   );
   await page.locator('#contato button[type="submit"]').click();
-  await interceptedPost;
+  const contactRequest = await interceptedPost;
+  const contactPayload = contactRequest.postDataJSON();
+  if (
+    typeof contactPayload?.antiBotToken !== "string" ||
+    contactPayload.antiBotToken.trim().length === 0
+  ) {
+    throw new Error("reCAPTCHA did not produce a token for the intercepted contact POST");
+  }
   if (!recaptchaRequested || !(await page.evaluate(() => Boolean(window.grecaptcha)))) {
     throw new Error("reCAPTCHA did not load and execute before the intercepted contact POST");
   }
@@ -170,10 +203,12 @@ try {
     waitUntil: "domcontentloaded",
   });
   const launcher = page.locator("#accessibility-widget-launcher");
+  const nativeTrigger = page.locator("#acc-widget-host #accessibilityWidget");
+  await launcher.or(nativeTrigger).first().waitFor({ state: "visible" });
   if (await launcher.isVisible()) {
     await launcher.click();
   } else {
-    await page.locator("#acc-widget-host #accessibilityWidget").click();
+    await nativeTrigger.click();
   }
   await page.locator("#acc-widget-host .acc-menu").waitFor({ state: "visible" });
   await page.waitForTimeout(1_500);
