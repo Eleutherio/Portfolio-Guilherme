@@ -133,6 +133,8 @@ No repositório do GitHub, configure:
 
 Execute o workflow manualmente depois do primeiro deploy e confirme as duas mensagens de sucesso. O agendamento reduz fortemente a chance de cold start, mas não é garantia de disponibilidade: execuções agendadas podem atrasar ou ser descartadas sob carga, e workflows agendados de repositórios públicos sem atividade podem ser desativados após 60 dias.
 
+O dispatch manual oferece quatro cenários de validação. `healthy` executa os probes reais; `incident-failure` abre ou atualiza uma issue de ensaio isolada do alerta operacional; `incident-recovery` registra a recuperação e fecha somente essa issue de ensaio; `monthly-review` cria a cobrança mensal sem esperar o próximo agendamento. Os três modos simulados nunca alteram URL, segredo ou infraestrutura, e o ensaio não pode fechar um incidente verdadeiro.
+
 O workflow usa permissão restrita de escrita em issues para tornar falhas observáveis sem serviço pago:
 
 - a primeira falha abre e atribui `ops: keep-alive indisponível` ao proprietário;
