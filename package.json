@@ -15,7 +15,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test:api": "tsx --test server/app.test.ts server/env.test.ts server/services/coffee.test.ts server/services/github.test.ts server/services/health.test.ts src/lib/external-contracts.server.test.ts scripts/release-verifier.test.mjs",
+    "test:api": "tsx --test server/app.test.ts server/env.test.ts server/services/coffee.test.ts server/services/github.test.ts server/services/health.test.ts src/lib/external-contracts.server.test.ts scripts/github-operations-issues.test.mjs scripts/release-verifier.test.mjs",
     "carbon:check": "npm run build:pages && node scripts/verify-carbon-budget.mjs",
     "security:audit": "npm audit --audit-level=high",
     "security:sbom": "npm sbom --package-lock-only --sbom-format cyclonedx --sbom-type application",

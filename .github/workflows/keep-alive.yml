@@ -3,10 +3,12 @@ name: Keep services active
 on:
   schedule:
     - cron: "7,17,27,37,47,57 * * * *"
+    - cron: "23 9 1 * *"
   workflow_dispatch:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: keep-services-active
@@ -14,6 +16,7 @@ concurrency:
 
 jobs:
   keep-alive:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '7,17,27,37,47,57 * * * *'
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -26,7 +29,41 @@ jobs:
           node-version: 22
 
       - name: Check Render and Supabase
+        id: probe
         env:
           KEEP_ALIVE_API_URL: ${{ vars.KEEP_ALIVE_API_URL }}
           KEEP_ALIVE_SECRET: ${{ secrets.KEEP_ALIVE_SECRET }}
         run: node scripts/keep-alive.mjs
+
+      - name: Record keep-alive failure
+        if: failure() && steps.probe.conclusion == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OBSERVABILITY_EVENT: incident-failure
+        run: node scripts/github-operations-issues.mjs
+
+      - name: Close recovered keep-alive incident
+        if: success() && steps.probe.conclusion == 'success'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OBSERVABILITY_EVENT: incident-recovered
+        run: node scripts/github-operations-issues.mjs
+
+  monthly-usage-review:
+    if: github.event_name == 'schedule' && github.event.schedule == '23 9 1 * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Open monthly infrastructure review
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OBSERVABILITY_EVENT: monthly-review
+        run: node scripts/github-operations-issues.mjs
