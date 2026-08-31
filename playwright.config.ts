@@ -15,8 +15,8 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: 2,
   reporter: [["list"], ["html", { outputFolder: "playwright-report", open: "never" }]],
-  // O baseline é compartilhado entre sistemas, mas isolado por engine. As fontes são locais e
-  // a tolerância perceptual absorve apenas diferenças de rasterização entre Windows e Linux.
+  // Os baselines são isolados por engine. Testes com variação comprovada de rasterização
+  // acrescentam a plataforma ao próprio nome do snapshot.
   snapshotPathTemplate: "{testDir}/__screenshots__/{testFilePath}/{projectName}/{arg}{ext}",
   use: {
     baseURL: BASE_URL,

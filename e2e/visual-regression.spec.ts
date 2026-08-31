@@ -22,7 +22,7 @@ test.describe("baselines visuais selecionados", () => {
     });
 
     await expect(page.locator('section[aria-labelledby="accessibility-heading"]')).toHaveScreenshot(
-      "accessibility-header-mobile-dark.png",
+      `accessibility-header-mobile-dark-${process.platform}.png`,
       {
         animations: "disabled",
         caret: "hide",
