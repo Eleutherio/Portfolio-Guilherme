@@ -133,6 +133,15 @@ No repositório do GitHub, configure:
 
 Execute o workflow manualmente depois do primeiro deploy e confirme as duas mensagens de sucesso. O agendamento reduz fortemente a chance de cold start, mas não é garantia de disponibilidade: execuções agendadas podem atrasar ou ser descartadas sob carga, e workflows agendados de repositórios públicos sem atividade podem ser desativados após 60 dias.
 
+O workflow usa permissão restrita de escrita em issues para tornar falhas observáveis sem serviço pago:
+
+- a primeira falha abre e atribui `ops: keep-alive indisponível` ao proprietário;
+- falhas seguintes atualizam a mesma issue, sem criar uma notificação a cada execução;
+- a primeira execução saudável registra a recuperação e fecha o incidente;
+- no primeiro dia de cada mês, uma issue separada cobra a revisão de Actions, Render, Supabase e retenção.
+
+Referência observada em 30/08/2026: as últimas 100 execuções tiveram uma falha e duração média de 38,4 segundos. O intervalo médio real foi 98,7 minutos e o maior, 746,2 minutos. Portanto, o cron de dez minutos é apenas uma solicitação ao GitHub e não impede sozinho o spin-down do Render.
+
 ## 7. Smoke test de produção
 
 Após cada deploy:
@@ -152,8 +161,10 @@ Após cada deploy:
 ## Limitações conhecidas do plano gratuito
 
 - O Render Free pode suspender um serviço após 15 minutos sem tráfego e pode reiniciá-lo independentemente do keep-alive.
-- Manter uma instância ativa consome as horas gratuitas mensais do workspace.
+- Manter uma instância ativa consome as 750 horas gratuitas mensais do workspace: são 720 horas em um mês de 30 dias e 744 em um mês de 31 dias, deixando somente 6 horas de margem quando existe um único serviço sempre ativo. Outros serviços Free no mesmo workspace compartilham o limite.
+- O repositório é público e, por isso, o uso de runners padrão do GitHub Actions não é cobrado; atrasos e descarte de cron continuam possíveis.
 - O Supabase Free pode pausar projetos com pouca atividade; a chamada a `app_healthcheck()` existe para produzir atividade real de banco.
+- O Supabase Free inclui 500 MB de banco e 5 GB de egress; a revisão mensal deve conferir esses limites e a atividade dos sete dias anteriores.
 - Uma rota inexistente acessada por navegação interna é tratada pelo roteador do cliente. No acesso direto, sem `_redirects` global, o Pages pode responder sua página `404` de plataforma; qualquer contrato de 404 customizado na borda exige implementação separada.
 
 ## Referências operacionais
@@ -163,4 +174,6 @@ Após cada deploy:
 - [Render: serviços gratuitos](https://render.com/docs/free)
 - [Render: especificação de Blueprints](https://render.com/docs/blueprint-spec)
 - [Supabase: pausa de projetos](https://supabase.com/docs/guides/platform/free-project-pausing)
+- [Supabase: preços e limites](https://supabase.com/pricing)
+- [GitHub Actions: billing e uso](https://docs.github.com/actions/concepts/billing-and-usage)
 - [GitHub Actions: sintaxe de agendamento](https://docs.github.com/actions/reference/workflows-and-actions/workflow-syntax#onschedule)

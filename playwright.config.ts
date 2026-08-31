@@ -15,13 +15,26 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: 2,
   reporter: [["list"], ["html", { outputFolder: "playwright-report", open: "never" }]],
+  // Os baselines são isolados por engine. Testes com variação comprovada de rasterização
+  // acrescentam a plataforma ao próprio nome do snapshot.
+  snapshotPathTemplate: "{testDir}/__screenshots__/{testFilePath}/{projectName}/{arg}{ext}",
   use: {
     baseURL: BASE_URL,
-    browserName: "chromium",
     locale: "pt-BR",
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
   },
+  projects: [
+    {
+      name: "chromium",
+      use: { browserName: "chromium" },
+    },
+    {
+      name: "webkit-smoke",
+      testMatch: /cross-browser\.spec\.ts/u,
+      use: { browserName: "webkit" },
+    },
+  ],
   webServer: {
     command: `node ./node_modules/vite/bin/vite.js --host 127.0.0.1 --port ${PORT} --strictPort`,
     url: BASE_URL,

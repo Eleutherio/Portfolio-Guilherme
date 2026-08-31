@@ -303,6 +303,28 @@ test.describe("Cursor customizado", () => {
     await probe.evaluate((element) => element.remove());
   });
 
+  test("distingue movimento normal e reduzido", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await openPage(page, "/", { width: 1440, height: 900, loadDeferredSections: false });
+
+    const visual = page.locator("#custom-cursor .custom-cursor__visual");
+    await page.locator("header nav button").nth(1).hover();
+    const normalDurations = await visual.evaluate((element) =>
+      getComputedStyle(element)
+        .transitionDuration.split(",")
+        .map((duration) => Number.parseFloat(duration) * (duration.includes("ms") ? 1 : 1000)),
+    );
+    expect(normalDurations.some((duration) => duration > 0)).toBe(true);
+
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const reducedDurations = await visual.evaluate((element) =>
+      getComputedStyle(element)
+        .transitionDuration.split(",")
+        .map((duration) => Number.parseFloat(duration)),
+    );
+    expect(reducedDurations.every((duration) => duration === 0)).toBe(true);
+  });
+
   test("preserva zonas nativas e remove animação com movimento reduzido", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await openPage(page, "/", { width: 1440, height: 900, loadDeferredSections: false });
