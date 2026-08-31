@@ -280,6 +280,17 @@ test.describe("WCAG 2.2 AA — reflow e preferências", () => {
     expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
   });
 
+  for (const route of ["/sobre", "/projetos/grengame", "/acessibilidade"] as const) {
+    test(`${route} mantém reflow em 320px`, async ({ page }) => {
+      await openPage(page, route, { width: 320, height: 900 });
+      const dimensions = await page.evaluate(() => ({
+        viewport: document.documentElement.clientWidth,
+        content: document.documentElement.scrollWidth,
+      }));
+      expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
+    });
+  }
+
   test("forced colors mantém estrutura e nomes", async ({ page }, testInfo) => {
     await page.emulateMedia({ forcedColors: "active", reducedMotion: "reduce" });
     await openPage(page, "/acessibilidade", { width: 1280, height: 800 });
