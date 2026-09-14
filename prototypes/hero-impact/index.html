@@ -28,8 +28,21 @@
       --radius: 18px;
       --ease: cubic-bezier(.22, 1, .36, 1);
       --scroll: 0;
-      --mouse-x: 0;
-      --mouse-y: 0;
+      --grid-opacity: .92;
+      --grid-x: 50%;
+      --grid-y: 0px;
+      --copy-x: 0px;
+      --copy-y: 0px;
+      --copy-mouse-y: 0px;
+      --copy-opacity: 1;
+      --code-x: 0px;
+      --code-y: 0px;
+      --code-mouse-y: 0px;
+      --code-scale: 1;
+      --code-opacity: 1;
+      --meta-y: 0px;
+      --meta-opacity: 1;
+      --rail-y: -100%;
     }
 
     [data-theme="light"] {
@@ -192,12 +205,10 @@
     .hero-grid {
       position: absolute;
       inset: 0;
-      opacity: calc(.92 - var(--scroll) * .28);
+      opacity: var(--grid-opacity);
       background-image: radial-gradient(circle, var(--grid) 1.15px, transparent 1.25px);
       background-size: 29px 29px;
-      background-position:
-        calc(50% + var(--mouse-x) * 2px)
-        calc(var(--scroll) * -9px + var(--mouse-y) * 2px);
+      background-position: var(--grid-x) var(--grid-y);
       mask-image: linear-gradient(to bottom, transparent 2%, #000 13%, #000 87%, transparent 100%);
       z-index: -2;
     }
@@ -227,13 +238,12 @@
     .hero-copy {
       position: relative;
       z-index: 3;
-      transform:
-        translate3d(
-          calc(var(--mouse-x) * -2px),
-          calc(var(--scroll) * -24px + var(--mouse-y) * -2px),
-          0
-        );
-      opacity: calc(1 - max(0, (var(--scroll) - .83) * 5.8));
+      transform: translate3d(
+        var(--copy-x),
+        calc(var(--copy-y) + var(--copy-mouse-y)),
+        0
+      );
+      opacity: var(--copy-opacity);
       will-change: transform, opacity;
     }
 
@@ -389,12 +399,12 @@
       z-index: 2;
       transform:
         translate3d(
-          calc(var(--mouse-x) * 4px),
-          calc(var(--scroll) * -51px + var(--mouse-y) * 4px),
+          var(--code-x),
+          calc(var(--code-y) + var(--code-mouse-y)),
           0
         )
-        scale(calc(1 - max(0, (var(--scroll) - .84) * .10)));
-      opacity: calc(1 - max(0, (var(--scroll) - .89) * 8.5));
+        scale(var(--code-scale));
+      opacity: var(--code-opacity);
       will-change: transform, opacity;
     }
 
@@ -488,14 +498,14 @@
       display: inline-block;
       width: max-content;
       max-width: 100%;
-      clip-path: inset(0 calc((1 - var(--reveal, 0)) * 100%) 0 0);
+      clip-path: inset(0 var(--hidden, 100%) 0 0);
     }
 
     .typed.active-cursor::after {
       content: "";
       position: absolute;
       top: .28em;
-      left: calc(var(--reveal, 0) * 100%);
+      left: var(--cursor-left, 0%);
       width: 1px;
       height: 1.18em;
       background: var(--blue-bright);
@@ -540,15 +550,14 @@
       left: 50%;
       bottom: 27px;
       width: min(1200px, calc(100% - 48px));
-      transform:
-        translate3d(-50%, calc(var(--scroll) * -13px), 0);
+      transform: translate3d(-50%, var(--meta-y), 0);
       display: flex;
       align-items: center;
       justify-content: flex-end;
       gap: 13px;
       color: var(--faint);
       font: 300 .66rem/1.4 "DM Mono", monospace;
-      opacity: calc(1 - max(0, (var(--scroll) - .78) * 5));
+      opacity: var(--meta-opacity);
     }
 
     .meta-dot {
@@ -592,7 +601,7 @@
       position: absolute;
       inset: 0;
       background: var(--blue);
-      transform: translateY(calc(-100% + var(--scroll) * 100%));
+      transform: translateY(var(--rail-y));
     }
 
     .stage-label {
@@ -1151,9 +1160,10 @@
         close: document.getElementById('typedClose')
       };
 
-      const lineByStep = Object.fromEntries(
-        [...document.querySelectorAll('[data-step]')].map(line => [line.dataset.step, line])
-      );
+      const lineByStep = {};
+      document.querySelectorAll('[data-step]').forEach(line => {
+        if (!lineByStep[line.dataset.step]) lineByStep[line.dataset.step] = line;
+      });
 
       const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
       const range = (progress, start, end) => clamp((progress - start) / (end - start));
@@ -1163,8 +1173,10 @@
 
       function setReveal(element, value, active) {
         if (!element) return;
-        element.style.setProperty('--reveal', reduced || mobile ? 1 : clamp(value));
-        element.classList.toggle('active-cursor', Boolean(active && value > .02 && value < .98));
+        const reveal = reduced || mobile ? 1 : clamp(value);
+        element.style.setProperty('--hidden', ((1 - reveal) * 100).toFixed(2) + '%');
+        element.style.setProperty('--cursor-left', (reveal * 100).toFixed(2) + '%');
+        element.classList.toggle('active-cursor', Boolean(active && reveal > .02 && reveal < .98));
       }
 
       function activate(step, top, stage) {
@@ -1184,6 +1196,16 @@
         if (Math.abs(progress - lastProgress) < .0005) return;
         lastProgress = progress;
         root.style.setProperty('--scroll', progress.toFixed(4));
+        root.style.setProperty('--grid-opacity', (.92 - progress * .28).toFixed(3));
+        root.style.setProperty('--grid-y', (progress * -9).toFixed(2) + 'px');
+        root.style.setProperty('--copy-y', (progress * -24).toFixed(2) + 'px');
+        root.style.setProperty('--copy-opacity', (1 - clamp((progress - .83) * 5.8)).toFixed(3));
+        root.style.setProperty('--code-y', (progress * -51).toFixed(2) + 'px');
+        root.style.setProperty('--code-scale', (1 - clamp((progress - .84) * .10)).toFixed(4));
+        root.style.setProperty('--code-opacity', (1 - clamp((progress - .89) * 8.5)).toFixed(3));
+        root.style.setProperty('--meta-y', (progress * -13).toFixed(2) + 'px');
+        root.style.setProperty('--meta-opacity', (1 - clamp((progress - .78) * 5)).toFixed(3));
+        root.style.setProperty('--rail-y', (-100 + progress * 100).toFixed(2) + '%');
 
         setReveal(typed.developer, range(progress, .02, .16), progress < .16);
         setReveal(typed.focus, range(progress, .14, .31), progress >= .14 && progress < .31);
@@ -1229,8 +1251,11 @@
         if (event.pointerType === 'touch') return;
         const x = (event.clientX / window.innerWidth - .5) * 2;
         const y = (event.clientY / window.innerHeight - .5) * 2;
-        root.style.setProperty('--mouse-x', x.toFixed(3));
-        root.style.setProperty('--mouse-y', y.toFixed(3));
+        root.style.setProperty('--grid-x', 'calc(50% + ' + (x * 2).toFixed(2) + 'px)');
+        root.style.setProperty('--copy-x', (x * -2).toFixed(2) + 'px');
+        root.style.setProperty('--copy-mouse-y', (y * -2).toFixed(2) + 'px');
+        root.style.setProperty('--code-x', (x * 4).toFixed(2) + 'px');
+        root.style.setProperty('--code-mouse-y', (y * 4).toFixed(2) + 'px');
         cursor.style.left = event.clientX + 'px';
         cursor.style.top = event.clientY + 'px';
         cursor.style.opacity = '1';
