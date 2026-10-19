@@ -55,9 +55,9 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.12.1",
+    "@axe-core/playwright": "4.14.0",
     "@eslint/js": "^9.32.0",
-    "@playwright/test": "1.61.1",
+    "@playwright/test": "1.64.1",
     "@types/node": "^22.16.5",
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^19.2.0",
@@ -65,17 +65,17 @@
     "@vitejs/plugin-react": "^5.2.0",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.1",
-    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-prettier": "^5.5.7",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
+    "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^15.15.0",
-    "lru-cache": "^11.5.2",
-    "prettier": "^3.7.3",
-    "sharp": "^0.35.3",
-    "subset-font": "^2.5.0",
-    "tsx": "^4.20.6",
+    "lru-cache": "^11.5.3",
+    "prettier": "^3.9.10",
+    "sharp": "^0.35.5",
+    "subset-font": "^2.9.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.56.1",
-    "vite": "^8.0.16"
+    "typescript-eslint": "^8.71.2",
+    "vite": "^8.3.4"
   }
 }
