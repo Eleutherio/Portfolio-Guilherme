@@ -8,9 +8,14 @@ test.describe("contratos essenciais entre engines", () => {
       loadDeferredSections: false,
     });
 
-    await page.getByRole("link", { name: /ver projetos/i }).click();
+    await page.locator('header a:has([data-wordmark="guifer.tech"])').focus();
+    await page
+      .getByRole("navigation", { name: "Navegação principal" })
+      .getByRole("button", { name: "projetos" })
+      .click();
     await expect(page.locator('[data-projects-hydrated="true"]')).toBeAttached();
-    await expect(page.locator("#projetos")).toBeInViewport();
+    await expect(page).toHaveURL(/#projetos$/u);
+    await expect(page.locator("#projetos-heading")).toBeFocused();
   });
 
   test("case mantém leitura e reflow no viewport móvel", async ({ page }) => {

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { usePageRevealed } from "@/lib/page-readiness";
 
 export function useElementActivity<T extends Element>(rootMargin = "0px") {
+  const revealed = usePageRevealed();
   const ref = useRef<T>(null);
   const [nearViewport, setNearViewport] = useState(false);
   const [pageVisible, setPageVisible] = useState(
@@ -29,5 +31,5 @@ export function useElementActivity<T extends Element>(rootMargin = "0px") {
     return () => document.removeEventListener("visibilitychange", update);
   }, []);
 
-  return { ref, active: nearViewport && pageVisible };
+  return { ref, active: revealed && nearViewport && pageVisible };
 }

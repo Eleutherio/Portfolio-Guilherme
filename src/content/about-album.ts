@@ -80,7 +80,7 @@ export const aboutAlbumPhotos: AboutAlbumPhoto[][] = [
         en: "Team presenting the GrenGame project to a panel at Unisinos.",
       },
       {
-        pt: "Foto da transmissão online da apresentação final do GrenGame para a banca avaliadora. - Março/2026",
+        pt: "Foto da transmissão online da apresentação final do GrenGame para a banca avaliadora. - março/2026",
         en: "GrenGame project presentation to the evaluation panel.",
       },
     ),
@@ -92,7 +92,7 @@ export const aboutAlbumPhotos: AboutAlbumPhoto[][] = [
         en: "Guilherme presenting the GrenGame project with a microphone.",
       },
       {
-        pt: "Apresentação do GrenGame na etapa final da Residência TIC55. - Março/2026",
+        pt: "Apresentação do GrenGame na etapa final da Residência TIC55. - março/2026",
         en: "GrenGame presentation in the final stage of the TIC55 Residency.",
       },
     ),

@@ -4,7 +4,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
   test("footer exibe selo sustentável e links legais padronizados", async ({ page }, testInfo) => {
     let greenBadgeRequests = 0;
     page.on("request", (request) => {
-      if (request.url().includes("/api/v3/greencheckimage/guifer.tech")) {
+      if (request.url().includes("/images/green-hosting.webp")) {
         greenBadgeRequests += 1;
       }
     });
@@ -23,7 +23,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       top: element.getBoundingClientRect().top,
       viewport: window.innerHeight,
     }));
-    expect(footerPosition.top).toBeGreaterThan(footerPosition.viewport);
+    expect(footerPosition.top).toBeGreaterThanOrEqual(footerPosition.viewport);
     await footer.scrollIntoViewIfNeeded();
     await expect(accessibility).toBeVisible();
     await expect(privacy).toBeVisible();
@@ -37,10 +37,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       "a verificação de hospedagem verde",
     );
     await expect(badge).toBeVisible();
-    await expect(badge).toHaveAttribute(
-      "src",
-      "https://app.greenweb.org/api/v3/greencheckimage/guifer.tech",
-    );
+    await expect(badge).toHaveAttribute("src", "/images/green-hosting.webp");
     await expect(badge).toHaveAttribute("width", "200");
     await expect(badge).toHaveAttribute("height", "95");
     await expect(badge).toHaveAttribute("loading", "eager");
@@ -56,11 +53,12 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       content: document.documentElement.scrollWidth,
     }));
     expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
-    await expect(footer.getByText("Obrigado pela visita", { exact: false })).toHaveCount(0);
-    await expect(footer.getByText(/Porto Alegre .* Hora local:/)).toBeVisible();
+    await expect(footer.getByText("Obrigado pela visita!", { exact: true })).toBeVisible();
+    await expect(footer.getByRole("navigation", { name: /Explore/ })).toBeAttached();
+    await expect(footer.getByText("Core Web Vitals", { exact: true })).toBeVisible();
     await expect(footer.getByText("WCAG 2.2", { exact: false })).toHaveCount(0);
     await expect(footer.getByText("Internet.nl", { exact: false })).toHaveCount(0);
-    await runAxe(page, testInfo, "footer-green-badge");
+    await runAxe(page, testInfo, "footer-green-badge", "footer");
 
     await openPage(page, "/", { language: "en", width: 320, height: 900 });
     await expect(footer.getByRole("link", { name: "Accessibility", exact: true })).toBeVisible();
@@ -77,11 +75,15 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       "alt",
       "This website uses green hosting, verified by the Green Web Foundation",
     );
-    await expect(footer.getByText(/Porto Alegre .* Local time:/)).toBeVisible();
-    await expect(footer.getByText("Thanks for stopping by", { exact: false })).toHaveCount(0);
+    await expect(footer.getByRole("navigation", { name: /Explore/ })).toBeAttached();
+    await expect(footer.getByText("Core Web Vitals", { exact: true })).toBeVisible();
+    await expect(footer.getByText("Thanks for visiting!", { exact: true })).toBeVisible();
   });
 
-  test("badge Website Carbon apresenta a resposta central e a escala oficial", async ({ page }) => {
+  test("badge Website Carbon apresenta a resposta central e a escala oficial", async ({
+    page,
+    baseURL,
+  }) => {
     let result = {
       grade: "C",
       carbon: 0.2,
@@ -105,8 +107,9 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       });
       await expect(page.locator("footer")).toBeAttached();
     };
-    const externalOrigin = "http://guifer.localhost:4173/";
-    await openPage(page, externalOrigin);
+    const externalOrigin = new URL(baseURL!);
+    externalOrigin.hostname = "guifer.localhost";
+    await openPage(page, externalOrigin.href);
     await loadFooter();
     const badge = page.locator(
       'footer a[href="https://www.websitecarbon.com/website/guifer-tech/"]',
@@ -121,29 +124,8 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       }),
     ).toBeVisible();
 
-    const gradeColors = {
-      "A+": "#00f5bd",
-      A: "#54f56f",
-      B: "#9bfb35",
-      C: "#caff00",
-      D: "#f5f000",
-      E: "#ffb800",
-      F: "#ff2028",
-    } as const;
-    for (const [grade, color] of Object.entries(gradeColors)) {
-      result = { ...result, grade };
-      await page.reload({ waitUntil: "domcontentloaded" });
-      await loadFooter();
-      await badge.scrollIntoViewIfNeeded();
-      await expect(badge.locator(":scope > span > span").first()).toHaveText(grade);
-      await expect
-        .poll(() =>
-          badge.evaluate((element) => getComputedStyle(element).getPropertyValue("--carbon-grade")),
-        )
-        .toBe(color);
-    }
-
-    await openPage(page, externalOrigin, { language: "en" });
+    result = { ...result, grade: "F" };
+    await openPage(page, externalOrigin.href, { language: "en" });
     await loadFooter();
     await badge.scrollIntoViewIfNeeded();
     await expect(badge).toHaveAccessibleName(
@@ -160,7 +142,52 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     ).toBeVisible();
   });
 
-  test("badge Website Carbon usa o A+ publicado quando a API própria falha", async ({ page }) => {
+  for (const [grade, color] of Object.entries({
+    "A+": "#00f5bd",
+    A: "#54f56f",
+    B: "#9bfb35",
+    C: "#caff00",
+    D: "#f5f000",
+    E: "#ffb800",
+    F: "#ff2028",
+  })) {
+    test(`badge Website Carbon aplica a cor oficial da nota ${grade}`, async ({
+      page,
+      baseURL,
+    }) => {
+      await page.route("**/api/website-carbon", async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            grade,
+            carbon: 0.2,
+            cleanerThan: 54,
+            updatedAt: "2026-08-26T12:00:00.000Z",
+            source: "api",
+          }),
+        });
+      });
+      const externalOrigin = new URL(baseURL!);
+      externalOrigin.hostname = "guifer.localhost";
+      await openPage(page, externalOrigin.href);
+      const badge = page.locator(
+        'footer a[href="https://www.websitecarbon.com/website/guifer-tech/"]',
+      );
+      await badge.scrollIntoViewIfNeeded();
+      await expect(badge.locator(":scope > span > span").first()).toHaveText(grade);
+      await expect
+        .poll(() =>
+          badge.evaluate((element) => getComputedStyle(element).getPropertyValue("--carbon-grade")),
+        )
+        .toBe(color);
+    });
+  }
+
+  test("badge Website Carbon usa o A+ publicado quando a API própria falha", async ({
+    page,
+    baseURL,
+  }) => {
     await page.route("**/api/website-carbon", async (route) => {
       await route.fulfill({ status: 503, contentType: "application/json", body: '{"ok":false}' });
     });
@@ -169,7 +196,9 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       localStorage.setItem("website-carbon:v2:grade:https://guifer.tech/", '{"grade":"C"}');
     });
 
-    await openPage(page, "http://guifer.localhost:4173/");
+    const externalOrigin = new URL(baseURL!);
+    externalOrigin.hostname = "guifer.localhost";
+    await openPage(page, externalOrigin.href);
     await page.evaluate(() => {
       window.dispatchEvent(
         new CustomEvent("portfolio:load-deferred-section", { detail: "rodape" }),
@@ -200,81 +229,62 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       .toBeNull();
   });
 
-  test("infraestrutura comunica estados sem depender somente de cor", async ({ page }) => {
-    await page.route("**/health/status", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          ok: false,
-          checkedAt: new Date().toISOString(),
-          services: {
-            backend: "operational",
-            database: "unavailable",
-            smtp: "operational",
-            recaptcha: "operational",
-          },
-        }),
-      });
+  test("rodapé preserva navegação e assinatura mesmo com API indisponível", async ({ page }) => {
+    await page.route("**/health/status", (route) => route.fulfill({ status: 503, body: "{}" }));
+    await openPage(page, "/", { width: 1440 });
+    const footer = page.locator("footer");
+    await footer.scrollIntoViewIfNeeded();
+    const navigation = footer.getByRole("navigation", { name: "Explore a página" });
+    await expect(navigation.getByRole("link")).toHaveCount(6);
+    const destinations = await navigation
+      .getByRole("link")
+      .evaluateAll((links) => links.map((link) => link.getAttribute("href")));
+    expect(destinations).toEqual([
+      "/#home",
+      "/#sobre",
+      "/#projetos",
+      "/#habilidades",
+      "/#depoimentos",
+      "/#contato",
+    ]);
+    await expect(footer.locator('.footer-copyright [data-wordmark="guifer.tech"]')).toHaveCount(1);
+    await expect(footer.locator(".footer-copyright")).toContainText(
+      `© ${new Date().getFullYear()} Guilherme Eleuthério`,
+    );
+    await expect(footer.locator(".footer-local-time")).toContainText(
+      /Brasil - Porto Alegre, RS — BRT · Hora local: \d{2}:\d{2}/,
+    );
+  });
+
+  test("linha institucional mantém alinhamento desktop e reflow mobile", async ({ page }) => {
+    await openPage(page, "/", { width: 1440 });
+    const footer = page.locator("footer");
+    await footer.scrollIntoViewIfNeeded();
+    const geometry = await footer.evaluate((element) => {
+      const rect = (selector: string) => element.querySelector(selector)!.getBoundingClientRect();
+      const row = rect(".footer-institutional-row");
+      const copyright = rect(".footer-copyright");
+      return {
+        center: copyright.x + copyright.width / 2 - row.x - row.width / 2,
+        time: rect(".footer-local-time").x,
+        legal: rect(".footer-legal-block").x,
+      };
     });
-    await openPage(page, "/");
-    await page.locator("footer").scrollIntoViewIfNeeded();
-
-    await expect(page.getByRole("button", { name: /Backend: operacional/ })).toBeVisible();
-    const database = page.getByRole("button", { name: /Database: indisponível/ });
-    await expect(database).toBeVisible();
-    await expect(database.locator(".bg-red-500")).toBeVisible();
-  });
-
-  test("cada serviço de infraestrutura explica sua verificação em hover e foco", async ({
-    page,
-  }) => {
-    await openPage(page, "/");
-    const scenarios = [
-      [/Backend:/, "Indica se a API do site está respondendo normalmente."],
-      [/Database:/, "Indica se o armazenamento e a leitura de dados estão disponíveis."],
-      [/SMTP service:/, "Indica se o serviço responsável pelo envio de mensagens está disponível."],
-      [/reCAPTCHA v3:/, "Indica se a proteção contra envios automatizados está disponível."],
-    ] as const;
-
-    const firstTooltip = page
-      .getByRole("button", { name: scenarios[0][0] })
-      .locator("xpath=following-sibling::span[1]");
-    await page.getByRole("button", { name: scenarios[0][0] }).hover();
-    await expect(firstTooltip).toBeVisible();
-    await page.mouse.move(0, 0);
-    for (const [name, description] of scenarios) {
-      const button = page.getByRole("button", { name });
-      await expectFocusedTooltip(button, description);
-    }
-
-    await openPage(page, "/", { language: "en" });
-    const englishScenarios = [
-      [/Backend:/, "Indicates whether the website API is responding normally."],
-      [/Database:/, "Indicates whether data storage and retrieval are available."],
-      [
-        /SMTP service:/,
-        "Indicates whether the service responsible for sending messages is available.",
-      ],
-      [/reCAPTCHA v3:/, "Indicates whether protection against automated submissions is available."],
-    ] as const;
-
-    for (const [name, description] of englishScenarios) {
-      const button = page.getByRole("button", { name });
-      await expect(button).toHaveAccessibleName(
-        new RegExp(description.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
-      );
+    expect(Math.abs(geometry.center)).toBeLessThan(1);
+    expect(geometry.time).toBeLessThan(geometry.legal);
+    for (const width of [320, 412]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(footer.locator(".footer-copyright")).toBeVisible();
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+      expect(overflow).toBe(false);
     }
   });
-
   test("cada métrica vital expõe sua explicação em hover e foco", async ({ page }) => {
     await openPage(page, "/");
     const scenarios = [
       [/LCP:/, "Mede quanto tempo leva para o maior elemento visível aparecer."],
       [/INP:/, "Mede o tempo de resposta da interface à interação mais lenta."],
       [/CLS:/, "Mede mudanças inesperadas de posição dos elementos."],
-      [/FPS:/, "Mede a fluidez da animação em quadros por segundo."],
-      [/sessão:/, "Mostra há quanto tempo esta página está aberta nesta aba."],
     ] as const;
 
     const firstTooltip = page
@@ -293,8 +303,6 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       [/LCP:/, "Measures how long the largest visible element takes to appear."],
       [/INP:/, "Measures how quickly the interface responds to its slowest interaction."],
       [/CLS:/, "Measures unexpected changes in the position of page elements."],
-      [/FPS:/, "Measures animation smoothness in frames per second."],
-      [/session:/, "Shows how long this page has been open in this tab."],
     ] as const;
 
     for (const [name, description] of englishScenarios) {

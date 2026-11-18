@@ -20,22 +20,17 @@ export function AccessibilityPage() {
       <main id="main" tabIndex={-1} className="flex-1 overflow-x-clip outline-none">
         <section aria-labelledby="accessibility-heading" className="border-b border-hairline">
           <div className="section-container py-14 md:py-24">
-            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
-              {content.kicker}
-            </p>
-            <h1 id="accessibility-heading" className="page-title mt-4 max-w-3xl text-foreground">
+            <h1 id="accessibility-heading" className="page-title max-w-3xl text-foreground">
               {content.title}
             </h1>
-            <div className="mt-7 inline-flex items-center gap-2 rounded-md border border-[var(--control-border)] bg-surface px-3 py-2 font-mono text-xs text-foreground">
+            <div className="meta-text mt-7 inline-flex items-center gap-2 rounded-md border border-[var(--control-border)] bg-surface px-3 py-2 text-foreground">
               <span className="h-2 w-2 rounded-full bg-amber-500" aria-hidden="true" />
               <span>
                 <span className="sr-only">{content.statusLabel}: </span>
                 {content.status}
               </span>
             </div>
-            <p className="mt-7 max-w-3xl text-base leading-relaxed text-muted-foreground md:text-lg">
-              {content.intro}
-            </p>
+            <p className="section-intro mt-4 max-w-3xl text-muted-foreground">{content.intro}</p>
           </div>
         </section>
 
@@ -61,7 +56,7 @@ export function AccessibilityPage() {
               <h2 id="accessibility-feedback" className="subsection-title text-foreground">
                 {content.feedbackTitle}
               </h2>
-              <p className="mt-3 max-w-3xl leading-relaxed text-muted-foreground">
+              <p className="body-copy mt-3 max-w-3xl text-muted-foreground">
                 {content.feedbackBody}
               </p>
               <a
@@ -75,7 +70,7 @@ export function AccessibilityPage() {
             </div>
           </section>
 
-          <p className="font-mono text-xs text-muted-foreground md:col-span-2">
+          <p className="meta-text text-muted-foreground md:col-span-2">
             {content.updatedLabel}: <time dateTime={LAST_UPDATED}>{formattedDate}</time>
           </p>
         </div>
@@ -89,7 +84,7 @@ function InfoSection({ title, children }: { title: string; children: React.React
   return (
     <section className="border-t border-hairline pt-6">
       <h2 className="subsection-title text-foreground">{title}</h2>
-      <div className="mt-4 leading-relaxed text-muted-foreground">{children}</div>
+      <div className="body-copy mt-4 text-muted-foreground">{children}</div>
     </section>
   );
 }

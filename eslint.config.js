@@ -7,7 +7,16 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist", "dist-api", ".output", ".vinxi", "playwright-report", "test-results"],
+    ignores: [
+      "dist",
+      "dist-api",
+      ".output",
+      ".vinxi",
+      ".specify/backups/**",
+      "playwright-report",
+      "test-results",
+      "tmp/**",
+    ],
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
@@ -34,7 +43,7 @@ export default tseslint.config(
         },
       ],
       "react-refresh/only-export-components": "off",
-      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "error",
     },
   },
   {
