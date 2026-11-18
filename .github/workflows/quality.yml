@@ -44,6 +44,9 @@ jobs:
       - name: Test API
         run: set -o pipefail; npm run test:api 2>&1 | tee .ci-artifacts/quality/api.log
 
+      - name: Test commit gate
+        run: set -o pipefail; npm run test:commit-gate 2>&1 | tee .ci-artifacts/quality/commit-gate.log
+
       - name: Build API
         run: set -o pipefail; npm run build:api 2>&1 | tee .ci-artifacts/quality/build-api.log
 
