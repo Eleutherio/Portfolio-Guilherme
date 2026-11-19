@@ -82,11 +82,61 @@ test.describe("WCAG 2.2 AA — contraste manual dos gradientes", () => {
         4.5,
       );
 
-      const testimonialMuted = compositeColor(color("--background"), color("--foreground"), 0.6);
+      const thanksColors = await page.locator(".footer-thanks").evaluate((element) => ({
+        text: getComputedStyle(element).color,
+        background: getComputedStyle(element.closest("footer")!).backgroundColor,
+      }));
+      const rgb = (value: string) =>
+        value
+          .match(/[\d.]+/g)!
+          .slice(0, 3)
+          .map(Number) as [number, number, number];
       expect(
-        contrastRatio(testimonialMuted, color("--foreground")),
-        `${theme}: metadados dos depoimentos a 60%`,
+        contrastRatio(rgb(thanksColors.text), rgb(thanksColors.background)),
+        `${theme}: agradecimento renderizado`,
       ).toBeGreaterThanOrEqual(4.5);
+
+      const testimonialMuted = compositeColor(color("--foreground"), color("--background"), 0.65);
+      expect(
+        contrastRatio(testimonialMuted, color("--background")),
+        `${theme}: metadados dos depoimentos a 65%`,
+      ).toBeGreaterThanOrEqual(4.5);
+
+      await page.evaluate(() => {
+        window.dispatchEvent(
+          new CustomEvent("portfolio:load-deferred-section", { detail: "depoimentos" }),
+        );
+      });
+      const testimonialSection = page.locator("#depoimentos");
+      await expect(testimonialSection).toBeAttached();
+      await expect(
+        testimonialSection.locator(".testimonial-editorial-quote-mark").first(),
+      ).toBeAttached();
+      const testimonialColors = await testimonialSection.evaluate((section) => {
+        const root = getComputedStyle(section);
+        const quote = getComputedStyle(
+          section.querySelector<HTMLElement>(".testimonial-editorial-quote-mark")!,
+        );
+        const rule = getComputedStyle(
+          section.querySelector<HTMLElement>(".section-editorial-rule")!,
+        );
+        return {
+          background: root.backgroundColor,
+          backgroundToken: root.getPropertyValue("--background").trim(),
+          accentToken: root.getPropertyValue("--accent").trim(),
+          quote: quote.color,
+          rule: rule.backgroundColor,
+        };
+      });
+      expect(testimonialColors.background).toBe(
+        serializeRgb(parseHexColor(testimonialColors.backgroundToken)),
+      );
+      expect(testimonialColors.quote).toBe(
+        serializeRgb(parseHexColor(testimonialColors.accentToken)),
+      );
+      expect(testimonialColors.rule).toBe(
+        serializeRgb(parseHexColor(testimonialColors.accentToken)),
+      );
 
       await page.evaluate(() => {
         window.dispatchEvent(
@@ -99,6 +149,7 @@ test.describe("WCAG 2.2 AA — contraste manual dos gradientes", () => {
       await contactName.fill("A");
       await page.locator("#contact-email").fill("email-invalido");
       await page.locator("#contact-message").fill("curta");
+      await page.locator("#contact-privacy-consent").check();
       await page.locator('#contato button[type="submit"]').click();
 
       const alerts = page.locator('#contato [role="alert"]');

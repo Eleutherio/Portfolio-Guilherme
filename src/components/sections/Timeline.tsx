@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 import { ScrambleText } from "@/components/ScrambleText";
+import { MobileTimelineCarousel } from "@/components/timeline/MobileTimelineCarousel";
 import { useApp } from "@/i18n/AppContext";
 import { useElementActivity } from "@/hooks/use-element-activity";
 
@@ -201,12 +202,12 @@ export function Timeline() {
       data-runtime-activity={animationActive ? "active" : "paused"}
       className="relative"
     >
-      <div className="section-container py-14 md:py-20">
+      <div className="section-container section-start-spacing pb-[clamp(2rem,4.166667vw,5rem)] max-[412px]:pb-[calc(var(--responsive-mobile-unit)*2)]">
         <header className="flex flex-col">
           <h2
             id="trajetoria-heading"
             tabIndex={-1}
-            className="section-title order-2 mt-12 text-center text-foreground outline-none md:mt-16"
+            className="section-title order-2 mt-[clamp(1.5rem,3.333333vw,4rem)] text-center text-foreground outline-none max-[412px]:mt-[calc(var(--responsive-mobile-unit)*1.5)]"
           >
             {t.timeline.title}
           </h2>
@@ -217,7 +218,7 @@ export function Timeline() {
                 key={stat.label}
                 className="flex min-h-14 min-w-0 flex-col items-center justify-start gap-2 text-center"
               >
-                <strong className="shrink-0 text-center font-display text-[3.25rem] font-light leading-none tracking-[-0.055em] text-accent tabular-nums md:text-[4rem]">
+                <strong className="numeric-indicator shrink-0 text-center text-[calc(var(--responsive-mobile-unit)*3.25)] leading-none [letter-spacing:var(--type-tracking-numeric)] text-accent md:text-[4rem]">
                   {stat.kind === "count" ? (
                     <AnimatedValue
                       active={animationActive}
@@ -230,7 +231,7 @@ export function Timeline() {
                     <AnimatedEnglishLevel active={animationActive} reducedMotion={reducedMotion} />
                   )}
                 </strong>
-                <span className="grid max-w-48 text-sm leading-snug text-muted-foreground md:text-[15px]">
+                <span className="meta-text grid max-w-48 text-muted-foreground">
                   <span aria-hidden="true" className="invisible col-start-1 row-start-1">
                     {stat.label}
                   </span>
@@ -243,14 +244,24 @@ export function Timeline() {
           </ul>
         </header>
 
+        <MobileTimelineCarousel
+          active={animationActive}
+          reducedMotion={reducedMotion}
+          title={t.timeline.title}
+          items={items}
+        />
+
         <ol
           aria-label={t.timeline.title}
           tabIndex={0}
-          className="mt-16 grid snap-x snap-mandatory auto-cols-[minmax(17rem,84vw)] grid-flow-col gap-0 overflow-x-auto [scrollbar-width:thin] md:mt-20 md:auto-cols-fr md:overflow-visible"
+          className="mt-[clamp(2rem,4.166667vw,5rem)] hidden grid-cols-3 md:grid"
         >
           {groups.map((group, groupIndex) => (
-            <li key={group.year} className="grid snap-start grid-rows-[auto_1fr] py-7 md:py-9">
-              <time className="block w-full text-left font-display text-[2rem] font-light leading-none tracking-[-0.055em] text-foreground tabular-nums md:text-[2.25rem]">
+            <li
+              key={group.year}
+              className="grid snap-start grid-rows-[auto_1fr] py-[clamp(1rem,1.875vw,2.25rem)]"
+            >
+              <time className="numeric-indicator block w-full text-left text-[2rem] leading-none [letter-spacing:var(--type-tracking-numeric)] text-foreground md:text-[2.25rem]">
                 <AnimatedValue
                   active={animationActive}
                   reducedMotion={reducedMotion}
@@ -270,7 +281,7 @@ export function Timeline() {
                       className={usesInverseTheme ? "bg-foreground p-5 md:p-6" : "p-5 md:p-6"}
                     >
                       <p
-                        className={`font-mono text-[10px] tracking-[0.16em] ${
+                        className={`meta-text ${
                           usesInverseTheme ? "text-background/65" : "text-muted-foreground"
                         }`}
                       >
@@ -278,21 +289,21 @@ export function Timeline() {
                       </p>
 
                       <h3
-                        className={`mt-3 font-display text-xl font-medium leading-tight tracking-[-0.025em] md:text-2xl ${
+                        className={`content-title mt-3 ${
                           usesInverseTheme ? "text-background" : "text-foreground"
                         }`}
                       >
                         {item.title}
                       </h3>
                       <p
-                        className={`mt-2 text-sm font-medium leading-relaxed ${
+                        className={`body-copy inline-emphasis mt-2 ${
                           usesInverseTheme ? "text-background/85" : "text-accent"
                         }`}
                       >
                         {item.org}
                       </p>
                       <p
-                        className={`mt-4 text-sm leading-relaxed ${
+                        className={`body-copy mt-4 ${
                           usesInverseTheme ? "text-background/70" : "text-muted-foreground"
                         }`}
                       >

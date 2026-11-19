@@ -1,6 +1,10 @@
 import { expect, openPage, screenshotPixel, test } from "./support/portfolio";
 
 test.describe("Cursor customizado", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route(/hero-background[^/]*\.mp4(?:\?.*)?$/u, (route) => route.abort());
+  });
+
   test("usa a forma aprovada, inversão real e crescimento em elementos interativos", async ({
     page,
   }) => {
@@ -33,6 +37,7 @@ test.describe("Cursor customizado", () => {
     await expect(tooltip).toHaveAttribute("data-visible", "false");
 
     const projects = page.locator("header nav button").nth(1);
+    await page.locator('header a:has([data-wordmark="guifer.tech"])').focus();
     await projects.hover();
     await expect(cursor).toHaveAttribute("data-interactive", "true");
     await expect(cursor).toHaveAttribute("data-visible", "true");
@@ -53,11 +58,17 @@ test.describe("Cursor customizado", () => {
     await page.mouse.up();
     await expect(cursor).toHaveAttribute("data-pressed", "false");
 
-    const projectsButton = page.locator("#home a.btn-primary").first();
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent("portfolio:load-deferred-section", { detail: "projetos" }),
+      );
+    });
+    const projectsButton = page.locator("#habilidades .services-section__contact").first();
+    await projectsButton.scrollIntoViewIfNeeded();
     await projectsButton.hover();
     await expect(cursor).toHaveAttribute("data-visible", "false");
     await expect(cursor).toHaveAttribute("data-label-visible", "true");
-    await expect(tooltip).toHaveText("Abrir meus projetos");
+    await expect(tooltip).toHaveText("Abrir a seção de contato");
     await expect(tooltip).toHaveAttribute("data-visible", "true");
     await expect(tooltip).toHaveCSS("mix-blend-mode", "normal");
   });
@@ -72,11 +83,12 @@ test.describe("Cursor customizado", () => {
 
     const cursor = page.locator("#custom-cursor");
     const tooltip = page.locator("#custom-cursor-tooltip");
+    await page.locator('header a:has([data-wordmark="guifer.tech"])').focus();
     await page.locator("header nav button").nth(1).hover();
     await expect(cursor).toHaveAttribute("data-visible", "true");
     await expect(tooltip).toHaveAttribute("data-visible", "false");
 
-    await page.locator("#home a[download]").hover();
+    await page.locator("#sobre a[download]").hover();
     await expect(cursor).toHaveAttribute("data-visible", "true");
     await expect(tooltip).toHaveAttribute("data-visible", "false");
 
@@ -84,11 +96,13 @@ test.describe("Cursor customizado", () => {
     await expect(cursor).toHaveAttribute("data-visible", "true");
     await expect(tooltip).toHaveAttribute("data-visible", "false");
 
-    await page.locator("#home a.btn-primary").first().hover();
+    await page.locator("#habilidades .services-section__contact").first().hover();
     await expect(cursor).toHaveAttribute("data-visible", "false");
-    await expect(tooltip).toHaveText("Open my projects");
+    await expect(tooltip).toHaveText("Open the contact section");
 
-    const firstProjectLink = page.locator('#projetos a[aria-current="true"]');
+    const firstProjectLink = page.locator(
+      '#projetos [data-project-card="grengame"] [data-project-preview]',
+    );
     const projectTitle = await firstProjectLink.getAttribute("data-cursor-open");
     expect(projectTitle).toBeTruthy();
     await firstProjectLink.hover();
@@ -151,15 +165,11 @@ test.describe("Cursor customizado", () => {
     await expect(tooltip).toHaveAttribute("data-visible", "false");
     await expect(input).toHaveCSS("cursor", "none");
 
+    await page.locator("#contact-privacy-consent").check();
     const submit = page.locator('#contato button[type="submit"]');
     await submit.hover();
     await expect(cursor).toHaveAttribute("data-interactive", "true");
     await expect(visual).toHaveCSS("transform", /matrix\(1\.35/);
-    await expect(tooltip).toHaveAttribute("data-visible", "false");
-
-    const carouselAction = page.locator("#projetos button:not(:disabled)").first();
-    await carouselAction.hover();
-    await expect(cursor).toHaveAttribute("data-interactive", "true");
     await expect(tooltip).toHaveAttribute("data-visible", "false");
 
     await page.evaluate(() => {
@@ -180,7 +190,13 @@ test.describe("Cursor customizado", () => {
   }) => {
     await openPage(page, "/", { width: 1440, height: 900, loadDeferredSections: false });
 
-    const button = page.locator("#home .btn-primary").first();
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent("portfolio:load-deferred-section", { detail: "projetos" }),
+      );
+    });
+    const button = page.locator("#habilidades .services-section__contact").first();
+    await button.scrollIntoViewIfNeeded();
     const buttonBox = await button.boundingBox();
     expect(buttonBox).not.toBeNull();
     if (!buttonBox) return;
@@ -209,7 +225,7 @@ test.describe("Cursor customizado", () => {
     expect(magneticOffset.x).toBeLessThanOrEqual(12);
     expect(magneticOffset.y).toBeLessThanOrEqual(8);
 
-    await page.locator("#home h1").hover();
+    await page.mouse.move(1, 1);
     await expect(button).toHaveAttribute("data-magnetic-active", "false");
     await expect(button).toHaveCSS("transform", /matrix\(1, 0, 0, 1, 0, 0\)|none/);
     await expect
@@ -308,6 +324,7 @@ test.describe("Cursor customizado", () => {
     await openPage(page, "/", { width: 1440, height: 900, loadDeferredSections: false });
 
     const visual = page.locator("#custom-cursor .custom-cursor__visual");
+    await page.locator('header a:has([data-wordmark="guifer.tech"])').focus();
     await page.locator("header nav button").nth(1).hover();
     const normalDurations = await visual.evaluate((element) =>
       getComputedStyle(element)
@@ -332,6 +349,7 @@ test.describe("Cursor customizado", () => {
     const cursor = page.locator("#custom-cursor");
     const visual = cursor.locator(".custom-cursor__visual");
     const projects = page.locator("header nav button").nth(1);
+    await page.locator('header a:has([data-wordmark="guifer.tech"])').focus();
     await projects.hover();
     await expect(page.locator("html")).toHaveAttribute("data-custom-cursor", "active");
     await page.mouse.down();
@@ -340,10 +358,12 @@ test.describe("Cursor customizado", () => {
     await expect(visual).toHaveCSS("transform", "none");
     await page.mouse.up();
 
-    const launcher = page.locator("#accessibility-widget-launcher");
+    const launcher = page
+      .locator("#accessibility-widget-launcher, #acc-widget-host #accessibilityWidget")
+      .first();
     await launcher.hover();
     await expect(cursor).toHaveAttribute("data-visible", "false");
-    await expect(launcher).toHaveCSS("cursor", "auto");
+    await expect(launcher).not.toHaveCSS("cursor", "none");
 
     await page.evaluate(() => {
       const iframe = document.createElement("iframe");
@@ -393,6 +413,7 @@ test.describe("Cursor customizado", () => {
 
     await expect(page.locator("html")).toHaveAttribute("data-custom-cursor", "inactive");
     await expect(page.locator("#custom-cursor")).toHaveCount(0);
+    await page.locator('header a:has([data-wordmark="guifer.tech"])').focus();
     await expect(page.locator("[data-header-switches] button").first()).not.toHaveCSS(
       "cursor",
       "none",
@@ -405,7 +426,10 @@ test.describe("Cursor customizado", () => {
 
     await expect(page.locator("html")).toHaveAttribute("data-custom-cursor", "inactive");
     await expect(page.locator("#custom-cursor")).toHaveCount(0);
-    await expect(page.locator("#home a.btn-primary").first()).not.toHaveCSS("cursor", "none");
+    await expect(page.locator("#habilidades .services-section__contact")).not.toHaveCSS(
+      "cursor",
+      "none",
+    );
   });
 });
 

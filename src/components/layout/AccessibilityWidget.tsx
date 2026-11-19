@@ -17,7 +17,6 @@ type WidgetWindow = Window & {
 };
 
 let widgetImport: Promise<unknown> | null = null;
-const WIDGET_STORAGE_KEY = "accweb";
 
 function importWidget() {
   widgetImport ??= import("accessible-web-widget").catch((error: unknown) => {
@@ -25,41 +24,6 @@ function importWidget() {
     throw error;
   });
   return widgetImport;
-}
-
-function readStoredWidgetConfig() {
-  try {
-    const stored = window.localStorage.getItem(WIDGET_STORAGE_KEY);
-    if (stored) return stored;
-  } catch {
-    /* The widget falls back to its cookie when Web Storage is unavailable. */
-  }
-
-  try {
-    const cookieName = `${WIDGET_STORAGE_KEY}=`;
-    const cookie = document.cookie
-      .split(";")
-      .map((entry) => entry.trim())
-      .find((entry) => entry.startsWith(cookieName));
-    return cookie ? decodeURIComponent(cookie.slice(cookieName.length)) : null;
-  } catch {
-    return null;
-  }
-}
-
-function hasStoredPreferences() {
-  try {
-    const stored = readStoredWidgetConfig();
-    if (!stored) return false;
-    const states = (JSON.parse(stored) as { states?: Record<string, unknown> }).states;
-    return Object.values(states ?? {}).some((value) => {
-      if (typeof value === "boolean") return value;
-      if (typeof value === "number") return value > 0;
-      return typeof value === "string" && value.length > 0;
-    });
-  } catch {
-    return false;
-  }
 }
 
 function configureWidget(lang: "pt" | "en") {
@@ -83,22 +47,26 @@ export function AccessibilityWidget() {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (loaded || !hasStoredPreferences()) return;
-    let active = true;
-    setLoading(true);
+    if (loaded) return;
+    let saved = false;
+    try {
+      saved = Boolean(localStorage.getItem("accweb"));
+    } catch {
+      /* Cookie fallback below. */
+    }
+    if (!saved && !document.cookie.split(";").some((value) => value.trim().startsWith("accweb=")))
+      return;
+    let cancelled = false;
     configureWidget(lang);
-    void importWidget().then(
-      () => {
-        if (active) setLoaded(true);
-      },
-      () => {
-        if (!active) return;
-        setFailed(true);
-        setLoading(false);
-      },
-    );
+    void importWidget()
+      .then(() => {
+        if (!cancelled) setLoaded(true);
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      });
     return () => {
-      active = false;
+      cancelled = true;
     };
   }, [lang, loaded]);
 
@@ -113,8 +81,9 @@ export function AccessibilityWidget() {
       await importWidget();
       setLoaded(true);
       window.requestAnimationFrame(() => {
-        const nativeTrigger = document.querySelector<HTMLButtonElement>(
-          "#acc-widget-host #accessibilityWidget",
+        const host = document.getElementById("acc-widget-host");
+        const nativeTrigger = (host?.shadowRoot ?? host)?.querySelector<HTMLButtonElement>(
+          "#accessibilityWidget",
         );
         if (nativeTrigger) nativeTrigger.click();
         else widgetWindow.AccessibleWebWidget?.instance?.open();

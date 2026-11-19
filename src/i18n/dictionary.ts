@@ -3,13 +3,17 @@ export type Lang = "pt" | "en";
 export const dictionary = {
   pt: {
     nav: {
+      inicio: "início",
       sobre: "sobre",
       projetos: "projetos",
+      habilidades: "habilidades",
+      depoimentos: "depoimentos",
       processo: "processo",
       tecnologias: "tecnologias",
       trajetoria: "trajetória",
       contratar: "contratar",
       contato: "contato",
+      talk: "Entre em contato",
       menu: "Menu",
     },
     cursor: {
@@ -18,6 +22,8 @@ export const dictionary = {
         home: "a página inicial",
         about: "minha trajetória",
         projects: "meus projetos",
+        capabilities: "minhas habilidades",
+        testimonials: "os depoimentos",
         contact: "a seção de contato",
         accessibility: "a página de acessibilidade",
         privacy: "o aviso de privacidade",
@@ -39,7 +45,7 @@ export const dictionary = {
     },
     hero: {
       headline:
-        "Olá, seja bem-vindo(a),\nEu me chamo Guilherme Eleuthério.\nSou Desenvolvedor de Software e profissional de TI.",
+        "Tecnologia para conectar pessoas, ideias e negócios.\nProgramação, análise de software e serviços de TI.",
       headlineHighlight: "Guilherme Eleuthério",
       carousel1: ["sistemas", "websites", "aplicativos"],
       carousel2: [
@@ -51,6 +57,13 @@ export const dictionary = {
       cta2: "Baixar currículo (PDF)",
       cta3: "Entre em contato",
       resumeUrl: "/curriculo.pdf",
+      video: {
+        play: "Reproduzir vídeo",
+        pause: "Pausar vídeo",
+        resume: "Retomar vídeo",
+        unavailable: "Vídeo indisponível",
+        retry: "Tentar reproduzir o vídeo novamente",
+      },
       proofBar: [
         "Foco full-stack",
         "React / TypeScript / Django",
@@ -64,6 +77,7 @@ export const dictionary = {
         coffeeOffer: "Oferecer um café",
         coffeeThanks: "Obrigado pelo café",
         coffeeThanksIcon: "Obrigado pelo café ☕",
+        coffeeExplanation: "Total de visitantes que pegaram um café.",
         coffeeSingular: "café",
         coffeePlural: "cafés",
         coffeeLoading: "carregando cafés",
@@ -72,16 +86,37 @@ export const dictionary = {
     },
 
     about: {
-      title: "Quem sou, o que faço e porquê",
-      subtitle: "Perfil",
+      title: "Quem sou, o que faço e por quê",
       photos: {
-        label: "Registros da minha trajetória",
+        label: "Registros da minha formação e vida pessoal",
+        currentAlt: "Guilherme Eleuthério usando fones de ouvido.",
         featuredAlt: "Guilherme apresentando o projeto GrenGame com um microfone.",
         workbenchAlt: "Notebooks desmontados durante a recuperação após a enchente.",
         campusAlt: "Fachada iluminada do Espaço Unisinos durante a noite.",
+        classroomAlt: "Encontro da Residência TIC55 em uma sala da Unisinos.",
+        kitAlt: "Kit da Residência TIC55 com mochila, notebook, caderno e periféricos.",
+        catAlt: "Gata preta deitada em uma caixa de madeira.",
       },
-      p1: "Minha relação com a tecnologia começou antes de eu imaginar que ela se tornaria profissão, entre computadores desmontados, tentativas e problemas que eu ainda não sabia resolver.",
-      p2: "Entre aquela curiosidade e o profissional que busco me tornar, há experiências que mudaram a forma como estudo, trabalho e assumo responsabilidades.",
+      greeting: "Olá, eu me chamo",
+      introductionName: "Guilherme Eleuthério",
+      profileRole: "Sou desenvolvedor full-stack",
+      teaserLabel: "Um pouco sobre mim",
+      teaserBody:
+        "Sou bolsista do ProUni, participei de diversos programas de desenvolvimento em tecnologia e informação e atuo no planejamento e desenvolvimento de aplicações digitais.",
+      workLabel: "Meu resumo profissional",
+      resumeSummary:
+        "Detalhei minha trajetória profissional e educacional em um currículo para download em PDF.",
+      socialLabel: "Minhas redes sociais",
+      mobileLearnMore: "Saiba mais sobre mim",
+      coffeeInvite: "Visitante? Pegue um café!",
+      techStackTitle: "Tecnologias que uso no meu trabalho:",
+      techStackCategories: {
+        frontend: "Front-end",
+        backend: "Back-end",
+        database: "Bancos de dados",
+        software: "Infraestrutura e ferramentas",
+      },
+      statsLabel: "Indicadores de trajetória",
       story: {
         albumLabel: "Álbum de fotos",
         selectorLabel: "Selecionar foto",
@@ -92,7 +127,6 @@ export const dictionary = {
           "Tecnologia desde cedo",
           "Responsabilidade profissional",
           "Objetivo profissional",
-          "Curiosidades sobre mim",
         ],
         paragraphs: [
           "Minha trajetória começou na escola pública e sempre foi norteada pela educação e pelo comprometimento, que hoje são os dois pilares da minha vida. Atualmente, curso Análise e Desenvolvimento de Sistemas na Unisinos por meio do ProUni e venho complementando essa formação com projetos práticos, cursos e experiências que consigo conquistar.",
@@ -105,27 +139,22 @@ export const dictionary = {
           "O Desenvolvedor de Software tem tanta responsabilidade quanto o Médico, o Juiz ou o Policial: é ele quem trabalha para evitar uma pane em um sistema de ABS, nos aviônicos de uma aeronave ou no marcapasso de alguma pessoa… e é importante vocês entenderem isso.",
         closing:
           "Por fim, meu maior objetivo é me tornar um profissional de excelência técnica e interpessoal, assumindo responsabilidades cada vez maiores e realizando um trabalho do qual eu possa me orgulhar, tanto pela qualidade daquilo que entrego quanto pela forma como trato as pessoas durante o caminho.",
-        curiositiesTitle: "Curiosidades sobre mim",
-        curiosities: [
-          "Já fiz trabalho voluntário.",
-          "Nunca viajei de avião, mas sei quase tudo sobre eles.",
-          "Gosto de jogar simuladores e jogos de sobrevivência.",
-        ],
       },
-      learnMore: "Conheça minha trajetória",
+      learnMore: "Conhecer minha trajetória",
       backHome: "voltar para o início",
     },
 
     projects: {
-      subtitle: "Cases selecionados",
-      lead: "Trabalhos de destaque da minha trajetória, apresentados com contexto profissional e decisões técnicas.",
-      paginationPrev: "Página anterior de projetos",
-      paginationNext: "Próxima página de projetos",
+      featured: "destaque",
+      title:
+        "Cases selecionados que detalham o contexto, as escolhas feitas e as entregas finais de cada projeto.",
       repo: "repositório",
       demo: "ver projeto",
       typeLabel: "tipo",
       evidenceLabel: "evidências técnicas",
       openPreview: "Abrir projeto",
+      swipeHint: "Deslize para o lado",
+      clickHint: "Clique para saber mais",
       caseStudy: "Ver case study",
       live: "Ver ao vivo",
     },
@@ -162,33 +191,32 @@ export const dictionary = {
           },
           presentation: {
             alt: "Guilherme apresentando o projeto GrenGame com um microfone.",
-            caption: "Apresentação do GrenGame na etapa final da Residência TIC55. - Março/2026",
+            caption: "Apresentação do GrenGame na etapa final da Residência TIC55. - março/2026",
           },
         },
       },
       contextTitle: "Contexto",
-      contextProblem: "qual era o problema",
-      contextAudience: "para quem era",
-      contextImportance: "por que o projeto importava",
+      contextProblem: "Qual era o problema",
+      contextAudience: "Para quem era",
+      contextImportance: "Por que o projeto importava",
       solutionTitle: "Solução",
-      solutionProduct: "decisões de produto",
-      solutionTechnical: "decisões técnicas",
-      solutionArchitecture: "arquitetura ou fluxo principal",
+      solutionProduct: "Decisões de produto",
+      solutionTechnical: "Decisões técnicas",
+      solutionArchitecture: "Arquitetura ou fluxo principal",
       executionTitle: "Execução",
-      executionChallenges: "desafios reais",
-      executionTradeoffs: "trade-offs",
-      executionHindsight: "o que eu faria diferente hoje",
+      executionChallenges: "Desafios reais",
+      executionTradeoffs: "Trade-offs",
+      executionHindsight: "O que eu faria diferente hoje",
       resultTitle: "Resultado",
-      resultImpact: "impacto percebido",
-      resultGains: "ganhos em conversão, SEO, clareza, performance ou organização",
+      resultImpact: "Impacto percebido",
+      resultGains: "Ganhos em conversão, SEO, clareza, performance ou organização",
       closingTitle: "Encerramento",
-      closingNextSteps: "próximos passos",
+      closingNextSteps: "Próximos passos",
       contactPrompt: {
         text: "Ficou interessado em algum destes cases ou quer tirar alguma dúvida?",
         cta: "Entrar em contato",
       },
       nextSteps: {
-        kicker: "// próximos passos",
         title: "Continue explorando",
         subtitle: "Três caminhos para seguir a conversa.",
         metaPrev: "case anterior",
@@ -200,44 +228,94 @@ export const dictionary = {
       },
     },
     skills: {
-      title: "Minha abordagem, separada em etapas:",
-      subtitle: "Processo",
-      steps: [
+      title: "Serviços",
+      intro: [
+        "Realizo uma ampla variedade de serviços em TI e sistemas, sempre com qualidade e comprometimento.",
+      ],
+      services: [
         {
-          kicker: "descoberta",
-          title: "Primeiro contato",
+          title: "Websites e aplicações de web",
           description:
-            "Etapa focada em conversar com o cliente, entender o que ele deseja resolver, alinhar expectativas e trabalhar nos levantamentos iniciais.",
-          tags: ["Escuta ativa", "Análise de projeto", "Levantamento de requisitos"],
+            "Criação de websites comerciais, locais, portfólios, landing pages e aplicações web em geral, sempre observando o melhor formato e tecnologia para cada caso.",
         },
         {
-          kicker: "construção",
-          title: "Protótipo, validação e desenvolvimento",
+          title: "Integrações e automações",
           description:
-            "Após o levantamento e o alinhamento inicial, desenvolvo a solução com foco em qualidade e satisfação do cliente.",
-          tags: ["Protótipo", "Desenvolvimento", "Testes"],
+            "Sou apto a integrar diversos sistemas, como um checkout, o WhatsApp ou um e-commerce. Basta me dizer o que precisa. Também posso oferecer automações nesses processos e reduzir trabalhos manuais.",
         },
         {
-          kicker: "operação",
-          title: "Entregáveis",
+          title: "Análise de SEO e indexação orgânica",
           description:
-            "Na etapa final, configuro os entregáveis e organizo o acompanhamento necessário para manter o produto preparado para evoluir continuamente.",
-          tags: ["Configuração", "Monitoramento", "Melhorias"],
+            "Seu negócio não aparece na busca do Google? Existem vários fatores para que isso possa estar acontecendo. Investigo de ponta a ponta o seu site e proponho um plano de ação para otimizá-lo.",
+        },
+        {
+          title: "Suporte em TI",
+          description:
+            "Te ajudo com manutenção de computadores, instalação de programas e orientação na escolha de equipamentos.",
+        },
+      ],
+      knowledgeTitle: "Princípios de desenvolvimento",
+      marquee: {
+        drag: "Arraste para explorar",
+        keyboard: "Use as setas para navegar e a barra de espaço para pausar.",
+        previous: "Ver princípios anteriores",
+        next: "Ver próximos princípios",
+        pause: "Pausar movimento dos princípios",
+        resume: "Retomar movimento dos princípios",
+        carousel: "carrossel",
+      },
+      knowledgeIntro: "Métodos e boas práticas profissionais que aplico em todos os trabalhos.",
+      knowledge: [
+        {
+          title: "Briefing inicial",
+          description:
+            "Procuro entender o que você deseja resolver, entender o contexto do seu negócio, e onde exatamente devemos trabalhar. Tudo através de uma reunião ou um documento de briefing.",
+        },
+        {
+          title: "Testes, análise de performance e segurança",
+          description:
+            "Estudo constantemente melhorias para aplicar em meus trabalhos. Cada etapa de desenvolvimento é estudada, aplicada, testada e documentada.",
+        },
+        {
+          title: "Uso de inteligência artificial",
+          description:
+            "Entendo como LLMs funcionam e como extrair o máximo dessas ferramentas. No contexto de trabalho, utilizo fluxos já testados para otimizar o tempo e entregar melhor qualidade.",
+        },
+        {
+          title: "Responsividade, acessibilidade e compliance",
+          description:
+            "Seja em projetos novos ou em produção, analiso e apresento melhorias de usabilidade com foco nos seus usuários, sempre dentro da realidade do seu negócio.",
+        },
+        {
+          title: "Privacidade e proteção de dados",
+          description:
+            "Realizo adequação às leis da LGPD no Brasil ou GDPR na Europa. Garanto transparência do uso de dados coletados, integridade das informações e aplico gestão de consentimento pelo usuário.",
+        },
+        {
+          title: "Foco em resultados",
+          description:
+            "Sigo um fluxo de trabalho focado em entregas e validações, sempre mantendo alinhada a expectativa com as entregas.",
         },
       ],
     },
 
     testimonials: {
-      title: "Depoimentos",
+      title: "Alguns depoimentos de quem conhece o meu trabalho.",
+      authorLabel: "Autoria",
+      workplaceBrandAlt: "Identidade visual do local de trabalho de {name}",
       carouselLabel: "carrossel de depoimentos",
       previousLabel: "Exibir depoimento anterior",
       nextLabel: "Exibir próximo depoimento",
+      pauseAutoplayLabel: "Pausar rotação automática dos depoimentos",
+      resumeAutoplayLabel: "Retomar rotação automática dos depoimentos",
+      scrollQuoteLabel: "Depoimento longo. Role para continuar lendo.",
       selectLabel: "Exibir depoimento {number}",
       photoAlt: "Foto de {name}",
+      linkedinLabel: "Abrir o perfil de {name} no LinkedIn",
     },
 
     timeline: {
-      title: "Roadmap de experiências",
+      title: "Trajetória",
       stats: {
         trainingHours: "de formação complementar",
         trainingPrograms: "programas de formação e certificação",
@@ -288,7 +366,7 @@ export const dictionary = {
           period: "2025",
           type: "etapa de nivelamento · 180h",
           org: "Residência TIC55 — Unisinos, Brisa & MCTI / Gov.",
-          title: "Apoio à Recuperação do Rio Grande do Sul",
+          title: "Apoio à recuperação do Rio Grande do Sul",
           description:
             "Atuei em ambiente prático de apoio, lidando com demandas reais de usuários, rotinas de troubleshooting e comunicação operacional durante a etapa de nivelamento da residência.",
           evidence: [
@@ -306,7 +384,7 @@ export const dictionary = {
             "Selecionado entre os 50 melhores candidatos para a imersão prática. Seis meses de desenvolvimento end-to-end com orientação presencial, construindo uma PWA gamificada de treinamentos corporativos para empresa parceira.",
           evidence: [
             "Desenvolvimento fullstack end-to-end",
-            "Atuação como Product Owner",
+            "Atuação como product owner",
             "Code review em equipe",
           ],
         },
@@ -349,8 +427,39 @@ export const dictionary = {
 
     contact: {
       title: "Vamos conversar?",
-      lead: "Para conversar sobre projetos, oportunidades ou colaboração técnica, comece por aqui.",
+      lead: "Fique à vontade para falar sobre algum projeto ou tirar qualquer dúvida. Estou aberto para novas oportunidades.",
+      primaryLabel: "Você também me encontra em:",
       formAriaLabel: "Formulário de contato",
+      faq: {
+        title: "Perguntas frequentes",
+        items: [
+          {
+            question: "Que tipo de projeto você desenvolve?",
+            answer:
+              "Aplicações web e soluções digitais de ponta a ponta, da interface às APIs e aos dados.",
+          },
+          {
+            question: "Você trabalha com projetos já existentes?",
+            answer:
+              "Sim. Analiso a base atual, documento riscos e evoluo o produto sem exigir uma reconstrução completa.",
+          },
+          {
+            question: "Como você organiza o desenvolvimento?",
+            answer:
+              "Trabalho com especificações, planejamento e entregas verificáveis para manter escopo, decisões e progresso claros.",
+          },
+          {
+            question: "Como segurança e LGPD entram no projeto?",
+            answer:
+              "Reviso coleta de dados, acessos, validações e retenção desde o planejamento, conforme o risco e o contexto do negócio.",
+          },
+          {
+            question: "Para quem seu trabalho é indicado?",
+            answer:
+              "Principalmente para pequenas e médias empresas que precisam transformar necessidades reais em soluções digitais claras e sustentáveis.",
+          },
+        ],
+      },
       form: {
         name: "// seu nome",
         namePh: "Como você se chama?",
@@ -360,27 +469,31 @@ export const dictionary = {
         subjectPh: "Sobre o que vamos tratar?",
         message: "// mensagem",
         messagePh: "Escreva a sua mensagem...",
-        submit: "enviar mensagem",
-        submitting: "enviando…",
-        success: "mensagem enviada. respondo em breve.",
-        error: "algo deu errado. tenta de novo ou me chama no WhatsApp.",
-        recaptchaNotice: "Protegido por reCAPTCHA. Aplicam-se a",
-        recaptchaPrivacy: "Política de Privacidade",
+        submit: "Enviar mensagem",
+        submitting: "Enviando…",
+        success: "Mensagem enviada. Respondo em breve.",
+        error: "Algo deu errado. Tente de novo ou me chame no WhatsApp.",
+        recaptchaNotice: "Protegido por reCAPTCHA.",
+        recaptchaPrivacy: "Política de Privacidade do Google",
         recaptchaJoin: "e os",
-        recaptchaTerms: "Termos de Serviço do Google",
+        recaptchaTerms: "Termos de Serviço se aplicam",
         sitePrivacyPrefix: "Ao enviar, você declara estar ciente do",
-        sitePrivacy: "Aviso de Privacidade",
+        sitePrivacy: "Aviso de privacidade",
       },
     },
     footer: {
       localTimeLabel: "Hora local",
-      navigationLabel: "Navegação",
-      connectLabel: "Conectar",
+      thanks: "Obrigado pela visita!",
+      location: "Brasil - Porto Alegre, RS",
+      navigationLabel: "Explore a página",
+      home: "início",
+      skills: "habilidades",
+      testimonials: "depoimentos",
       legalLabel: "Informações legais",
       accessibility: "Acessibilidade",
       privacy: "Privacidade",
       greenHostingBadgeAlt: "Este site usa hospedagem verde, verificada pela Green Web Foundation",
-      vitalsLabel: "vitals",
+      vitalsLabel: "Core Web Vitals",
       infraLabel: "infra",
       uptimeLabel: "sessão",
       backend: "Backend",
@@ -412,12 +525,10 @@ export const dictionary = {
       skipToContent: "Pular para o conteúdo",
       homeLink: "Guilherme Ferreira — início",
       primaryNavigation: "Navegação principal",
-      mobileNavigation: "Navegação mobile",
       openMenu: "Abrir menu",
       closeMenu: "Fechar menu",
     },
     accessibility: {
-      kicker: "// acessibilidade",
       title: "Acessibilidade",
       statusLabel: "Status da avaliação",
       status: "Avaliação WCAG 2.2 AA em andamento",
@@ -462,7 +573,6 @@ export const dictionary = {
     },
 
     nextSteps: {
-      kicker: "// próximos passos",
       title: "Continue explorando",
       subtitle: "Três caminhos para seguir a conversa.",
       items: [
@@ -480,13 +590,17 @@ export const dictionary = {
   },
   en: {
     nav: {
+      inicio: "home",
       sobre: "about",
       projetos: "projects",
+      habilidades: "capabilities",
+      depoimentos: "testimonials",
       processo: "process",
       tecnologias: "stack",
       trajetoria: "journey",
       contratar: "hire_me",
       contato: "contact",
+      talk: "Get in touch",
       menu: "Menu",
     },
     cursor: {
@@ -495,6 +609,8 @@ export const dictionary = {
         home: "the home page",
         about: "my story",
         projects: "my projects",
+        capabilities: "my capabilities",
+        testimonials: "the testimonials",
         contact: "the contact section",
         accessibility: "the accessibility page",
         privacy: "the privacy notice",
@@ -515,7 +631,8 @@ export const dictionary = {
       },
     },
     hero: {
-      headline: "Hi, welcome,\nI'm Guilherme Eleuthério.\nDeveloper and IT professional",
+      headline:
+        "Innovation, strategy, and software development.\nProgramming, software analysis and IT services.",
       headlineHighlight: "Guilherme Eleuthério",
       carousel1: ["systems", "websites", "apps"],
       carousel2: [
@@ -527,6 +644,13 @@ export const dictionary = {
       cta2: "Download resume (PDF)",
       cta3: "Contact me",
       resumeUrl: "/curriculo.pdf",
+      video: {
+        play: "Play video",
+        pause: "Pause video",
+        resume: "Resume video",
+        unavailable: "Video unavailable",
+        retry: "Retry video playback",
+      },
       proofBar: [
         "Full-stack focus",
         "React / TypeScript / Django",
@@ -540,6 +664,7 @@ export const dictionary = {
         coffeeOffer: "Buy me a coffee",
         coffeeThanks: "Thanks for the coffee",
         coffeeThanksIcon: "Thanks for the coffee ☕",
+        coffeeExplanation: "Total visitors who grabbed a coffee.",
         coffeeSingular: "coffee",
         coffeePlural: "coffees",
         coffeeLoading: "loading coffees",
@@ -548,16 +673,37 @@ export const dictionary = {
     },
 
     about: {
-      title: "Who I am, what I do and why",
-      subtitle: "Profile",
+      title: "Who I am, what I do, and why",
       photos: {
-        label: "Moments from my journey",
+        label: "Moments from my education and personal life",
+        currentAlt: "Guilherme Eleuthério wearing headphones.",
         featuredAlt: "Guilherme presenting the GrenGame project with a microphone.",
         workbenchAlt: "Disassembled laptops during recovery work after the flood.",
         campusAlt: "Illuminated facade of Espaço Unisinos at night.",
+        classroomAlt: "TIC55 Residency meeting in a classroom at Unisinos.",
+        kitAlt: "TIC55 Residency kit with a backpack, laptop, notebook and peripherals.",
+        catAlt: "Black cat lying in a wooden box.",
       },
-      p1: "My relationship with technology began before I imagined it would become my profession, among disassembled computers, trial and error, and problems I still did not know how to solve.",
-      p2: "Between that curiosity and the professional I am working to become, there are experiences that changed the way I study, work and take responsibility.",
+      greeting: "Hello, my name is",
+      introductionName: "Guilherme Eleuthério",
+      profileRole: "I am a full-stack developer",
+      teaserLabel: "A little about me",
+      teaserBody:
+        "I am a ProUni scholarship recipient, have participated in various technology and information development programs, and work on the planning and development of digital applications.",
+      workLabel: "My professional summary",
+      resumeSummary:
+        "I detailed my professional and educational journey in a résumé available for download as a PDF.",
+      socialLabel: "My social networks",
+      mobileLearnMore: "Learn more about me",
+      coffeeInvite: "Visitor? Grab a coffee!",
+      techStackTitle: "Technologies I use in my work:",
+      techStackCategories: {
+        frontend: "Frontend",
+        backend: "Backend",
+        database: "Databases",
+        software: "Infrastructure and tools",
+      },
+      statsLabel: "Journey indicators",
       story: {
         albumLabel: "Photo album",
         selectorLabel: "Select photo",
@@ -568,7 +714,6 @@ export const dictionary = {
           "Technology from an early age",
           "Professional responsibility",
           "Professional goal",
-          "A few things about me",
         ],
         paragraphs: [
           "My journey began in public school and has always been guided by education and commitment, which are now the two pillars of my life. I am currently studying Systems Analysis and Development at Unisinos through ProUni, while complementing my degree with practical projects, courses and every experience I am able to pursue.",
@@ -581,27 +726,22 @@ export const dictionary = {
           "A software developer carries as much responsibility as a doctor, a judge or a police officer. Developers work to prevent failures in an ABS system, an aircraft's avionics or a person's pacemaker… and it is important that you understand that.",
         closing:
           "Ultimately, my main goal is to become a professional known for both technical and interpersonal excellence, taking on increasingly greater responsibilities and doing work I can be proud of, both for the quality of what I deliver and for the way I treat people along the way.",
-        curiositiesTitle: "A few things about me",
-        curiosities: [
-          "I have done volunteer work.",
-          "I have never travelled by plane, but I know almost everything about them.",
-          "I enjoy playing simulation and survival games.",
-        ],
       },
-      learnMore: "Discover my journey",
+      learnMore: "Explore my journey",
       backHome: "back to home",
     },
 
     projects: {
-      subtitle: "Selected case studies",
-      lead: "Standout work from my journey, presented with professional context and technical decisions.",
-      paginationPrev: "Previous projects page",
-      paginationNext: "Next projects page",
+      featured: "featured",
+      title:
+        "Selected case studies detailing the context, the choices made, and the final deliverables for each project.",
       repo: "repository",
       demo: "view project",
       typeLabel: "type",
       evidenceLabel: "technical evidence",
       openPreview: "Open project",
+      swipeHint: "Swipe to the side",
+      clickHint: "Click to learn more",
       caseStudy: "View case study",
       live: "Live demo",
     },
@@ -644,28 +784,27 @@ export const dictionary = {
         },
       },
       contextTitle: "Context",
-      contextProblem: "what was the problem",
-      contextAudience: "who it was for",
-      contextImportance: "why the project mattered",
+      contextProblem: "What was the problem",
+      contextAudience: "Who it was for",
+      contextImportance: "Why the project mattered",
       solutionTitle: "Solution",
-      solutionProduct: "product decisions",
-      solutionTechnical: "technical decisions",
-      solutionArchitecture: "architecture or main flow",
+      solutionProduct: "Product decisions",
+      solutionTechnical: "Technical decisions",
+      solutionArchitecture: "Architecture or main flow",
       executionTitle: "Execution",
-      executionChallenges: "real challenges",
-      executionTradeoffs: "trade-offs",
-      executionHindsight: "what I would do differently today",
+      executionChallenges: "Real challenges",
+      executionTradeoffs: "Trade-offs",
+      executionHindsight: "What I would do differently today",
       resultTitle: "Result",
-      resultImpact: "perceived impact",
-      resultGains: "gains in conversion, SEO, clarity, performance, or organization",
+      resultImpact: "Perceived impact",
+      resultGains: "Gains in conversion, SEO, clarity, performance, or organization",
       closingTitle: "Closing",
-      closingNextSteps: "next steps",
+      closingNextSteps: "Next steps",
       contactPrompt: {
         text: "Interested in any of these cases or have a question?",
         cta: "Get in touch",
       },
       nextSteps: {
-        kicker: "// next steps",
         title: "Keep exploring",
         subtitle: "Three ways to continue the conversation.",
         metaPrev: "previous case",
@@ -677,44 +816,94 @@ export const dictionary = {
       },
     },
     skills: {
-      title: "My approach, structured in stages:",
-      subtitle: "Process",
-      steps: [
+      title: "Services",
+      intro: [
+        "I provide a wide range of IT and software services, always with a focus on quality and commitment.",
+      ],
+      services: [
         {
-          kicker: "discovery",
-          title: "First contact",
+          title: "Websites and web applications",
           description:
-            "A stage focused on talking with the client, understanding the problem they want to solve, aligning expectations and carrying out the initial discovery.",
-          tags: ["Active listening", "Project analysis", "Requirements gathering"],
+            "Business websites, local business sites, portfolios, landing pages, and web applications, with the format and technology best suited to each project.",
         },
         {
-          kicker: "build",
-          title: "Prototype, validation & development",
+          title: "Integrations and automation",
           description:
-            "After the initial discovery and alignment, I develop the solution with a focus on quality and client satisfaction.",
-          tags: ["Prototype", "Development", "Testing"],
+            "I can integrate a variety of systems, such as a checkout, WhatsApp, or an e-commerce platform. Just tell me what you need. I can also automate these processes to reduce manual work.",
         },
         {
-          kicker: "operate",
-          title: "Deliverables",
+          title: "SEO and organic indexing analysis",
           description:
-            "In the final stage, I configure the deliverables and organize the follow-up needed to keep the product ready to evolve over time.",
-          tags: ["Configuration", "Monitoring", "Improvements"],
+            "Is your business missing from Google search results? There are several possible reasons. I review your website from end to end and propose an action plan to optimize it.",
+        },
+        {
+          title: "IT support",
+          description:
+            "I can help you with computer maintenance, software installation, and choosing equipment.",
+        },
+      ],
+      knowledgeTitle: "Development principles",
+      marquee: {
+        drag: "Drag to explore",
+        keyboard: "Use the arrow keys to navigate and the space bar to pause.",
+        previous: "View previous principles",
+        next: "View next principles",
+        pause: "Pause principles motion",
+        resume: "Resume principles motion",
+        carousel: "carousel",
+      },
+      knowledgeIntro: "Methods and professional best practices I apply to every project.",
+      knowledge: [
+        {
+          title: "Initial briefing",
+          description:
+            "I start by understanding what you want to solve, the context of your business, and exactly where we need to focus. We work through this in a meeting or a briefing document.",
+        },
+        {
+          title: "Testing, performance analysis, and security",
+          description:
+            "I continually research improvements to apply to my work. Each stage of development is studied, implemented, tested, and documented.",
+        },
+        {
+          title: "Using artificial intelligence",
+          description:
+            "I understand how LLMs work and how to get the most out of these tools. In my work, I use established workflows to save time and deliver better quality.",
+        },
+        {
+          title: "Responsive design, accessibility, and compliance",
+          description:
+            "For both new projects and live products, I analyze and propose usability improvements focused on your users, always taking your business context into account.",
+        },
+        {
+          title: "Privacy and data protection",
+          description:
+            "I adapt projects to Brazil’s LGPD or Europe’s GDPR. I ensure transparency about how collected data is used, maintain information integrity, and implement user consent management.",
+        },
+        {
+          title: "Focus on results",
+          description:
+            "I follow a workflow focused on deliverables and validation, keeping expectations aligned with what is delivered.",
         },
       ],
     },
 
     testimonials: {
-      title: "Testimonials",
+      title: "A few testimonials from people who know my work.",
+      authorLabel: "Author",
+      workplaceBrandAlt: "Visual identity of {name}’s workplace",
       carouselLabel: "testimonial carousel",
       previousLabel: "Show previous testimonial",
       nextLabel: "Show next testimonial",
+      pauseAutoplayLabel: "Pause automatic testimonial rotation",
+      resumeAutoplayLabel: "Resume automatic testimonial rotation",
+      scrollQuoteLabel: "Long testimonial. Scroll to continue reading.",
       selectLabel: "Show testimonial {number}",
       photoAlt: "Photo of {name}",
+      linkedinLabel: "Open {name}’s LinkedIn profile",
     },
 
     timeline: {
-      title: "Experience roadmap",
+      title: "Journey",
       stats: {
         trainingHours: "of complementary training",
         trainingPrograms: "training and certification programs",
@@ -765,7 +954,7 @@ export const dictionary = {
           period: "2025",
           type: "leveling stage · 180h",
           org: "TIC55 Residency — Unisinos, Brisa & MCTI / Gov.",
-          title: "Rio Grande do Sul Recovery Support",
+          title: "Rio Grande do Sul recovery support",
           description:
             "Worked in a practical support environment during the residency leveling stage, handling real user issues, troubleshooting routines and operational communication.",
           evidence: [
@@ -821,39 +1010,74 @@ export const dictionary = {
     },
 
     contact: {
-      title: "Let's talk?",
-      lead: "To discuss projects, opportunities or technical collaboration, start here.",
+      title: "Shall we talk?",
+      lead: "Feel free to reach out to discuss a project or ask any questions. I’m open to new opportunities.",
+      primaryLabel: "You can also find me on:",
       formAriaLabel: "Contact form",
+      faq: {
+        title: "Frequently asked questions",
+        items: [
+          {
+            question: "What kind of projects do you build?",
+            answer:
+              "End-to-end web applications and digital solutions, from interfaces to APIs and data.",
+          },
+          {
+            question: "Do you work with existing projects?",
+            answer:
+              "Yes. I assess the current codebase, document risks and evolve the product without requiring a complete rebuild.",
+          },
+          {
+            question: "How do you organize development?",
+            answer:
+              "I use specifications, planning and verifiable deliveries to keep scope, decisions and progress clear.",
+          },
+          {
+            question: "How do security and privacy fit into a project?",
+            answer:
+              "I review data collection, access, validation and retention from planning onward, according to the business context and risk.",
+          },
+          {
+            question: "Who is your work best suited for?",
+            answer:
+              "Especially small and medium-sized businesses that need to turn real needs into clear, sustainable digital solutions.",
+          },
+        ],
+      },
       form: {
         name: "// your name",
-        namePh: "what should I call you?",
+        namePh: "What should I call you?",
         email: "// your email",
         emailPh: "you@example.com",
         subject: "// subject (optional)",
         subjectPh: "What should we talk about?",
         message: "// message",
-        messagePh: "what's the challenge? tell me everything.",
-        submit: "send message",
-        submitting: "sending…",
-        success: "message sent. I'll get back to you soon.",
-        error: "something went wrong. try again or message me on WhatsApp.",
-        recaptchaNotice: "Protected by reCAPTCHA. The Google",
-        recaptchaPrivacy: "Privacy Policy",
+        messagePh: "What's the challenge? Tell me everything.",
+        submit: "Send message",
+        submitting: "Sending…",
+        success: "Message sent. I'll get back to you soon.",
+        error: "Something went wrong. Try again or message me on WhatsApp.",
+        recaptchaNotice: "Protected by reCAPTCHA.",
+        recaptchaPrivacy: "Google’s Privacy Policy",
         recaptchaJoin: "and",
         recaptchaTerms: "Terms of Service apply",
-        sitePrivacyPrefix: "By sending, you acknowledge the",
-        sitePrivacy: "Privacy Notice",
+        sitePrivacyPrefix: "By submitting, you acknowledge that you are aware of the",
+        sitePrivacy: "Privacy notice",
       },
     },
     footer: {
       localTimeLabel: "Local time",
-      navigationLabel: "Navigation",
-      connectLabel: "Connect",
+      thanks: "Thanks for visiting!",
+      location: "Brazil - Porto Alegre, RS",
+      navigationLabel: "Explore the page",
+      home: "home",
+      skills: "capabilities",
+      testimonials: "testimonials",
       legalLabel: "Legal information",
       accessibility: "Accessibility",
       privacy: "Privacy",
       greenHostingBadgeAlt: "This website uses green hosting, verified by the Green Web Foundation",
-      vitalsLabel: "vitals",
+      vitalsLabel: "Core Web Vitals",
       infraLabel: "infra",
       uptimeLabel: "session",
       backend: "Backend",
@@ -885,12 +1109,10 @@ export const dictionary = {
       skipToContent: "Skip to content",
       homeLink: "Guilherme Ferreira — home",
       primaryNavigation: "Primary navigation",
-      mobileNavigation: "Mobile navigation",
       openMenu: "Open menu",
       closeMenu: "Close menu",
     },
     accessibility: {
-      kicker: "// accessibility",
       title: "Accessibility",
       statusLabel: "Evaluation status",
       status: "WCAG 2.2 AA evaluation in progress",
@@ -935,7 +1157,6 @@ export const dictionary = {
     },
 
     nextSteps: {
-      kicker: "// next steps",
       title: "Keep exploring",
       subtitle: "Three ways to continue the conversation.",
       items: [

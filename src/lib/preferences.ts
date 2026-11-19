@@ -75,7 +75,11 @@ function subscribe(listener: () => void) {
   };
 }
 
-function setPreference<Key extends keyof Preferences>(key: Key, value: Preferences[Key]) {
+function setPreference<Key extends keyof Preferences>(
+  key: Key,
+  value: Preferences[Key],
+  applyImmediately = true,
+) {
   const next = { ...snapshot, [key]: value };
 
   try {
@@ -87,7 +91,7 @@ function setPreference<Key extends keyof Preferences>(key: Key, value: Preferenc
     // A preferência continua válida durante a sessão quando o Web Storage não está disponível.
   }
 
-  publish(next);
+  if (applyImmediately) publish(next);
 }
 
 export function initializePreferences() {
@@ -103,8 +107,11 @@ export function usePreferences() {
   );
 }
 
-export function setLanguagePreference(language: LanguagePreference) {
-  setPreference("language", language);
+export function setLanguagePreference(
+  language: LanguagePreference,
+  { applyImmediately = true } = {},
+) {
+  setPreference("language", language, applyImmediately);
 }
 
 export function setThemePreference(theme: ThemePreference) {

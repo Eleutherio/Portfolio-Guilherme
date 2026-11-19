@@ -93,7 +93,7 @@ function PhotoAlbum({ chapterTitle, photos, eager = false }: PhotoAlbumProps) {
                 className="h-full w-full object-cover"
               />
             </div>
-            <figcaption className="mt-3 grid text-sm leading-relaxed text-muted-foreground">
+            <figcaption className="meta-text mt-3 grid text-muted-foreground">
               {photos.map((photo, index) => {
                 const isActive = index === activeIndex;
 
@@ -166,6 +166,12 @@ export function AboutAlbum() {
   const { t } = useApp();
   const reducedMotion = useReducedMotion();
   const story = t.about.story;
+  const journeyStats = [
+    { value: "+960h", label: t.timeline.stats.trainingHours },
+    { value: "3", label: t.timeline.stats.trainingPrograms },
+    { value: "2", label: t.timeline.stats.professionalExperiences },
+    { value: "C1", label: t.timeline.stats.englishLevel },
+  ];
   const chapters = [
     {
       title: story.chapterTitles[0],
@@ -185,19 +191,13 @@ export function AboutAlbum() {
       paragraphs: [story.closing],
     },
     {
-      title: story.chapterTitles[4],
-      curiosities: story.curiosities,
+      title: t.about.statsLabel,
+      stats: journeyStats,
     },
   ];
 
   return (
-    <SectionShell
-      id="sobre"
-      label={`${t.about.title}:`}
-      sublabel={t.about.subtitle}
-      headingLevel={1}
-      headerVariant="split"
-    >
+    <SectionShell id="sobre" label={`${t.about.title}:`} headingLevel={1} headerVariant="split">
       <div className="md:col-span-12">
         {chapters.map((chapter, index) => {
           const photos = aboutAlbumPhotos[index] ?? [];
@@ -225,14 +225,11 @@ export function AboutAlbum() {
                     : "mx-auto max-w-3xl text-center"
                 }
               >
-                <p className="font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-accent">
-                  {String(index + 1).padStart(2, "0")}
-                </p>
-                <h2 id={chapterId} className="subsection-title mt-3 text-foreground">
+                <h2 id={chapterId} className="subsection-title text-foreground">
                   {chapter.title}
                 </h2>
                 <div
-                  className={`mt-6 space-y-5 text-base leading-relaxed text-muted-foreground md:text-lg ${
+                  className={`body-copy mt-3 space-y-5 text-muted-foreground ${
                     hasPhotos ? "max-w-xl" : "mx-auto max-w-2xl"
                   }`}
                 >
@@ -241,20 +238,21 @@ export function AboutAlbum() {
                   ))}
 
                   {chapter.quote ? (
-                    <blockquote className="border-l-2 border-accent pl-5 text-left font-display text-[1.05em] font-medium leading-relaxed text-foreground">
+                    <blockquote className="body-copy border-l-2 border-accent pl-5 text-left text-foreground">
                       “{chapter.quote}”
                     </blockquote>
                   ) : null}
 
-                  {chapter.curiosities ? (
-                    <ul className="mx-auto max-w-xl space-y-3 text-left">
-                      {chapter.curiosities.map((curiosity) => (
-                        <li key={curiosity} className="flex gap-3">
-                          <span
-                            aria-hidden="true"
-                            className="mt-[0.7em] h-1 w-1 shrink-0 rounded-full bg-accent"
-                          />
-                          <span>{curiosity}</span>
+                  {chapter.stats ? (
+                    <ul className="grid grid-cols-2 gap-x-6 gap-y-10 pt-4 text-center md:grid-cols-4 md:gap-x-8">
+                      {chapter.stats.map((stat) => (
+                        <li key={stat.label} className="flex min-w-0 flex-col items-center gap-3">
+                          <strong className="numeric-indicator text-[3rem] leading-none [letter-spacing:var(--type-tracking-numeric)] text-accent md:text-[4rem]">
+                            {stat.value}
+                          </strong>
+                          <span className="meta-text max-w-40 text-muted-foreground">
+                            {stat.label}
+                          </span>
                         </li>
                       ))}
                     </ul>

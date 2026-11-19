@@ -1,21 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/layout/Header";
-import { DeferredBackToTop } from "@/components/layout/DeferredBackToTop";
-import { DeferredSection } from "@/components/sections/DeferredSection";
+import { BackToTop } from "@/components/layout/BackToTop";
+import { About } from "@/components/sections/About";
+import { Projects } from "@/components/sections/Projects";
+import { Skills } from "@/components/sections/Skills";
+import { Testimonials } from "@/components/sections/Testimonials";
+import { Contact } from "@/components/sections/Contact";
+import { Footer } from "@/components/layout/Footer";
 
 import { Hero } from "@/components/sections/Hero";
 import { absoluteSiteUrl, socialImageMeta } from "@/lib/seo";
 
-const loadAbout = () => import("@/components/sections/About").then((m) => ({ default: m.About }));
-const loadTestimonials = () =>
-  import("@/components/sections/Testimonials").then((m) => ({ default: m.Testimonials }));
-const loadProjects = () =>
-  import("@/components/sections/Projects").then((m) => ({ default: m.Projects }));
-const loadTimeline = () =>
-  import("@/components/sections/Timeline").then((m) => ({ default: m.Timeline }));
-const loadContact = () =>
-  import("@/components/sections/Contact").then((m) => ({ default: m.Contact }));
-const loadFooter = () => import("@/components/layout/Footer").then((m) => ({ default: m.Footer }));
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -33,22 +28,18 @@ function Index() {
   return (
     <div className="home-visual flex min-h-dvh flex-col bg-background">
       <Header />
-      <div className="home-header-spacer shrink-0" aria-hidden="true" />
       <main id="main" tabIndex={-1} className="flex-1 overflow-x-clip outline-none">
-        <Hero />
-        <DeferredSection id="projetos" load={loadProjects} />
-        <DeferredSection id="depoimentos" load={loadTestimonials} />
-        <DeferredSection id="trajetoria" load={loadTimeline} />
-        <DeferredSection id="sobre" load={loadAbout} />
-        <DeferredSection id="contato" load={loadContact} />
+        <div className="home-projects-parallax" data-parallax-paused="true">
+          <Hero />
+          <About />
+          <Projects />
+        </div>
+        <Skills />
+        <Testimonials />
+        <Contact />
       </main>
-      <DeferredSection
-        id="rodape"
-        load={loadFooter}
-        placeholderClassName="min-h-[28rem]"
-        rootMargin="6000px 0px"
-      />
-      <DeferredBackToTop />
+      <Footer />
+      <BackToTop />
     </div>
   );
 }

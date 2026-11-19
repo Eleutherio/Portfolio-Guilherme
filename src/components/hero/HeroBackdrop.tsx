@@ -67,7 +67,7 @@ function SourcePanel() {
         opacity: 0.75,
       }}
     >
-      <div className="absolute inset-0 overflow-hidden px-6 py-14 font-mono text-[10.5px] leading-[1.55] lg:px-8 lg:text-[11.5px]">
+      <div className="code-text absolute inset-0 overflow-hidden px-6 py-14 text-[10.5px] leading-[1.55] lg:px-8 lg:text-[11.5px]">
         <div className="grid grid-cols-[2.4rem_minmax(0,1fr)] gap-x-3">
           <div className="select-none text-right text-muted-foreground/55 tabular-nums">
             {lines.map((_, i) => (
@@ -88,7 +88,7 @@ function SourcePanel() {
 export function BenchmarksPanel() {
   const { metrics, status } = useLiveMetrics();
   return (
-    <div className="space-y-8 font-mono text-[11px] leading-[1.9] text-muted-foreground md:text-[12px]">
+    <div className="code-text space-y-8 text-[11px] leading-[1.9] text-muted-foreground md:text-[12px]">
       <div>
         <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.35em] text-muted-foreground/70">
           <span>web vitals</span>

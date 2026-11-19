@@ -28,6 +28,10 @@ export default defineConfig(({ mode }) => {
   });
 
   return {
+    // Execuções E2E paralelas não devem compartilhar o cache de otimização do dev server.
+    cacheDir: process.env.E2E_PORT
+      ? `node_modules/.vite-e2e-${process.env.E2E_PORT}`
+      : "node_modules/.vite",
     plugins: [
       tanstackRouter({ target: "react", autoCodeSplitting: true }),
       tailwindcss(),
@@ -40,7 +44,7 @@ export default defineConfig(({ mode }) => {
     server: {
       watch: {
         // O Playwright regrava estas pastas durante a suíte; observá-las causa EBUSY no Windows.
-        ignored: ["**/playwright-report/**", "**/test-results/**"],
+        ignored: ["**/playwright-report/**", "**/test-results/**", "**/tmp/**"],
       },
     },
     build: {

@@ -1,0 +1,9 @@
+header.fixed,
+nav.fixed,
+#accessibility-widget-launcher,
+#acc-widget-host,
+[data-back-to-top],
+#custom-cursor,
+#custom-cursor-tooltip {
+  visibility: hidden !important;
+}

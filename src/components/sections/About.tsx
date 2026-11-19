@@ -1,99 +1,121 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight } from "lucide-react";
+
+import aboutCutout480Avif from "@/assets/about/about-speaking-cutout-480w.avif";
+import aboutCutout480Webp from "@/assets/about/about-speaking-cutout-480w.webp";
+import aboutCutout512Avif from "@/assets/about/about-speaking-cutout-512w.avif";
+import aboutCutout512Webp from "@/assets/about/about-speaking-cutout-512w.webp";
+import aboutCutout720Avif from "@/assets/about/about-speaking-cutout-720w.avif";
+import aboutCutout720Webp from "@/assets/about/about-speaking-cutout-720w.webp";
+import aboutCutout960Avif from "@/assets/about/about-speaking-cutout-960w.avif";
+import aboutCutout960Webp from "@/assets/about/about-speaking-cutout-960w.webp";
+import { ScrambleText } from "@/components/ScrambleText";
+import { CoffeeCounter } from "@/components/hero/HeroStats";
+import { GithubIcon, LinkedinIcon, WhatsappIcon } from "@/components/icons/Brand";
 import { useApp } from "@/i18n/AppContext";
-import { ImageCover } from "@/components/ImageCover";
-import { aboutCampusImage, aboutFeaturedImage, aboutWorkbenchImage } from "@/content/about-images";
 import { SectionShell } from "./SectionShell";
 
 export function About() {
   const { t } = useApp();
 
   return (
-    <SectionShell id="sobre" label={t.about.title} headerVariant="editorial" compact>
-      <div className="contents md:col-span-12 md:grid md:grid-cols-12 md:items-center md:gap-8">
-        <div className="md:col-span-7">
-          <div
-            className="section-content-reveal relative mx-auto grid w-full max-w-[220px] grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-2 sm:max-w-[450px] sm:gap-3 md:mx-0 md:max-w-[570px]"
-            role="group"
-            aria-label={t.about.photos.label}
-          >
-            <span
-              aria-hidden="true"
-              className="absolute -left-2 -top-2 z-10 h-10 w-10 rounded-tl-lg border-l-2 border-t-2"
-              style={{
-                borderImage: "var(--gradient-brand) 1",
-                borderImageSlice: 1,
-              }}
-            />
-            <span
-              aria-hidden="true"
-              className="absolute -bottom-2 -right-2 z-10 h-10 w-10 rounded-br-lg border-b-2 border-r-2"
-              style={{
-                borderImage: "var(--gradient-brand) 1",
-                borderImageSlice: 1,
-              }}
-            />
-
-            <div className="relative aspect-[4/5] min-w-0 overflow-hidden rounded-lg border border-hairline bg-surface shadow-sm">
-              <ImageCover
-                image={aboutFeaturedImage}
-                alt={t.about.photos.featuredAlt}
-                sizes="(max-width: 639px) 142px, (max-width: 767px) 292px, (max-width: 1023px) 35vw, 372px"
-                className="block h-full w-full"
-                imgClassName="h-full w-full object-cover object-top"
-              />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-background/30 via-transparent to-transparent"
-              />
-            </div>
-
-            <div className="grid min-w-0 grid-rows-2 gap-2 sm:gap-3">
-              <div className="relative min-h-0 overflow-hidden rounded-lg border border-hairline bg-surface shadow-sm">
-                <ImageCover
-                  image={aboutWorkbenchImage}
-                  alt={t.about.photos.workbenchAlt}
-                  sizes="(max-width: 639px) 68px, (max-width: 767px) 146px, (max-width: 1023px) 17.5vw, 186px"
-                  className="block h-full w-full"
-                  imgClassName="h-full w-full object-cover object-center"
-                />
-              </div>
-
-              <div className="relative min-h-0 overflow-hidden rounded-lg border border-hairline bg-surface shadow-sm">
-                <ImageCover
-                  image={aboutCampusImage}
-                  alt={t.about.photos.campusAlt}
-                  sizes="(max-width: 639px) 68px, (max-width: 767px) 146px, (max-width: 1023px) 17.5vw, 186px"
-                  className="block h-full w-full"
-                  imgClassName="h-full w-full object-cover object-center"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-5 sm:mt-8 md:col-span-5 md:mt-0 md:pl-2">
-          <div className="section-content-reveal section-content-reveal-delay prose-measure space-y-3 text-[14px] leading-[1.55] text-foreground sm:space-y-4 sm:text-[16px] sm:leading-relaxed md:text-[17px]">
-            <p className="first-letter:float-left first-letter:mr-2 first-letter:font-display first-letter:text-[2.75rem] first-letter:font-medium first-letter:leading-[0.85] first-letter:text-gradient sm:first-letter:text-[3.25rem]">
-              {t.about.p1}
+    <SectionShell id="sobre" label={t.nav.sobre} compact hideHeading>
+      <div className="about-template md:col-span-12">
+        <div className="about-template__content">
+          <div className="about-template__intro">
+            <h3 className="section-editorial-title text-foreground">
+              <ScrambleText text={`${t.about.greeting} ${t.about.introductionName}`} />
+            </h3>
+            <p className="section-editorial-intro about-template__role">
+              <ScrambleText text={t.about.profileRole} />
             </p>
-            <p className="text-muted-foreground">{t.about.p2}</p>
           </div>
 
-          <div className="section-content-reveal section-content-reveal-late mt-4 sm:mt-6">
+          <div className="about-template__details">
+            <p className="body-copy text-pretty text-muted-foreground">{t.about.teaserBody}</p>
+            <p className="body-copy text-pretty text-muted-foreground">{t.about.resumeSummary}</p>
+          </div>
+
+          <div className="about-template__actions">
             <Link
               to="/sobre"
               data-cursor-open={t.cursor.destinations.about}
-              className="btn-outline group w-fit max-w-full px-3 sm:px-[1.2rem] md:px-3 lg:px-[1.2rem]"
+              className="btn-primary w-fit"
             >
               <span>{t.about.learnMore}</span>
-              <ArrowUpRight
-                className="hidden h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 sm:block"
-                aria-hidden="true"
-              />
             </Link>
+            <a
+              href={t.hero.resumeUrl}
+              data-cursor-open={t.cursor.destinations.resume}
+              data-resume-download
+              download="Guilherme-Eleutherio-Curriculo.pdf"
+              type="application/pdf"
+              aria-label={t.hero.cta2}
+              className="ui-control-text link-ink touch-target w-fit text-foreground"
+            >
+              <span>{t.hero.cta2}</span>
+            </a>
+          </div>
+
+          <div className="about-template__social">
+            <div className="about-template__social-links">
+              <a
+                href="https://www.linkedin.com/in/eleutherio/"
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="LinkedIn"
+                data-cursor-open={t.cursor.destinations.linkedin}
+              >
+                <LinkedinIcon />
+              </a>
+              <a
+                href="https://github.com/Eleutherio"
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="GitHub"
+                data-cursor-open={t.cursor.destinations.github}
+              >
+                <GithubIcon />
+              </a>
+              <a
+                href="https://wa.me/5551994055984"
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="WhatsApp"
+                data-cursor-open={t.cursor.destinations.whatsapp}
+              >
+                <WhatsappIcon />
+              </a>
+            </div>
+          </div>
+
+          <div className="about-template__coffee" data-about-coffee>
+            <span className="ui-control-text text-foreground">{t.about.coffeeInvite}</span>
+            <CoffeeCounter />
           </div>
         </div>
+
+        <figure className="about-template__portrait">
+          <picture>
+            <source
+              type="image/avif"
+              srcSet={`${aboutCutout480Avif} 480w, ${aboutCutout512Avif} 512w, ${aboutCutout720Avif} 720w, ${aboutCutout960Avif} 960w`}
+              sizes="(max-width: 47.999rem) calc(100vw - 6rem), (max-width: 63.999rem) 40vw, min(32rem, 36vw)"
+            />
+            <source
+              type="image/webp"
+              srcSet={`${aboutCutout480Webp} 480w, ${aboutCutout512Webp} 512w, ${aboutCutout720Webp} 720w, ${aboutCutout960Webp} 960w`}
+              sizes="(max-width: 47.999rem) calc(100vw - 6rem), (max-width: 63.999rem) 40vw, min(32rem, 36vw)"
+            />
+            <img
+              src={aboutCutout720Webp}
+              alt={t.about.photos.featuredAlt}
+              width={1067}
+              height={1600}
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
+        </figure>
       </div>
     </SectionShell>
   );
