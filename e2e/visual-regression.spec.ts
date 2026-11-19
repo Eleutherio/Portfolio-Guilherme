@@ -118,7 +118,7 @@ test.describe("baselines visuais selecionados", () => {
       return { headerBottom: header.bottom, headingTop: heading.top };
     });
     expect(anchorClearance.headingTop).toBeGreaterThanOrEqual(anchorClearance.headerBottom);
-    await expect(target).toHaveScreenshot("testimonials-mobile-dark.png", {
+    await expect(target).toHaveScreenshot(`testimonials-mobile-dark-${process.platform}.png`, {
       animations: "disabled",
       caret: "hide",
       maxDiffPixelRatio: 0.015,

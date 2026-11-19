@@ -1727,3 +1727,10 @@ Eliminar instalação APT durante o job de browser, cuja transferência de 126 M
 com browsers e dependências instalados, versão compatível com o lockfile e digest fixado.
 Verificar lançamento de Chromium e WebKit com timeout finito antes dos gates existentes.
 Preservar nomes dos checks obrigatórios, limite do job, carbono e suíte E2E.
+
+### Referências visuais por plataforma — 2026-11-19
+
+Atualizar referência Linux de acessibilidade para o layout/tipografia já aprovados e manter
+referências Windows/Linux próprias para Depoimentos mobile, cuja rasterização de texto difere.
+Usar capturas Linux revisadas do container fixado na CI; preservar referência Windows e
+tolerância de 1,5%, sem skips novos, alterações de UI ou atualização automática de snapshots.

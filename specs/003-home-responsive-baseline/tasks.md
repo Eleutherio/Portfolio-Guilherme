@@ -917,5 +917,8 @@ T030: conteúdo PT/EN em src/i18n/dictionary.ts
       e aguardar aprovação dos cinco grupos antes de staging ou commit.
 - [x] T367 Substituir instalação APT por imagem oficial Playwright compatível, verificar engines
       e validar contrato do workflow.
-- [ ] T368 Após aprovação do commit corretivo, publicar no PR destinado à main e verificar
+- [x] T368 Após aprovação do commit corretivo, publicar no PR destinado à main e verificar
       execução Linux completa sem timeout de instalação, preservando gates existentes.
+- [x] T369 Corrigir referência Linux obsoleta de acessibilidade e separar Depoimentos mobile
+      por plataforma após inspeção das capturas e comprovação de estabilidade.
+- [ ] T370 Publicar correção visual após aprovação e verificar nova execução integral da CI.

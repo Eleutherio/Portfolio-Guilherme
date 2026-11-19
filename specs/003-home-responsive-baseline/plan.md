@@ -1121,3 +1121,39 @@ valida o container. Dispensar runner E2E local nesta invocação, mantendo lint/
 API, testes do mecanismo, build e carbono antes do staging. Risco: sem nova suíte Windows;
 nenhum comportamento de produto foi alterado. Responsável: Guilherme; dispensa expira
 neste commit corretivo e não dispensa E2E remoto. Logs: `tmp/ci-fix-approved-*.log`.
+
+### Diagnóstico dos dois snapshots Linux — 2026-11-19
+
+CI do commit 3ab1726, run 44573071177/job 135745212519: browsers lançam em 1s, carbono passa,
+309 testes passam e dois screenshots falham. Instalação corrigida; falhas são referências
+visuais. Log `tmp/ci-visual-failures.log`, imagens/traces em `tmp/ci-visual-artifacts`.
+
+Acessibilidade Linux ainda espera kicker, inset e fonte antigos (375×399); captura atual
+375×324 corresponde ao layout da referência Windows já aprovada. Depoimentos mobile tem
+geometria, conteúdo e imagens iguais (412×990), mas diferenças de rasterização de texto
+Windows/Linux atingem 11032 pixels (3%). Diff inspecionado: diferenças limitadas ao texto.
+Separar somente esse snapshot por plataforma, conforme padrão já adotado em acessibilidade.
+Manter maxDiffPixelRatio 0.015; não alterar app, ignorar testes ou mascarar diferenças.
+
+As três tentativas Linux geram PNGs idênticos por cenário: SHA256 acessibilidade
+`676a25cca2a56765f3427b6380a2601148611879e7eccb166aad5eed5ffe4ef7`, Depoimentos
+`1df47cd0efbbf129c343c47400928fffe51bd6c3a1942bc179bbeb95756de9db`.
+Atualizar acessibilidade Linux e adicionar Depoimentos Linux a partir dessas capturas revisadas;
+renomear referência existente Depoimentos para win32, sem modificar seus bytes.
+Documentação primária: https://playwright.dev/docs/test-snapshots orienta gerar/comparar
+referências no mesmo SO devido a fontes e rasterização diferentes. Execução Linux nova
+continua pendente de commit/push aprovado; screenshots não são atualizados pela CI.
+
+Validação: sete screenshots Windows passam em 18,4s, sem updates, porta isolada 4417.
+Typecheck e lint do teste aprovados. Script de comparação comprova bytes Windows intactos
+após renomear e igualdade de cada baseline Linux com as três capturas do cenário. Capturas
+Linux e diff foram inspecionados visualmente antes da cópia. Log: `tmp/e2e-platform-visual.log`.
+Sem alterações de produto, tolerância ou gates. Proposta de commit para aprovação:
+`test(e2e): corrige baselines visuais por plataforma`; publicar no PR25 destinado à main.
+
+Usuário aprovou commit e push da correção. Reutilizar sete E2E visuais locais já aprovados,
+sem repetir a suíte Windows inteira no pre-commit, conforme preferência de dispensa local
+do usuário. Responsável: Guilherme; escopo somente este commit de referências/teste/docs;
+risco limitado à ausência de nova rodada integral Windows, sem mudança de app ou tolerância.
+Dispensa expira neste commit; CI Linux integral permanece obrigatória. Carbono antes do
+staging e demais verificações preservados. Logs: `tmp/visual-fix-approved-*.log`.
