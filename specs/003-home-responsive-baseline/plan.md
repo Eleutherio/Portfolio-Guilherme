@@ -1090,3 +1090,34 @@ Usuário aprovou C1–C5 e a dispensa E2E pontual. Executar gates restantes, car
 staging explícito e commits PT-BR na ordem aprovada. Preservar configuração permanente dos
 hooks e materiais reservados; push não autorizado. Evidências desta execução ficam em
 `tmp/approved-commit-*.log`; o histórico Git registra os hashes dos cinco commits.
+
+### Correção do timeout de instalação CI — 2026-11-19
+
+Investigar execução 44381918795, job 135101333691: instalação dos engines permaneceu em APT
+de 20:15:43Z a 20:40:25Z, transferindo 126 MB do mirror Ubuntu us-east-2.ec2.archive.ubuntu.com.
+O timeout de 25 minutos cancelou o job antes de carbono/E2E; não houve falha de asserção.
+Log local: `tmp/ci-browser-install-timeout.log`.
+
+Usar container oficial `mcr.microsoft.com/playwright:v1.61.1-noble`, compatível com lockfile,
+fixado ao digest verificado no registro Microsoft em 2026-11-19:
+`sha256:cf0daee9b994042e011bc29f20cdff1a9f682a039b43fcd738f7d8a9d3bcd9d6`.
+Documentação oficial https://playwright.dev/docs/docker confirma browsers e bibliotecas de
+sistema pré-instalados; `npm ci` continua instalando a dependência do projeto. IPC host segue
+recomendação para Chromium. Smoke de lançamento Chromium/WebKit limita prontidão a dois
+minutos e detecta imagem incompatível antes dos gates. Nomes dos checks e limite 25min intactos.
+Sem alteração de branch protection. Não aumentar timeout nem dispensar carbono/E2E.
+
+Validação local: YAML interpretado com js-yaml; imagem corresponde ao Playwright 1.61.1 do
+lockfile, nomes/limites/comandos dos gates preservados e nenhuma instalação Playwright/APT
+restante no job. Script exato do workflow executado localmente: Chromium 149.0.7827.55 e
+WebKit 26.5 lançam e encerram com sucesso. Formatação aprovada. Docker não está instalado
+neste Windows; execução da imagem Linux e run remoto continuam pendentes de publicação.
+Proposta de commit único para revisão do usuário: `fix(ci): usa browsers pré-instalados no Playwright`.
+Arquivos: `.github/workflows/quality.yml` e spec/plan/tasks da feature ativa. Usuário aprovou
+esse commit e push ao PR25 contra main. Preservar proteção e gates remotos. Reavaliada a
+dispensa de repetição E2E local solicitada pelo usuário: esta correção altera apenas YAML e
+documentação; prontidão dos dois browsers foi comprovada localmente, mas só a CI Linux
+valida o container. Dispensar runner E2E local nesta invocação, mantendo lint/typecheck,
+API, testes do mecanismo, build e carbono antes do staging. Risco: sem nova suíte Windows;
+nenhum comportamento de produto foi alterado. Responsável: Guilherme; dispensa expira
+neste commit corretivo e não dispensa E2E remoto. Logs: `tmp/ci-fix-approved-*.log`.

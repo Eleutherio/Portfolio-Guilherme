@@ -1719,3 +1719,11 @@ snapshots intermediários. Escopo, evidências, mecanismo e expiração constam 
 [commit-plan.md](./commit-plan.md). Manter demais gates, carbono antes do staging e CI.
 A dispensa expira ao concluir o lote; mudanças fora do inventário exigem reavaliação.
 Criação dos commits continua condicionada à aprovação da proposta pelo usuário.
+
+### Instalação dos browsers na CI — 2026-11-19
+
+Eliminar instalação APT durante o job de browser, cuja transferência de 126 MB consumiu
+24m42s e provocou cancelamento pelo limite de 25 minutos. Utilizar imagem oficial Playwright
+com browsers e dependências instalados, versão compatível com o lockfile e digest fixado.
+Verificar lançamento de Chromium e WebKit com timeout finito antes dos gates existentes.
+Preservar nomes dos checks obrigatórios, limite do job, carbono e suíte E2E.

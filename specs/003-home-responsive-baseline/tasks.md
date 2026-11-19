@@ -915,3 +915,7 @@ T030: conteúdo PT/EN em src/i18n/dictionary.ts
 - [x] T365 Otimizar vídeo Hero abaixo de 25 MiB, preservar original e verificar reprodução/carbono.
 - [x] T366 Revisar proposta de commits com dispensa E2E pontual autorizada, preservar demais gates
       e aguardar aprovação dos cinco grupos antes de staging ou commit.
+- [x] T367 Substituir instalação APT por imagem oficial Playwright compatível, verificar engines
+      e validar contrato do workflow.
+- [ ] T368 Após aprovação do commit corretivo, publicar no PR destinado à main e verificar
+      execução Linux completa sem timeout de instalação, preservando gates existentes.
