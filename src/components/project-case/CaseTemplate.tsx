@@ -40,7 +40,7 @@ export function CaseTemplate() {
             to="/"
             hash="projetos"
             data-cursor-open={t.cursor.destinations.projects}
-            className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-accent"
+            className="ui-control-text touch-target inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-accent"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             {t.caseStudy.back}
@@ -49,7 +49,7 @@ export function CaseTemplate() {
 
         <div className="section-container grid grid-cols-1 gap-8 pb-14 pt-8 md:grid-cols-12 md:gap-8 md:pb-24 md:pt-16">
           <div className="md:col-span-7">
-            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-accent">
+            <p className="meta-text text-accent">
               {data.id} · {data.category}
             </p>
             <motion.h1
@@ -60,9 +60,7 @@ export function CaseTemplate() {
             >
               {data.title}
             </motion.h1>
-            <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-              {data.cardSummary}
-            </p>
+            <p className="section-intro mt-4 max-w-2xl text-muted-foreground">{data.cardSummary}</p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               {data.demoUrl && data.demoUrl !== "#" && (
@@ -128,30 +126,30 @@ export function CaseTemplate() {
       </section>
 
       {/* Sections */}
-      <CaseBlock number="01" title={t.caseStudy.contextTitle}>
+      <CaseBlock title={t.caseStudy.contextTitle}>
         <CaseItem label={t.caseStudy.contextProblem}>{data.context.problem}</CaseItem>
         <CaseItem label={t.caseStudy.contextAudience}>{data.context.audience}</CaseItem>
         <CaseItem label={t.caseStudy.contextImportance}>{data.context.importance}</CaseItem>
       </CaseBlock>
 
-      <CaseBlock number="02" title={t.caseStudy.solutionTitle}>
+      <CaseBlock title={t.caseStudy.solutionTitle}>
         <CaseItem label={t.caseStudy.solutionProduct}>{data.solution.product}</CaseItem>
         <CaseItem label={t.caseStudy.solutionTechnical}>{data.solution.technical}</CaseItem>
         <CaseItem label={t.caseStudy.solutionArchitecture}>{data.solution.architecture}</CaseItem>
       </CaseBlock>
 
-      <CaseBlock number="03" title={t.caseStudy.executionTitle}>
+      <CaseBlock title={t.caseStudy.executionTitle}>
         <CaseItem label={t.caseStudy.executionChallenges}>{data.execution.challenges}</CaseItem>
         <CaseItem label={t.caseStudy.executionTradeoffs}>{data.execution.tradeoffs}</CaseItem>
         <CaseItem label={t.caseStudy.executionHindsight}>{data.execution.hindsight}</CaseItem>
       </CaseBlock>
 
-      <CaseBlock number="04" title={t.caseStudy.resultTitle}>
+      <CaseBlock title={t.caseStudy.resultTitle}>
         <CaseItem label={t.caseStudy.resultImpact}>{data.result.impact}</CaseItem>
         <CaseItem label={t.caseStudy.resultGains}>{data.result.gains}</CaseItem>
       </CaseBlock>
 
-      <CaseBlock number="05" title={t.caseStudy.closingTitle}>
+      <CaseBlock title={t.caseStudy.closingTitle}>
         <CaseItem label={t.caseStudy.closingNextSteps}>{data.closing.nextSteps}</CaseItem>
       </CaseBlock>
 
@@ -167,31 +165,18 @@ export function CaseTemplate() {
 function Meta({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <dt className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
-        {label}
-      </dt>
+      <dt className="meta-text text-muted-foreground">{label}</dt>
       <dd className="text-foreground">{children}</dd>
     </div>
   );
 }
 
-function CaseBlock({
-  number,
-  title,
-  children,
-}: {
-  number: string;
-  title: string;
-  children: React.ReactNode;
-}) {
+function CaseBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="border-b border-hairline">
       <div className="section-container grid grid-cols-1 gap-8 py-12 md:grid-cols-12 md:gap-8 md:py-24">
-        <div className="md:col-span-3">
-          <p className="section-number text-gradient text-4xl md:text-5xl">{number}</p>
-          <h2 className="mt-4 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
-            {title}
-          </h2>
+        <div className="md:col-span-4">
+          <h2 className="section-title text-foreground">{title}</h2>
         </div>
         <div className="space-y-10 md:col-span-8 md:col-start-5">{children}</div>
       </div>
@@ -202,10 +187,8 @@ function CaseBlock({
 function CaseItem({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-3 text-base leading-relaxed text-foreground sm:text-lg">{children}</p>
+      <p className="meta-text text-muted-foreground">{label}</p>
+      <p className="body-copy mt-3 text-foreground">{children}</p>
     </div>
   );
 }

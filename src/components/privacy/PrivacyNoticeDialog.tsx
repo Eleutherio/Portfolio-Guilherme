@@ -16,7 +16,6 @@ import {
 const content = {
   pt: {
     close: "Fechar aviso de privacidade",
-    kicker: "// privacidade e dados",
     title: "Como seus dados são usados",
     description:
       "O guifer.tech não vende dados nem cria perfis publicitários. O tratamento é limitado ao contato, à segurança e às preferências da interface.",
@@ -48,7 +47,6 @@ const content = {
   },
   en: {
     close: "Close privacy notice",
-    kicker: "// privacy and data",
     title: "How your data is used",
     description:
       "guifer.tech does not sell data or build advertising profiles. Processing is limited to contact, security and interface preferences.",
@@ -106,13 +104,8 @@ export function PrivacyNoticeDialog({
         className="max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-2xl overflow-y-auto rounded-xl border-hairline bg-background p-5 shadow-2xl sm:p-7"
       >
         <DialogHeader className="pr-8 text-left">
-          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">
-            {text.kicker}
-          </p>
-          <DialogTitle className="font-display text-2xl font-semibold leading-tight tracking-[-0.03em] text-foreground sm:text-3xl">
-            {text.title}
-          </DialogTitle>
-          <DialogDescription className="pt-2 text-sm leading-relaxed text-foreground sm:text-base">
+          <DialogTitle className="content-title text-foreground">{text.title}</DialogTitle>
+          <DialogDescription className="body-copy pt-2 text-foreground">
             {text.description}
           </DialogDescription>
         </DialogHeader>
@@ -120,13 +113,13 @@ export function PrivacyNoticeDialog({
         <div className="grid grid-cols-1 gap-3 py-2 sm:grid-cols-2">
           {text.items.map((item) => (
             <section key={item.title} className="rounded-lg border border-hairline bg-surface p-4">
-              <h3 className="font-display text-base font-medium text-foreground">{item.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-foreground">{item.body}</p>
+              <h3 className="content-title text-foreground">{item.title}</h3>
+              <p className="body-copy mt-2 text-foreground">{item.body}</p>
             </section>
           ))}
         </div>
 
-        <div className="space-y-3 border-t border-hairline pt-4 text-sm leading-relaxed text-foreground">
+        <div className="body-copy space-y-3 border-t border-hairline pt-4 text-foreground">
           <p>{text.providers}</p>
           <p>{text.rights}</p>
         </div>
@@ -136,7 +129,7 @@ export function PrivacyNoticeDialog({
             <a
               href="mailto:contato@guifer.tech?subject=Privacidade%20e%20LGPD%20no%20guifer.tech"
               data-cursor-open={t.cursor.destinations.email}
-              className="link-ink inline-flex items-center gap-2 text-sm text-foreground"
+              className="ui-control-text link-ink inline-flex items-center gap-2 text-foreground"
             >
               <Mail className="h-4 w-4" aria-hidden="true" />
               <span>{text.contact}</span>
@@ -144,7 +137,7 @@ export function PrivacyNoticeDialog({
             <Link
               to="/privacidade"
               data-cursor-open={t.cursor.destinations.privacy}
-              className="link-ink inline-flex items-center gap-2 text-sm text-foreground"
+              className="ui-control-text link-ink inline-flex items-center gap-2 text-foreground"
             >
               <span>{text.fullNotice}</span>
               <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />

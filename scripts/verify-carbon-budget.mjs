@@ -6,6 +6,7 @@ import { gzipSync } from "node:zlib";
 import path from "node:path";
 import process from "node:process";
 import { chromium } from "playwright";
+import { waitForCarbonPage } from "./carbon-page-readiness.mjs";
 
 const MAX_A_PLUS_BYTES = 272_510;
 const TARGET_WITH_MARGIN_BYTES = 250_000;
@@ -204,7 +205,8 @@ try {
     if (response) response.encodedBytes = event.encodedDataLength;
   });
 
-  await page.goto(baseUrl, { waitUntil: "networkidle", timeout: 60_000 });
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 60_000 });
+  await waitForCarbonPage(page);
   await page.waitForTimeout(1_000);
   const initialMeasurement = measureResponses(responses.values(), baseUrl);
   const initialWithoutMediaBytes = totalResources(

@@ -17,6 +17,8 @@ export type ResponsiveImage = {
 
 type Props = {
   image: ResponsiveImage;
+  /** Higher-quality source set for desktop layouts. */
+  desktopImage?: ResponsiveImage;
   alt: string;
   sizes?: string;
   className?: string;
@@ -31,6 +33,7 @@ type Props = {
  */
 export function ImageCover({
   image,
+  desktopImage,
   alt,
   sizes = "(max-width: 768px) 100vw, 50vw",
   className,
@@ -50,6 +53,25 @@ export function ImageCover({
 
   return (
     <picture className={className} style={bgStyle}>
+      {desktopImage?.avif && (
+        <source
+          media="(min-width: 64rem)"
+          type="image/avif"
+          srcSet={desktopImage.avif}
+          sizes={sizes}
+        />
+      )}
+      {desktopImage?.webp && (
+        <source
+          media="(min-width: 64rem)"
+          type="image/webp"
+          srcSet={desktopImage.webp}
+          sizes={sizes}
+        />
+      )}
+      {desktopImage && (
+        <source media="(min-width: 64rem)" srcSet={desktopImage.fallback} sizes={sizes} />
+      )}
       {image.avif && <source type="image/avif" srcSet={image.avif} sizes={sizes} />}
       {image.webp && <source type="image/webp" srcSet={image.webp} sizes={sizes} />}
       <img
