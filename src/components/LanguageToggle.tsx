@@ -1,20 +1,15 @@
+import { VerticalSwap } from "@/components/VerticalSwap";
+
 type Lang = "pt" | "en";
 
 interface LanguageToggleProps {
   lang: Lang;
   onToggle: () => void;
   ariaLabel: string;
-  variant?: "desktop" | "mobile";
 }
 
-export function LanguageToggle({
-  lang,
-  onToggle,
-  ariaLabel,
-  variant = "desktop",
-}: LanguageToggleProps) {
-  const label = lang === "pt" ? "EN" : "BR";
-  const isDesktop = variant === "desktop";
+export function LanguageToggle({ lang, onToggle, ariaLabel }: LanguageToggleProps) {
+  const label = lang === "pt" ? "ENG/US" : "PT/BR";
 
   return (
     <button
@@ -22,12 +17,14 @@ export function LanguageToggle({
       onClick={onToggle}
       aria-label={ariaLabel}
       className={`
-        grid place-items-center rounded-full font-sans font-medium tracking-[-0.01em]
-        text-muted-foreground transition-colors hover:bg-background hover:text-foreground
-        ${isDesktop ? "h-9 min-w-9 px-2 text-xs" : "h-11 min-w-14 px-3 text-xs"}
+        header-locale-control header-switch-control header-static-control touch-target grid place-items-center border-0 bg-transparent
+        ui-control-text transition-colors
+        h-11 w-[4.625rem] px-2 lg:h-9
       `}
     >
-      {label}
+      <VerticalSwap swapKey={label} className="min-w-[6ch] leading-none">
+        {label}
+      </VerticalSwap>
     </button>
   );
 }

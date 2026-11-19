@@ -18,7 +18,7 @@ export function ProofBar() {
         <div className="grid grid-cols-1 gap-px divide-y divide-hairline md:grid-cols-4 md:divide-x md:divide-y-0">
           {items.map((text, i) => (
             <div key={i} className="flex items-center justify-center py-6 md:py-8">
-              <span className="text-center font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+              <span className="meta-text text-center text-[11px] tracking-[0.22em] text-muted-foreground">
                 {text}
               </span>
             </div>

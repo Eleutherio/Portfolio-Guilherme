@@ -116,16 +116,13 @@ $RECYCLE.BIN/
 *.code-workspace
 
 # Misc local artifacts
+tmp/
 *.tmp
 *.temp
 *.pid
 *.seed
 *.pid.lock
 
-# Agent-local state, validation records and diagnostic artifacts
-.agente/
-
 # Local documentation drafts
 docs/MIV.md
 docs/sustainability/WEBSITE-CARBON-A-PLUS.md
-AGENTS.md

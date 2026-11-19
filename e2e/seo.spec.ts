@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import sharp from "sharp";
+import { openPage } from "./support/portfolio";
 
 const SITE_ORIGIN = "https://guifer.tech";
 
@@ -43,14 +44,15 @@ test("JSON-LD aponta a pessoa para a origem canônica", async ({ page }) => {
 });
 
 test("sincroniza metadados com idioma e tema sem duplicidades", async ({ page }) => {
-  await page.goto("/");
+  await openPage(page, "/", { preservePreferences: true });
 
-  await expect(page).toHaveTitle("Guilherme Ferreira Eleutherio — Desenvolvedor full-stack");
+  await expect(page).toHaveTitle("Portfólio - Guilherme Ferreira Eleuthério");
   await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute("content", "pt_BR");
   await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#f7f6f2");
 
+  await page.locator('header a:has([data-wordmark="guifer.tech"])').focus();
   await page.getByRole("button", { name: "Mudar idioma" }).click();
-  await expect(page).toHaveTitle("Guilherme Ferreira Eleutherio — Full-stack Developer");
+  await expect(page).toHaveTitle("Portfolio - Guilherme Ferreira Eleuthério");
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     "content",
     /^Full-stack developer focused/,
@@ -63,6 +65,8 @@ test("sincroniza metadados com idioma e tema sem duplicidades", async ({ page })
     .poll(async () => JSON.parse((await person.textContent()) ?? "{}").inLanguage)
     .toBe("en");
 
+  await page.locator("#site-preloader").waitFor({ state: "detached", timeout: 60_000 });
+  await page.locator('header a:has([data-wordmark="guifer.tech"])').focus();
   await page.getByRole("button", { name: "Switch to dark theme" }).click();
   await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#0e131b");
 
@@ -81,11 +85,12 @@ test("sincroniza metadados com idioma e tema sem duplicidades", async ({ page })
 });
 
 test("localiza metadados de case com o idioma atual", async ({ page }) => {
-  await page.goto("/projetos/martha-izabel");
+  await openPage(page, "/projetos/martha-izabel", { preservePreferences: true });
 
-  await expect(page).toHaveTitle("Portfólio de marca pessoal — Guilherme Ferreira");
+  await expect(page).toHaveTitle("Portfólio profissional — Guilherme Ferreira");
+  await page.locator('header a:has([data-wordmark="guifer.tech"])').focus();
   await page.getByRole("button", { name: "Mudar idioma" }).click();
-  await expect(page).toHaveTitle("Personal brand portfolio — Guilherme Ferreira");
+  await expect(page).toHaveTitle("Professional portfolio — Guilherme Ferreira");
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     "content",
     /^Institutional website and portfolio/,

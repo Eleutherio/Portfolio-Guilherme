@@ -2,7 +2,8 @@
 
 Este documento transforma os prazos publicados em `/privacidade` em controles verificáveis. Ele deve ser revisado sempre que um fornecedor, plano ou finalidade mudar.
 
-> Este é um runbook, não um registro de tarefas. Estado, prioridade e aceite das ações abertas ficam exclusivamente em `.agente/backlog.md`.
+> Este é um runbook, não um registro de tarefas. Estado, prioridade e aceite das ações abertas ficam
+> na [spec operacional](../../specs/006-operations-governance/spec.md).
 
 ## Matriz de retenção
 

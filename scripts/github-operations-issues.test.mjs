@@ -7,6 +7,7 @@ import {
   ensureMonthlyUsageReview,
   recordKeepAliveFailure,
   recordKeepAliveRecovery,
+  VALIDATION_INCIDENT_TITLE,
 } from "./github-operations-issues.mjs";
 
 const workflow = readFileSync(
@@ -96,6 +97,25 @@ test("cria somente uma revisão de consumo por mês", async () => {
   assert.match(mock.calls[0].url, /state=all/u);
 });
 
+test("isola o incidente simulado do alerta operacional", async () => {
+  const { client, mock } = createClient([
+    { status: 200, body: [] },
+    { status: 201, body: { number: 30 } },
+  ]);
+  await recordKeepAliveFailure(
+    client,
+    {
+      runUrl: "https://github.com/example/actions/runs/validation",
+      occurredAt: "2026-08-30T12:25:00.000Z",
+    },
+    { incidentTitle: VALIDATION_INCIDENT_TITLE, validation: true },
+  );
+  const payload = JSON.parse(mock.calls[1].body);
+  assert.equal(payload.title, VALIDATION_INCIDENT_TITLE);
+  assert.match(payload.body, /ensaio controlado/u);
+  assert.doesNotMatch(payload.body, /não conseguiu validar Render e Supabase/u);
+});
+
 test("pagina a busca antes de criar um incidente duplicado", async () => {
   const firstPage = Array.from({ length: 100 }, (_, index) => ({
     number: index + 1,
@@ -121,4 +141,17 @@ test("workflow atribui incidentes somente a falhas do probe", () => {
   assert.match(workflow, /id: probe/u);
   assert.match(workflow, /failure\(\) && steps\.probe\.conclusion == 'failure'/u);
   assert.match(workflow, /success\(\) && steps\.probe\.conclusion == 'success'/u);
+});
+
+test("workflow permite validar observabilidade sem alterar a infraestrutura", () => {
+  assert.match(workflow, /validation_mode:/u);
+  assert.match(workflow, /- incident-failure/u);
+  assert.match(workflow, /- incident-recovery/u);
+  assert.match(workflow, /- monthly-review/u);
+  assert.match(workflow, /inputs\.validation_mode == 'healthy'/u);
+  assert.match(workflow, /inputs\.validation_mode == 'monthly-review'/u);
+  const validationJob = workflow.split("  validate-incident-cycle:")[1];
+  assert.ok(validationJob);
+  assert.match(validationJob, /OBSERVABILITY_EVENT: validation-incident-failure/u);
+  assert.match(validationJob, /OBSERVABILITY_EVENT: validation-incident-recovered/u);
 });

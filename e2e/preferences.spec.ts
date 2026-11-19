@@ -22,10 +22,12 @@ test.describe("preferências globais", () => {
   });
 
   test("sincroniza alterações entre abas e persiste a seleção", async ({ page, context }) => {
-    await openPage(page, "/", { language: "pt", theme: "light" });
+    await openPage(page, "/", { language: "pt", theme: "light", preservePreferences: true });
     const secondPage = await context.newPage();
     await secondPage.goto("/", { waitUntil: "domcontentloaded" });
+    await secondPage.locator("#site-preloader").waitFor({ state: "detached", timeout: 60_000 });
 
+    await page.locator('header a:has([data-wordmark="guifer.tech"])').focus();
     const switches = page.locator("[data-header-switches]");
     await switches.locator("button").nth(0).click();
     await switches.locator("button").nth(1).click();
