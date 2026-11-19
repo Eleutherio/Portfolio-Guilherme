@@ -10,8 +10,7 @@ const content = {
     metaTitle: "Privacidade — Guilherme Ferreira Eleutherio",
     metaDescription:
       "Aviso de privacidade do guifer.tech: dados tratados, finalidades, bases legais, fornecedores, retenção e direitos.",
-    kicker: "// privacidade",
-    title: "Aviso de Privacidade",
+    title: "Aviso de privacidade",
     intro:
       "Este aviso explica, de forma objetiva, como o guifer.tech trata dados pessoais. O site não vende dados, não cria perfis publicitários e procura coletar somente o necessário para contato, segurança e funcionamento.",
     controllerTitle: "Controlador e canal",
@@ -124,8 +123,7 @@ const content = {
     metaTitle: "Privacy — Guilherme Ferreira Eleutherio",
     metaDescription:
       "guifer.tech privacy notice: processed data, purposes, legal bases, providers, retention and rights.",
-    kicker: "// privacy",
-    title: "Privacy Notice",
+    title: "Privacy notice",
     intro:
       "This notice explains how guifer.tech processes personal data. The site does not sell data, does not build advertising profiles and aims to collect only what is necessary for contact, security and operation.",
     controllerTitle: "Controller and contact channel",
@@ -252,15 +250,10 @@ export function PrivacyPage() {
       <main id="main" tabIndex={-1} className="flex-1 overflow-x-clip outline-none">
         <section aria-labelledby="privacy-heading" className="border-b border-hairline">
           <div className="section-container py-14 md:py-24">
-            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
-              {page.kicker}
-            </p>
-            <h1 id="privacy-heading" className="page-title mt-4 max-w-4xl text-foreground">
+            <h1 id="privacy-heading" className="page-title max-w-4xl text-foreground">
               {page.title}
             </h1>
-            <p className="mt-7 max-w-3xl text-base leading-relaxed text-muted-foreground md:text-lg">
-              {page.intro}
-            </p>
+            <p className="section-intro mt-4 max-w-3xl text-muted-foreground">{page.intro}</p>
           </div>
         </section>
 
@@ -282,9 +275,7 @@ export function PrivacyPage() {
             <div className="mt-7 grid grid-cols-1 gap-4 lg:grid-cols-2">
               {page.processing.map((activity) => (
                 <article key={activity.title} className="card-surface p-6 md:p-8">
-                  <h3 className="font-display text-xl font-medium tracking-[-0.025em] text-foreground">
-                    {activity.title}
-                  </h3>
+                  <h3 className="content-title text-foreground">{activity.title}</h3>
                   <dl className="mt-5 space-y-4">
                     <Definition term={page.fieldLabels.data}>{activity.data}</Definition>
                     <Definition term={page.fieldLabels.purpose}>{activity.purpose}</Definition>
@@ -329,7 +320,7 @@ export function PrivacyPage() {
           <div className="grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-12">
             <InfoSection title={page.changesTitle}>
               <p>{page.changesBody}</p>
-              <p className="mt-4 font-mono text-xs text-muted-foreground">
+              <p className="meta-text mt-4 text-muted-foreground">
                 {page.updatedLabel}: <time dateTime={LAST_UPDATED}>{formattedDate}</time>
               </p>
             </InfoSection>
@@ -342,7 +333,7 @@ export function PrivacyPage() {
                       data-cursor-open={`${t.cursor.destinations.external}: ${reference.label}`}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="link-ink inline-flex items-start gap-2 text-foreground"
+                      className="touch-target link-ink inline-flex items-start gap-2 text-foreground"
                     >
                       <span>{reference.label}</span>
                       <ExternalLink className="mt-1 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -371,7 +362,7 @@ function InfoSection({ title, children }: { title: string; children: React.React
   return (
     <section className="border-t border-hairline pt-6">
       <h2 className="subsection-title text-foreground">{title}</h2>
-      <div className="mt-4 leading-relaxed text-muted-foreground">{children}</div>
+      <div className="body-copy mt-4 text-muted-foreground">{children}</div>
     </section>
   );
 }
@@ -379,10 +370,8 @@ function InfoSection({ title, children }: { title: string; children: React.React
 function Definition({ term, children }: { term: string; children: React.ReactNode }) {
   return (
     <div>
-      <dt className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">{term}</dt>
-      <dd className="mt-1.5 text-sm leading-relaxed text-muted-foreground md:text-base">
-        {children}
-      </dd>
+      <dt className="meta-text text-accent">{term}</dt>
+      <dd className="body-copy mt-1.5 text-muted-foreground">{children}</dd>
     </div>
   );
 }

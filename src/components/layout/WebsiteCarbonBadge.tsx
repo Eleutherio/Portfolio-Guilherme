@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { fetchWebsiteCarbonResult } from "@/lib/api-client";
+import { registerInitialTask, usePageRevealed } from "@/lib/page-readiness";
 import {
   WEBSITE_CARBON_SNAPSHOT,
   isWebsiteCarbonResult,
@@ -63,27 +64,30 @@ function clearLegacyBrowserCache() {
 }
 
 export function WebsiteCarbonBadge({ active, lang }: { active: boolean; lang: Language }) {
+  const revealed = usePageRevealed();
   const [result, setResult] = useState<WebsiteCarbonResult>(WEBSITE_CARBON_SNAPSHOT);
   const labels = copy[lang];
 
   useEffect(() => {
-    if (!active) return;
+    if (!active && revealed) return;
     clearLegacyBrowserCache();
 
     const hostname = window.location.hostname;
     if (hostname === "localhost" || hostname === "127.0.0.1") return;
 
     const controller = new AbortController();
-    void fetchWebsiteCarbonResult(controller.signal)
-      .then((nextResult) => {
-        if (isWebsiteCarbonResult(nextResult)) setResult(nextResult);
-      })
-      .catch(() => {
-        // O snapshot publicado continua visível se a API própria estiver indisponível.
-      });
+    void registerInitialTask(
+      fetchWebsiteCarbonResult(controller.signal)
+        .then((nextResult) => {
+          if (isWebsiteCarbonResult(nextResult)) setResult(nextResult);
+        })
+        .catch(() => {
+          // O snapshot publicado continua visível se a API própria estiver indisponível.
+        }),
+    );
 
     return () => controller.abort();
-  }, [active]);
+  }, [active, revealed]);
 
   const primary = labels.grade(result.grade);
   const carbon =
@@ -108,14 +112,14 @@ export function WebsiteCarbonBadge({ active, lang }: { active: boolean; lang: La
       rel="noreferrer noopener"
       data-cursor-open={labels.open}
       aria-label={`${primary}. ${emission ? `${emission}. ` : ""}${cleanerThanLabel ? `${cleanerThanLabel}. ` : ""}${updatedAtLabel}`}
-      className="group inline-flex max-w-full flex-col items-center text-center font-sans text-[10px] leading-[1.15] no-underline"
+      className="group inline-flex max-w-full flex-col items-start text-left font-sans text-[10px] leading-[1.15] no-underline"
       style={gradeStyle}
     >
       <span className="inline-flex max-w-full items-stretch">
         <span className="inline-flex min-h-8 items-center justify-center rounded-l-sm border-2 border-[var(--carbon-grade)] bg-[var(--carbon-grade)] px-2 py-1 font-bold text-[#0e11a8]">
           {result.grade}
         </span>
-        <span className="inline-flex min-h-8 min-w-[8.6rem] items-center justify-center border-y-2 border-[var(--carbon-grade)] bg-white px-2 py-1 text-[#0e11a8]">
+        <span className="inline-flex min-h-8 min-w-0 items-center justify-center border-y-2 border-[var(--carbon-grade)] bg-white px-2 py-1 text-[#0e11a8]">
           {emission ?? updatedAtLabel}
         </span>
         <span className="inline-flex min-h-8 items-center justify-center rounded-r-sm border-2 border-l-0 border-[var(--carbon-grade)] bg-[#0e11a8] px-2 py-1 font-bold text-white">

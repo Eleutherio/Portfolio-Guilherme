@@ -77,6 +77,7 @@ function navigationDestination(
 function canShowNavigationTooltip(navigation: HTMLElement) {
   if (navigation.closest("header, footer")) return false;
   if (navigation.matches(VISUAL_BUTTON_SELECTOR)) return true;
+  if (navigation.matches("[data-cursor-tooltip='media']")) return true;
   return Boolean(navigation.querySelector("img, picture, video"));
 }
 
@@ -97,6 +98,8 @@ export function CustomCursor({ initialPointer }: { initialPointer?: { x: number;
     let frame = 0;
     let pointerX = 0;
     let pointerY = 0;
+    let activeLabelGroup: HTMLElement | null = null;
+    const labelMeasure = document.createElement("canvas").getContext("2d");
     let magneticButton: HTMLElement | null = null;
     let magneticCenterX = 0;
     let magneticCenterY = 0;
@@ -158,6 +161,8 @@ export function CustomCursor({ initialPointer }: { initialPointer?: { x: number;
     };
 
     const hide = () => {
+      activeLabelGroup = null;
+      tooltip.style.width = "";
       resetMagneticButton();
       cursor.dataset.visible = "false";
       cursor.dataset.interactive = "false";
@@ -202,6 +207,48 @@ export function CustomCursor({ initialPointer }: { initialPointer?: { x: number;
       const disabled = isDisabled(interactive);
       cursor.dataset.visible = "true";
       cursor.dataset.interactive = String(Boolean(interactive && !disabled));
+
+      const labelTarget = element.closest<HTMLElement>("[data-cursor-label]");
+      const labelGroup = element.closest<HTMLElement>("[data-cursor-label-group]");
+      const label = compactLabel(labelTarget?.dataset.cursorLabel);
+      if (label && !isDisabled(labelTarget)) {
+        if (labelGroup !== activeLabelGroup) {
+          tooltip.style.width = "";
+          activeLabelGroup = labelGroup;
+          if (labelGroup && labelMeasure) {
+            const style = window.getComputedStyle(tooltip);
+            labelMeasure.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+            const labels = Array.from(
+              labelGroup.querySelectorAll<HTMLElement>("[data-cursor-label]"),
+            );
+            const textWidth = Math.max(
+              0,
+              ...labels.map(
+                (item) =>
+                  labelMeasure.measureText(compactLabel(item.dataset.cursorLabel) ?? "").width,
+              ),
+            );
+            const spacing =
+              Number.parseFloat(style.paddingLeft) +
+              Number.parseFloat(style.paddingRight) +
+              Number.parseFloat(style.borderLeftWidth) +
+              Number.parseFloat(style.borderRightWidth);
+            tooltip.style.width = `${Math.ceil(textWidth + spacing)}px`;
+          }
+        }
+        tooltip.textContent = label;
+        cursor.dataset.visible = "false";
+        setTooltipVisible(true);
+        return;
+      }
+
+      // Preserve the current label while crossing the gaps within the same icon row.
+      if (labelGroup && labelGroup === activeLabelGroup && tooltip.dataset.visible === "true") {
+        cursor.dataset.visible = "false";
+        return;
+      }
+      activeLabelGroup = null;
+      tooltip.style.width = "";
 
       const navigation = element.closest<HTMLElement>(NAVIGATION_SELECTOR);
       if (!navigation || isDisabled(navigation) || !canShowNavigationTooltip(navigation)) {

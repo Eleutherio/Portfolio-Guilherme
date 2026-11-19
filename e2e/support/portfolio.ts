@@ -6,6 +6,24 @@ export type Language = "pt" | "en";
 export type Theme = "light" | "dark";
 type Rgb = [number, number, number];
 
+export const HOME_SECTION_IDS = [
+  "home",
+  "sobre",
+  "projetos",
+  "habilidades",
+  "depoimentos",
+  "contato",
+] as const;
+
+const HOME_DEFERRED_SECTION_IDS = [
+  "sobre",
+  "projetos",
+  "habilidades",
+  "depoimentos",
+  "contato",
+  "rodape",
+] as const;
+
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"];
 const SIMPLE_TOOLTIP_FORBIDDEN = /Brevo|Supabase|Render|Google|[—–]|\p{Extended_Pictographic}/u;
 export const ROUTES = [
@@ -82,19 +100,21 @@ export async function openPage(
     height?: number;
     loadDeferredSections?: boolean;
     loadMedia?: boolean;
+    preservePreferences?: boolean;
   } = {},
 ) {
   const language = options.language ?? "pt";
   const theme = options.theme ?? "light";
   await page.setViewportSize({ width: options.width ?? 1440, height: options.height ?? 900 });
-  await page.addInitScript(
-    ({ selectedLanguage, selectedTheme }) => {
-      window.localStorage.setItem("gf-lang", selectedLanguage);
-      window.localStorage.setItem("gf-theme", selectedTheme);
-      window.localStorage.removeItem("accweb");
-    },
-    { selectedLanguage: language, selectedTheme: theme },
-  );
+  if (!options.preservePreferences)
+    await page.addInitScript(
+      ({ selectedLanguage, selectedTheme }) => {
+        window.localStorage.setItem("gf-lang", selectedLanguage);
+        window.localStorage.setItem("gf-theme", selectedTheme);
+        window.localStorage.removeItem("accweb");
+      },
+      { selectedLanguage: language, selectedTheme: theme },
+    );
   if (!options.loadMedia) {
     await page.route(/\.mp4(?:\?|$)/u, async (route) => {
       if (route.request().resourceType() === "media") {
@@ -105,32 +125,38 @@ export async function openPage(
     });
   }
   await page.goto(route, { waitUntil: "domcontentloaded" });
-  await expect(page.locator("main#main")).toBeVisible();
+  await expect(page.locator("main#main")).toBeVisible({ timeout: 20_000 });
   await expect(page.locator("html")).toHaveAttribute("lang", language === "pt" ? "pt-BR" : "en");
   await expect(page.locator("html")).toHaveClass(new RegExp(theme));
-  await expect(page.locator("#accessibility-widget-launcher")).toBeAttached();
+  await page.locator("#site-preloader").waitFor({ state: "detached", timeout: 60_000 });
+  await expect(
+    page.locator("#accessibility-widget-launcher, #acc-widget-host").first(),
+  ).toBeAttached();
   if (route === "/sobre") {
     await page.locator("#sobre").scrollIntoViewIfNeeded();
     await page.waitForTimeout(900);
   }
   if (route === "/") {
     if (options.loadDeferredSections !== false) {
-      await page.evaluate(() => {
-        for (const id of ["projetos", "depoimentos", "trajetoria", "sobre", "contato", "rodape"]) {
+      await page.evaluate((sectionIds) => {
+        for (const id of sectionIds) {
           window.dispatchEvent(new CustomEvent("portfolio:load-deferred-section", { detail: id }));
         }
-      });
+      }, HOME_DEFERRED_SECTION_IDS);
       await expect(page.locator('[data-projects-hydrated="true"]')).toBeAttached();
       await expect(page.locator("#depoimentos-heading")).toBeAttached();
-      await expect(page.locator("#trajetoria-heading")).toBeAttached();
       await expect(page.locator("#sobre-heading")).toBeAttached();
+      await expect(page.locator("#habilidades-heading")).toBeAttached();
       await expect(page.locator("footer")).toBeAttached();
     }
   }
 }
 
 export async function openAccessibilityWidget(page: Page) {
-  await page.locator("#accessibility-widget-launcher").click();
+  await page
+    .locator("#accessibility-widget-launcher, #acc-widget-host #accessibilityWidget")
+    .first()
+    .click();
   const host = page.locator("#acc-widget-host");
   await expect(host).toBeAttached();
   await expect(host.locator(".acc-menu")).toBeVisible();
@@ -138,6 +164,15 @@ export async function openAccessibilityWidget(page: Page) {
 }
 
 export async function runAxe(page: Page, testInfo: TestInfo, label: string, include?: string) {
+  // Avaliar o estado legível após as revelações finitas, não o frame intermediário do fade.
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    for (const animation of document.getAnimations()) {
+      const timing = animation.effect?.getComputedTiming();
+      if (timing && timing.iterations !== Infinity) animation.finish();
+    }
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  });
   let builder = new AxeBuilder({ page }).withTags(WCAG_TAGS);
   if (include) builder = builder.include(include);
   const results = await builder.analyze();
@@ -153,7 +188,24 @@ export async function runAxe(page: Page, testInfo: TestInfo, label: string, incl
   const unexpectedIncomplete = results.incomplete.filter(
     (result) => result.id !== "color-contrast",
   );
-  expect(unexpectedIncomplete, `${label}: resultados axe incompletos não revisados`).toEqual([]);
+  const audioReview = unexpectedIncomplete.filter((result) => result.id === "no-autoplay-audio");
+  if (audioReview.length) {
+    // React configura muted como propriedade; o axe pode pedir revisão do atributo HTML.
+    const media = await page.locator("video, audio").evaluateAll((elements) =>
+      elements.map((element) => ({
+        muted: (element as HTMLMediaElement).muted,
+        volume: (element as HTMLMediaElement).volume,
+      })),
+    );
+    expect(
+      media.every((element) => element.muted || element.volume === 0),
+      `${label}: mídia automática silenciosa`,
+    ).toBe(true);
+  }
+  expect(
+    unexpectedIncomplete.filter((result) => result.id !== "no-autoplay-audio"),
+    `${label}: resultados axe incompletos não revisados`,
+  ).toEqual([]);
 }
 
 export async function installRecaptchaStub(page: Page, token = "playwright-recaptcha-token") {
@@ -178,6 +230,7 @@ export async function fillValidContactForm(page: Page) {
   await page
     .locator("#contact-message")
     .fill("Esta mensagem possui tamanho suficiente para validar o formulário.");
+  await page.locator("#contact-privacy-consent").check();
 }
 
 export async function screenshotPixel(page: Page, x: number, y: number) {
