@@ -386,12 +386,12 @@ export function Header() {
           >
             <nav
               aria-label={t.a11y.primaryNavigation}
-              className={`min-w-0 flex-col items-center gap-1 py-3 transition-[opacity,translate] duration-200 ease-out motion-reduce:transition-none lg:col-start-2 lg:row-start-1 lg:flex lg:flex-row lg:items-center lg:justify-center lg:gap-[clamp(0.125rem,0.6vw,0.5rem)] lg:py-0 ${
+              className={`min-w-0 flex-col items-center gap-1 py-3 transition-transform duration-200 ease-out motion-reduce:transition-none lg:col-start-2 lg:row-start-1 lg:flex lg:flex-row lg:items-center lg:justify-center lg:gap-[clamp(0.125rem,0.6vw,0.5rem)] lg:py-0 ${
                 open ? "flex" : "hidden"
               } ${
                 !headerControlsVisible
-                  ? "lg:pointer-events-none lg:-translate-y-1 lg:opacity-0"
-                  : "lg:pointer-events-auto lg:translate-y-0 lg:opacity-100"
+                  ? "lg:pointer-events-none lg:-translate-y-1 lg:invisible"
+                  : "lg:pointer-events-auto lg:translate-y-0 lg:visible"
               }`}
             >
               {sections.map((s) => {
