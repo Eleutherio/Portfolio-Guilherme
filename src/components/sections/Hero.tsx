@@ -1,15 +1,15 @@
-import { lazy, Suspense } from "react";
-import { ArrowDown, ArrowUpRight, Download } from "lucide-react";
+import { Pause, Play } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useApp } from "@/i18n/AppContext";
 import { HeroCarouselProvider } from "@/components/hero/HeroCarouselContext";
 import { useElementActivity } from "@/hooks/use-element-activity";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+import heroBackgroundVideo from "@/assets/hero/hero-background.mp4";
+import heroBackgroundPoster from "@/assets/hero/hero-background-poster-1200w.avif";
+import { usePageRevealed } from "@/lib/page-readiness";
 
-const HeroStats = lazy(() =>
-  import("@/components/hero/HeroStats").then((m) => ({ default: m.HeroStats })),
-);
-const TerminalCard = lazy(() =>
-  import("@/components/hero/TerminalCard").then((m) => ({ default: m.TerminalCard })),
-);
+type MediaIntent = "none" | "media-opt-in";
+type MediaStatus = "static" | "loading" | "playing" | "paused" | "unavailable";
 
 function HighlightHeadline({ text, grad }: { text: string; grad: string }) {
   const lines = text.split("\n");
@@ -17,7 +17,6 @@ function HighlightHeadline({ text, grad }: { text: string; grad: string }) {
     <>
       {lines.map((line, i) => {
         const idx = line.indexOf(grad);
-        const isGreeting = i === 0;
         const isProfessionalSummary = i === lines.length - 1;
         const content =
           idx === -1 ? (
@@ -34,15 +33,11 @@ function HighlightHeadline({ text, grad }: { text: string; grad: string }) {
         return (
           <span
             key={i}
-            className={
-              isGreeting
-                ? "mb-4 block font-sans text-[11px] font-medium leading-relaxed tracking-[-0.01em] text-muted-foreground"
-                : `block${
-                    isProfessionalSummary
-                      ? " mt-2 max-w-[31rem] font-sans text-[clamp(1rem,1.55vw,1.25rem)] font-medium leading-[1.4] tracking-[-0.01em] text-muted-foreground"
-                      : " font-title font-semibold tracking-[-0.025em]"
-                  }`
-            }
+            className={`block ${
+              isProfessionalSummary
+                ? "display-summary mt-3 max-w-[var(--type-measure-body)] text-[clamp(0.85rem,1.32vw,1.0625rem)] leading-[var(--type-leading-summary)] [letter-spacing:var(--type-tracking-compact)] text-muted-foreground sm:whitespace-nowrap"
+                : "display-heading [letter-spacing:var(--type-tracking-display)]"
+            }`}
           >
             {content}
           </span>
@@ -55,6 +50,71 @@ function HighlightHeadline({ text, grad }: { text: string; grad: string }) {
 export function Hero() {
   const { t } = useApp();
   const { ref, active } = useElementActivity<HTMLElement>();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const revealed = usePageRevealed();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const userPausedRef = useRef(false);
+  const [intent, setIntent] = useState<MediaIntent>("none");
+  const [status, setStatus] = useState<MediaStatus>("static");
+  const shouldLoadVideo = intent === "media-opt-in";
+
+  const activateVideo = useCallback((nextIntent: Exclude<MediaIntent, "none">) => {
+    userPausedRef.current = false;
+    setIntent(nextIntent);
+    setStatus("loading");
+  }, []);
+
+  useEffect(() => {
+    if (!revealed || intent === "none") return;
+    const video = videoRef.current;
+    if (!video) return;
+
+    const syncPlaybackWithActivity = () => {
+      if (
+        !active ||
+        document.visibilityState === "hidden" ||
+        (prefersReducedMotion && intent !== "media-opt-in")
+      ) {
+        if (!video.paused) video.pause();
+        return;
+      }
+      if (!userPausedRef.current && video.paused) {
+        void video.play().catch(() => setStatus("unavailable"));
+      }
+    };
+
+    syncPlaybackWithActivity();
+    document.addEventListener("visibilitychange", syncPlaybackWithActivity);
+    return () => document.removeEventListener("visibilitychange", syncPlaybackWithActivity);
+  }, [active, intent, prefersReducedMotion, revealed]);
+
+  const togglePlayback = () => {
+    if (intent === "none") {
+      activateVideo("media-opt-in");
+      return;
+    }
+
+    const video = videoRef.current;
+    if (!video) return;
+    if (status !== "playing") {
+      userPausedRef.current = false;
+      setStatus("loading");
+      void video.play().catch(() => setStatus("unavailable"));
+    } else {
+      userPausedRef.current = true;
+      setStatus("paused");
+      video.pause();
+    }
+  };
+
+  const controlLabel =
+    intent === "none"
+      ? t.hero.video.play
+      : status === "playing"
+        ? t.hero.video.pause
+        : status === "unavailable"
+          ? t.hero.video.retry
+          : t.hero.video.resume;
 
   return (
     <HeroCarouselProvider active={active}>
@@ -65,88 +125,69 @@ export function Hero() {
         data-runtime-activity={active ? "active" : "paused"}
         className="relative isolate flex min-h-[calc(100svh-var(--site-header-height))] flex-col overflow-x-clip bg-background"
       >
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <div
-            className="absolute inset-0 opacity-[0.35]"
-            style={{
-              backgroundImage: "radial-gradient(currentColor 1px, transparent 1px)",
-              backgroundSize: "28px 28px",
-              color: "var(--color-hairline)",
-              maskImage: "radial-gradient(ellipse 80% 65% at 30% 40%, black 30%, transparent 75%)",
-              WebkitMaskImage:
-                "radial-gradient(ellipse 80% 65% at 30% 40%, black 30%, transparent 75%)",
-            }}
-          />
-          <div
-            className="absolute -top-32 -right-32 h-[520px] w-[520px] rounded-full opacity-40 blur-3xl"
-            style={{ background: "var(--gradient-brand-soft)" }}
-          />
-        </div>
+        <video
+          ref={videoRef}
+          aria-hidden="true"
+          data-media-intent={intent}
+          data-media-status={status}
+          className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
+          src={shouldLoadVideo ? heroBackgroundVideo : undefined}
+          poster={heroBackgroundPoster}
+          muted
+          loop
+          playsInline
+          preload={shouldLoadVideo ? "auto" : "none"}
+          tabIndex={-1}
+          onPlaying={() => {
+            if (userPausedRef.current) {
+              videoRef.current?.pause();
+              return;
+            }
+            setStatus("playing");
+          }}
+          onPause={() => setStatus((current) => (current === "unavailable" ? current : "paused"))}
+          onError={() => setStatus("unavailable")}
+        />
 
-        <div className="section-container relative z-10 flex flex-1 flex-col justify-center py-8 md:py-9 lg:py-8">
-          <div className="grid w-full grid-cols-1 items-center lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] lg:gap-14 xl:gap-20">
-            <div className="min-w-0 lg:py-6 lg:pr-2">
-              <div className="max-w-[38rem]">
-                <h1
-                  id="home-heading"
-                  tabIndex={-1}
-                  className="font-display font-semibold leading-[1.05] tracking-[-0.03em] text-foreground text-balance outline-none"
-                  style={{ fontSize: "clamp(1.75rem, 3.2vw, 2.75rem)" }}
-                >
-                  <HighlightHeadline text={t.hero.headline} grad={t.hero.headlineHighlight} />
-                </h1>
+        {
+          <button
+            type="button"
+            onClick={togglePlayback}
+            aria-label={controlLabel}
+            title={controlLabel}
+            data-hero-video-control
+            className="carousel-control carousel-control--on-media touch-target absolute right-6 bottom-7 z-20"
+          >
+            {status === "playing" ? (
+              <Pause className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <Play className="h-4 w-4" aria-hidden="true" />
+            )}
+          </button>
+        }
 
-                <div className="mt-7 md:mt-8">
-                  <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                    <a
-                      href="#projetos"
-                      data-cursor-open={t.cursor.destinations.projects}
-                      className="btn-primary px-5 text-center sm:whitespace-nowrap"
-                    >
-                      <span>{t.hero.cta1}</span>
-                      <ArrowDown className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    </a>
-                    <a
-                      href="#contato"
-                      data-cursor-open={t.cursor.destinations.contact}
-                      className="btn-outline px-5 text-center sm:whitespace-nowrap"
-                    >
-                      <span>{t.hero.cta3}</span>
-                      <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    </a>
-                  </div>
+        <div className="hero-video-content section-container relative flex min-h-[calc(100svh-var(--site-header-height))] flex-1 flex-col justify-end pt-[var(--responsive-mobile-unit)] pb-[calc(var(--responsive-mobile-unit)*6)] sm:pt-6 sm:pb-28 md:min-h-0 md:py-20 lg:py-8">
+          <div data-hero-content-band className="hero-content-band relative">
+            <div
+              aria-hidden="true"
+              className="hero-content-band__surface pointer-events-none absolute top-0 right-0 bottom-[calc(var(--responsive-mobile-unit)*-6)] w-screen rounded-none bg-black/55 backdrop-blur-md sm:-bottom-28 md:-bottom-20 lg:-bottom-8"
+            />
 
-                  <a
-                    href={t.hero.resumeUrl}
-                    data-cursor-open={t.cursor.destinations.resume}
-                    download="Guilherme-Eleutherio-Curriculo.pdf"
-                    type="application/pdf"
-                    className="group mt-3 inline-flex w-fit items-center gap-2 rounded-sm py-2 font-sans text-xs font-medium tracking-[-0.01em] text-muted-foreground transition-colors hover:text-accent"
+            <div className="hero-content-band__content relative w-full pt-[calc(var(--responsive-mobile-unit)*6)] sm:pt-28 md:pt-20 lg:pt-8">
+              <div className="min-w-0 lg:pr-2">
+                <div className="max-w-[40rem]">
+                  <h1
+                    id="home-heading"
+                    tabIndex={-1}
+                    className="display-heading text-balance leading-[var(--type-leading-display)] [letter-spacing:var(--type-tracking-section)] text-foreground outline-none"
+                    style={{
+                      fontSize: "var(--hero-heading-size, clamp(1.5rem, 2.72vw, 2.34rem))",
+                    }}
                   >
-                    <Download
-                      className="h-4 w-4 shrink-0 transition-transform group-hover:translate-y-0.5"
-                      aria-hidden="true"
-                    />
-                    <span>{t.hero.cta2}</span>
-                  </a>
+                    <HighlightHeadline text={t.hero.headline} grad={t.hero.headlineHighlight} />
+                  </h1>
                 </div>
               </div>
-            </div>
-
-            <div className="hidden min-w-0 items-center justify-end lg:flex">
-              <div className="relative w-full max-w-[34rem]">
-                <Suspense fallback={<div className="min-h-[22rem]" aria-hidden="true" />}>
-                  <TerminalCard />
-                </Suspense>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 w-full lg:mt-8">
-            <div className="min-h-7">
-              <Suspense fallback={null}>
-                <HeroStats />
-              </Suspense>
             </div>
           </div>
         </div>

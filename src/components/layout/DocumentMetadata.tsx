@@ -15,13 +15,13 @@ type PageMetadata = {
 const STATIC_METADATA: Record<string, Record<Lang, PageMetadata>> = {
   "/": {
     pt: {
-      title: "Guilherme Ferreira Eleutherio — Desenvolvedor full-stack",
+      title: "Portfólio - Guilherme Ferreira Eleuthério",
       description:
         "Desenvolvedor full-stack focado em aplicações web seguras, escaláveis e manuteníveis com React, TypeScript, Django e PostgreSQL.",
       imageAlt: "guifer.tech — portfólio pessoal de desenvolvimento de software.",
     },
     en: {
-      title: "Guilherme Ferreira Eleutherio — Full-stack Developer",
+      title: "Portfolio - Guilherme Ferreira Eleuthério",
       description:
         "Full-stack developer focused on secure, scalable and maintainable web applications using React, TypeScript, Django and PostgreSQL.",
       imageAlt: "guifer.tech — personal software development portfolio.",
@@ -140,7 +140,7 @@ export function DocumentMetadata() {
       "@type": "Person",
       name: "Guilherme Ferreira",
       jobTitle:
-        lang === "pt" ? "Desenvolvedor de software full-stack" : "Full-stack Software Developer",
+        lang === "pt" ? "Desenvolvedor de software full-stack" : "Full-stack software developer",
       url: absoluteSiteUrl(),
       inLanguage: lang === "pt" ? "pt-BR" : "en",
       address: {

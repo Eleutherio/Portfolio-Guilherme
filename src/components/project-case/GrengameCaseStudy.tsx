@@ -105,14 +105,14 @@ export function GrengameCaseStudy({ data, prev, next, t }: GrengameCaseStudyProp
               to="/"
               hash="projetos"
               data-cursor-open={t.cursor.destinations.projects}
-              className="inline-flex min-h-11 items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-accent"
+              className="ui-control-text inline-flex min-h-11 items-center gap-2 text-muted-foreground transition-colors hover:text-accent"
             >
               <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
               {t.caseStudy.back}
             </Link>
 
             <div className="pb-12 pt-12 md:pb-16 md:pt-20">
-              <p className="font-mono text-[11px] uppercase tracking-[0.26em] text-accent">
+              <p className="meta-text text-accent">
                 {data.id} · {data.category}
               </p>
               <motion.h1
@@ -123,7 +123,7 @@ export function GrengameCaseStudy({ data, prev, next, t }: GrengameCaseStudyProp
               >
                 {data.title}
               </motion.h1>
-              <p className="mt-8 max-w-3xl text-lg leading-relaxed text-muted-foreground md:mt-10 md:text-xl">
+              <p className="section-intro mt-4 max-w-3xl text-muted-foreground">
                 {data.cardSummary}
               </p>
             </div>
@@ -191,12 +191,8 @@ export function GrengameCaseStudy({ data, prev, next, t }: GrengameCaseStudyProp
               className="group mt-8 flex min-h-28 items-center justify-between gap-6 rounded-md bg-accent px-6 py-6 text-accent-foreground transition-colors hover:bg-accent/90 md:mt-10 md:px-8"
             >
               <span>
-                <span className="block font-mono text-[10px] uppercase tracking-[0.28em] opacity-80">
-                  {copy.directMeta}
-                </span>
-                <span className="mt-2 block font-display text-2xl font-semibold tracking-[-0.025em] md:text-3xl">
-                  {copy.directCta}
-                </span>
+                <span className="meta-text block opacity-80">{copy.directMeta}</span>
+                <span className="content-title mt-2 block">{copy.directCta}</span>
               </span>
               <ExternalLink
                 className="h-6 w-6 shrink-0 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
@@ -216,7 +212,7 @@ export function GrengameCaseStudy({ data, prev, next, t }: GrengameCaseStudyProp
       <div className="border-b border-hairline">
         <div className="section-container">
           <div className="xl:ml-[150px] xl:max-w-[930px]">
-            <EditorialSection id="grengame-context" number="01" title={t.caseStudy.contextTitle}>
+            <EditorialSection id="grengame-context" title={t.caseStudy.contextTitle}>
               <div className="grid gap-10 md:grid-cols-2 md:gap-14">
                 <ProseBlock label={t.caseStudy.contextAudience}>{data.context.audience}</ProseBlock>
                 <ProseBlock label={t.caseStudy.contextImportance}>
@@ -225,16 +221,14 @@ export function GrengameCaseStudy({ data, prev, next, t }: GrengameCaseStudyProp
               </div>
             </EditorialSection>
 
-            <EditorialSection id="grengame-problem" number="02" title={copy.problemTitle}>
-              <p className="max-w-4xl border-l-2 border-accent py-2 pl-6 font-display text-2xl font-medium leading-snug tracking-[-0.025em] text-foreground md:pl-8 md:text-4xl">
+            <EditorialSection id="grengame-problem" title={copy.problemTitle}>
+              <p className="section-intro max-w-4xl border-l-2 border-accent py-2 pl-6 text-foreground md:pl-8">
                 {data.context.problem}
               </p>
             </EditorialSection>
 
-            <EditorialSection id="grengame-solution" number="03" title={t.caseStudy.solutionTitle}>
-              <p className="max-w-3xl text-lg leading-relaxed text-foreground md:text-xl">
-                {data.solution.product}
-              </p>
+            <EditorialSection id="grengame-solution" title={t.caseStudy.solutionTitle}>
+              <p className="section-intro max-w-3xl text-foreground">{data.solution.product}</p>
 
               <div className="mt-12 grid border-y border-hairline md:grid-cols-2">
                 <InsightBlock label={t.caseStudy.solutionTechnical} className="md:border-r">
@@ -246,7 +240,7 @@ export function GrengameCaseStudy({ data, prev, next, t }: GrengameCaseStudyProp
               </div>
             </EditorialSection>
 
-            <EditorialSection id="grengame-process" number="04" title={t.caseStudy.executionTitle}>
+            <EditorialSection id="grengame-process" title={t.caseStudy.executionTitle}>
               <ProcessRow number="01" label={t.caseStudy.executionChallenges}>
                 {data.execution.challenges}
               </ProcessRow>
@@ -258,11 +252,7 @@ export function GrengameCaseStudy({ data, prev, next, t }: GrengameCaseStudyProp
               </ProcessRow>
             </EditorialSection>
 
-            <EditorialSection
-              id="grengame-documentation"
-              number="05"
-              title={copy.documentationTitle}
-            >
+            <EditorialSection id="grengame-documentation" title={copy.documentationTitle}>
               <div
                 className="grid border-l border-t border-hairline md:grid-cols-2"
                 role="group"
@@ -299,34 +289,23 @@ export function GrengameCaseStudy({ data, prev, next, t }: GrengameCaseStudyProp
               </div>
             </EditorialSection>
 
-            <EditorialSection id="grengame-outcomes" number="06" title={t.caseStudy.resultTitle}>
-              <p className="max-w-4xl border-l-2 border-accent py-2 pl-6 font-display text-2xl font-medium leading-snug tracking-[-0.025em] text-foreground md:pl-8 md:text-4xl">
+            <EditorialSection id="grengame-outcomes" title={t.caseStudy.resultTitle}>
+              <p className="section-intro max-w-4xl border-l-2 border-accent py-2 pl-6 text-foreground md:pl-8">
                 {data.result.impact}
               </p>
 
               <div className="mt-12 border-y border-hairline py-8 md:ml-auto md:max-w-2xl md:py-10">
-                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent">
-                  {t.caseStudy.resultGains}
-                </p>
-                <p className="mt-4 text-base leading-relaxed text-foreground md:text-lg">
-                  {data.result.gains}
-                </p>
+                <p className="meta-text text-accent">{t.caseStudy.resultGains}</p>
+                <p className="body-copy mt-4 text-foreground">{data.result.gains}</p>
               </div>
             </EditorialSection>
 
-            <EditorialSection
-              id="grengame-closing"
-              number="07"
-              title={t.caseStudy.closingTitle}
-              last
-            >
+            <EditorialSection id="grengame-closing" title={t.caseStudy.closingTitle} last>
               <div className="grid gap-4 md:grid-cols-12 md:gap-10">
-                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent md:col-span-3">
+                <p className="meta-text text-accent md:col-span-3">
                   {t.caseStudy.closingNextSteps}
                 </p>
-                <p className="text-lg leading-relaxed text-foreground md:col-span-9 md:text-xl">
-                  {data.closing.nextSteps}
-                </p>
+                <p className="body-copy text-foreground md:col-span-9">{data.closing.nextSteps}</p>
               </div>
             </EditorialSection>
           </div>
@@ -340,13 +319,7 @@ export function GrengameCaseStudy({ data, prev, next, t }: GrengameCaseStudyProp
 }
 
 function CaseMeta({ className, children }: { className?: string; children: ReactNode }) {
-  return (
-    <div
-      className={`${className ?? ""} [&_dd]:mt-3 [&_dd]:text-sm [&_dd]:leading-relaxed [&_dd]:text-foreground [&_dt]:font-mono [&_dt]:text-[10px] [&_dt]:uppercase [&_dt]:tracking-[0.24em] [&_dt]:text-muted-foreground`}
-    >
-      {children}
-    </div>
-  );
+  return <div className={`case-meta ${className ?? ""}`}>{children}</div>;
 }
 
 function DesktopCaseIndex({
@@ -373,7 +346,7 @@ function DesktopCaseIndex({
                 href={`#${section.id}`}
                 data-cursor-open={section.cursorOpen}
                 aria-current={active ? "location" : undefined}
-                className={`group flex min-h-8 items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                className={`ui-control-text touch-target group flex min-h-8 items-center gap-3 transition-colors ${
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -415,7 +388,7 @@ function MobileCaseIndex({
                 href={`#${section.id}`}
                 data-cursor-open={section.cursorOpen}
                 aria-current={active ? "location" : undefined}
-                className={`flex min-h-11 items-center gap-2 border-b font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                className={`ui-control-text flex min-h-11 items-center gap-2 border-b transition-colors ${
                   active
                     ? "border-accent text-foreground"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -433,13 +406,11 @@ function MobileCaseIndex({
 
 function EditorialSection({
   id,
-  number,
   title,
   children,
   last = false,
 }: {
   id: string;
-  number: string;
   title: string;
   children: ReactNode;
   last?: boolean;
@@ -449,11 +420,8 @@ function EditorialSection({
       id={id}
       className={`scroll-mt-[calc(var(--site-header-height)+4rem)] py-20 md:py-28 ${last ? "" : "border-b border-hairline"}`}
     >
-      <header className="mb-12 flex items-end gap-5 md:mb-16 md:gap-7">
-        <p className="font-display text-6xl font-light leading-[0.75] tracking-[-0.05em] text-accent md:text-8xl">
-          {number}
-        </p>
-        <h2 className="pb-0.5 font-display text-2xl font-semibold tracking-[-0.03em] text-foreground md:pb-1 md:text-4xl">
+      <header className="mb-12 md:mb-16">
+        <h2 className="section-title case-study-editorial-heading min-w-0 text-foreground">
           {title}
         </h2>
       </header>
@@ -465,8 +433,8 @@ function EditorialSection({
 function ProseBlock({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent">{label}</p>
-      <p className="mt-4 text-base leading-relaxed text-foreground md:text-lg">{children}</p>
+      <p className="meta-text text-accent">{label}</p>
+      <p className="body-copy mt-4 text-foreground">{children}</p>
     </div>
   );
 }
@@ -482,8 +450,8 @@ function InsightBlock({
 }) {
   return (
     <div className={`border-hairline py-8 md:px-8 md:py-10 ${className ?? ""}`}>
-      <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent">{label}</p>
-      <p className="mt-4 text-base leading-relaxed text-foreground">{children}</p>
+      <p className="meta-text text-accent">{label}</p>
+      <p className="body-copy mt-4 text-foreground">{children}</p>
     </div>
   );
 }
@@ -504,14 +472,10 @@ function ProcessRow({
       className={`grid gap-5 py-9 md:grid-cols-12 md:gap-10 md:py-11 ${last ? "" : "border-b border-hairline"}`}
     >
       <div className="md:col-span-4">
-        <p className="font-mono text-[10px] tracking-[0.24em] text-muted-foreground">{number}</p>
-        <h3 className="mt-3 font-display text-xl font-semibold tracking-[-0.02em] text-foreground md:text-2xl">
-          {label}
-        </h3>
+        <p className="meta-text text-muted-foreground">{number}</p>
+        <h3 className="content-title mt-3 text-foreground">{label}</h3>
       </div>
-      <p className="text-base leading-relaxed text-foreground md:col-span-8 md:text-lg">
-        {children}
-      </p>
+      <p className="body-copy text-foreground md:col-span-8">{children}</p>
     </div>
   );
 }
@@ -543,8 +507,8 @@ function DocumentationFigure({
         />
       </div>
       <figcaption className="flex min-h-24 gap-4 pt-5">
-        <span className="font-mono text-[10px] tracking-[0.22em] text-accent">{number}</span>
-        <span className="text-sm leading-relaxed text-foreground">{caption}</span>
+        <span className="meta-text text-accent">{number}</span>
+        <span className="meta-text text-foreground">{caption}</span>
       </figcaption>
     </figure>
   );

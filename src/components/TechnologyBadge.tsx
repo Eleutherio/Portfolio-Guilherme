@@ -204,7 +204,7 @@ export function TechnologyIcon({ label }: { label: string }) {
     <span
       role="img"
       aria-label={label}
-      title={label}
+      data-cursor-label={label}
       className="inline-grid h-7 w-7 place-items-center"
       style={technologyStyle(meta)}
     >

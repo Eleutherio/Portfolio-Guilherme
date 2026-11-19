@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type HTMLAttributes } from "react";
-import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 import { ScrambleText } from "@/components/ScrambleText";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 type GuiferWordmarkProps = HTMLAttributes<HTMLSpanElement> & {
   animateSuffix?: boolean;
@@ -43,10 +43,19 @@ export function GuiferWordmark({
     return () => window.clearTimeout(revealTimer);
   }, [animateSuffix, reducedMotion, suffixExpanded]);
 
+  const suffix = (
+    <>
+      <span>fer</span>
+      <span data-wordmark-part="tech" className="font-light">
+        .tech
+      </span>
+    </>
+  );
+
   return (
     <span
       data-wordmark="guifer.tech"
-      className={`inline-flex items-center font-display leading-none tracking-[-0.055em] normal-case${className ? ` ${className}` : ""}`}
+      className={`inline-flex items-center font-display leading-none [letter-spacing:var(--type-tracking-numeric)] normal-case${className ? ` ${className}` : ""}`}
       {...props}
     >
       <span data-wordmark-part="guifer" className="inline-flex items-center font-bold">
@@ -69,12 +78,7 @@ export function GuiferWordmark({
             )}
           />
         ) : (
-          <>
-            <span>fer</span>
-            <span data-wordmark-part="tech" className="font-light">
-              .tech
-            </span>
-          </>
+          suffix
         )}
       </span>
     </span>
