@@ -120,6 +120,13 @@ export function Header() {
       const currentScrollY = window.scrollY;
       const delta = currentScrollY - previousScrollY;
 
+      if (currentScrollY === 0) {
+        setOpen(false);
+        setHidden(true);
+        previousScrollY = currentScrollY;
+        return;
+      }
+
       if (Math.abs(delta) < 8) return;
 
       if (!window.matchMedia("(min-width: 1024px)").matches) {
@@ -309,7 +316,7 @@ export function Header() {
         }}
         onBlurCapture={collapseWhenCompositeInactive}
         onPointerEnter={(event) => {
-          if (event.pointerType !== "mouse") return;
+          if (event.pointerType !== "mouse" || (event.clientX === 0 && event.clientY === 0)) return;
           pointerWithinHeaderRef.current = true;
           setHidden(false);
         }}
@@ -340,6 +347,11 @@ export function Header() {
         <div className="header-container mobile-header-container relative z-10 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 py-2 md:py-3.5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-5">
           <Link
             to="/"
+            onPointerEnter={(event) => {
+              if (event.pointerType !== "mouse") return;
+              pointerWithinHeaderRef.current = true;
+              setHidden(false);
+            }}
             aria-label={t.a11y.homeLink}
             aria-hidden={mobileViewport && !open}
             tabIndex={mobileViewport && !open ? -1 : undefined}
@@ -386,12 +398,12 @@ export function Header() {
           >
             <nav
               aria-label={t.a11y.primaryNavigation}
-              className={`min-w-0 flex-col items-center gap-1 py-3 transition-[opacity,translate] duration-200 ease-out motion-reduce:transition-none lg:col-start-2 lg:row-start-1 lg:flex lg:flex-row lg:items-center lg:justify-center lg:gap-[clamp(0.125rem,0.6vw,0.5rem)] lg:py-0 ${
+              className={`min-w-0 flex-col items-center gap-1 py-3 transition-transform duration-200 ease-out motion-reduce:transition-none lg:col-start-2 lg:row-start-1 lg:flex lg:flex-row lg:items-center lg:justify-center lg:gap-[clamp(0.125rem,0.6vw,0.5rem)] lg:py-0 ${
                 open ? "flex" : "hidden"
               } ${
                 !headerControlsVisible
-                  ? "lg:pointer-events-none lg:-translate-y-1 lg:opacity-0"
-                  : "lg:pointer-events-auto lg:translate-y-0 lg:opacity-100"
+                  ? "lg:pointer-events-none lg:-translate-y-1 lg:invisible"
+                  : "lg:pointer-events-auto lg:translate-y-0 lg:visible"
               }`}
             >
               {sections.map((s) => {
@@ -465,7 +477,7 @@ export function Header() {
         onFocusCapture={() => setHidden(false)}
         onBlurCapture={collapseWhenCompositeInactive}
         onPointerEnter={(event) => {
-          if (event.pointerType !== "mouse") return;
+          if (event.pointerType !== "mouse" || (event.clientX === 0 && event.clientY === 0)) return;
           pointerWithinActionsRef.current = true;
           setHidden(false);
         }}
