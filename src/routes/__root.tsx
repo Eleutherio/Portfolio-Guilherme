@@ -10,6 +10,10 @@ import { useApp } from "@/i18n/AppContext";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
 import { DeferredCustomCursor } from "@/components/layout/DeferredCustomCursor";
 import { DocumentMetadata } from "@/components/layout/DocumentMetadata";
+import { MomentumScroll } from "@/components/layout/MomentumScroll";
+import { PagePreparation } from "@/components/layout/PagePreparation";
+import { useEffect } from "react";
+import { PAGE_PREPARATION_ERROR_EVENT } from "@/lib/page-readiness";
 
 function NotFoundComponent() {
   const { t } = useApp();
@@ -20,17 +24,13 @@ function NotFoundComponent() {
       className="flex min-h-dvh items-center justify-center bg-background px-4 outline-none"
     >
       <div className="max-w-md text-center">
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          {t.errors.notFoundKicker}
-        </p>
-        <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight text-foreground">
-          {t.errors.notFoundTitle}
-        </h1>
-        <p className="mt-3 text-sm text-muted-foreground">{t.errors.notFoundBody}</p>
+        <p className="meta-text text-muted-foreground">{t.errors.notFoundKicker}</p>
+        <h1 className="page-title mt-4 text-foreground">{t.errors.notFoundTitle}</h1>
+        <p className="body-copy mt-3 text-muted-foreground">{t.errors.notFoundBody}</p>
         <a
           href="/"
           data-cursor-open={t.cursor.destinations.home}
-          className="mt-6 inline-flex items-center justify-center rounded-full bg-foreground px-5 py-3 font-display text-sm font-medium text-background"
+          className="ui-control-text mt-6 inline-flex items-center justify-center rounded-full bg-foreground px-5 py-3 text-background"
         >
           {t.errors.notFoundCta}
         </a>
@@ -43,6 +43,9 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   const { t } = useApp();
+  useEffect(() => {
+    window.dispatchEvent(new Event(PAGE_PREPARATION_ERROR_EVENT));
+  }, []);
 
   return (
     <main
@@ -51,24 +54,22 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
       className="flex min-h-dvh items-center justify-center bg-background px-4 outline-none"
     >
       <div className="max-w-md text-center">
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          {t.errors.boundaryTitle}
-        </h1>
-        <p className="mt-3 text-sm text-muted-foreground">{t.errors.boundaryBody}</p>
+        <h1 className="page-title text-foreground">{t.errors.boundaryTitle}</h1>
+        <p className="body-copy mt-3 text-muted-foreground">{t.errors.boundaryBody}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-full bg-foreground px-5 py-3 font-display text-sm font-medium text-background"
+            className="ui-control-text inline-flex items-center justify-center rounded-full bg-foreground px-5 py-3 text-background"
           >
             {t.errors.boundaryRetry}
           </button>
           <a
             href="/"
             data-cursor-open={t.cursor.destinations.home}
-            className="inline-flex items-center justify-center rounded-full border border-border bg-background px-5 py-3 font-display text-sm font-medium text-foreground"
+            className="ui-control-text inline-flex items-center justify-center rounded-full border border-border bg-background px-5 py-3 text-foreground"
           >
             {t.errors.boundaryHome}
           </a>
@@ -97,10 +98,12 @@ function RootComponent() {
     <>
       <HeadContent />
       <DocumentMetadata />
+      <MomentumScroll />
       <GlobalSkipLink />
       <Outlet />
       <AccessibilityWidget />
       <DeferredCustomCursor />
+      <PagePreparation />
     </>
   );
 }

@@ -1,0 +1,127 @@
+schema_version: "1.0"
+
+workflow:
+  id: "portfolio-sdd"
+  name: "Portfolio Spec-Driven Development"
+  version: "1.0.0"
+  author: "Guilherme Eleuthério"
+  description: "Runs the complete project SDD cycle with analysis, convergence and final gates."
+
+requires:
+  speckit_version: ">=1.0.12"
+  integrations:
+    any:
+      - "codex"
+
+inputs:
+  spec:
+    type: string
+    required: true
+    prompt: "Describe what you want to build"
+  integration:
+    type: string
+    default: "auto"
+    prompt: "Integration to use; 'auto' uses the project's initialized integration"
+
+steps:
+  - id: specify
+    command: speckit.specify
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: review-spec
+    type: gate
+    message: "Review the generated specification before planning."
+    options: [approve, reject]
+    on_reject: abort
+
+  - id: plan
+    command: speckit.plan
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: review-plan
+    type: gate
+    message: "Review the implementation plan before generating tasks."
+    options: [approve, reject]
+    on_reject: abort
+
+  - id: tasks
+    command: speckit.tasks
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: analyze
+    command: speckit.analyze
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: review-analysis
+    type: gate
+    message: "Review the cross-artifact analysis. Approve only after all critical findings are resolved."
+    options: [approve, reject]
+    on_reject: abort
+
+  - id: implement
+    command: speckit.implement
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: converge
+    command: speckit.converge
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: implement-converged-tasks
+    command: speckit.implement
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: verify-convergence
+    command: speckit.converge
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: review-convergence
+    type: gate
+    message: "Confirm that convergence found no remaining unimplemented work before final gates."
+    options: [approve, reject]
+    on_reject: abort
+
+  - id: lint
+    type: shell
+    run: "npm run lint"
+
+  - id: typecheck
+    type: shell
+    run: "npm run typecheck"
+
+  - id: test-api
+    type: shell
+    run: "npm run test:api"
+
+  - id: build
+    type: shell
+    run: "npm run build"
+
+  - id: test-a11y
+    type: shell
+    run: "npm run test:a11y"
+
+  - id: carbon-check
+    type: shell
+    run: "npm run carbon:check"
+
+  - id: final-approval
+    type: gate
+    message: "All automated gates passed. Review the final diff and evidence before staging or commit."
+    options: [approve, reject]
+    on_reject: abort
