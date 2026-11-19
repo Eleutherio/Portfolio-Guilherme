@@ -120,6 +120,13 @@ export function Header() {
       const currentScrollY = window.scrollY;
       const delta = currentScrollY - previousScrollY;
 
+      if (currentScrollY === 0) {
+        setOpen(false);
+        setHidden(true);
+        previousScrollY = currentScrollY;
+        return;
+      }
+
       if (Math.abs(delta) < 8) return;
 
       if (!window.matchMedia("(min-width: 1024px)").matches) {
@@ -309,7 +316,7 @@ export function Header() {
         }}
         onBlurCapture={collapseWhenCompositeInactive}
         onPointerEnter={(event) => {
-          if (event.pointerType !== "mouse") return;
+          if (event.pointerType !== "mouse" || (event.clientX === 0 && event.clientY === 0)) return;
           pointerWithinHeaderRef.current = true;
           setHidden(false);
         }}
@@ -340,6 +347,11 @@ export function Header() {
         <div className="header-container mobile-header-container relative z-10 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 py-2 md:py-3.5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-5">
           <Link
             to="/"
+            onPointerEnter={(event) => {
+              if (event.pointerType !== "mouse") return;
+              pointerWithinHeaderRef.current = true;
+              setHidden(false);
+            }}
             aria-label={t.a11y.homeLink}
             aria-hidden={mobileViewport && !open}
             tabIndex={mobileViewport && !open ? -1 : undefined}
@@ -465,7 +477,7 @@ export function Header() {
         onFocusCapture={() => setHidden(false)}
         onBlurCapture={collapseWhenCompositeInactive}
         onPointerEnter={(event) => {
-          if (event.pointerType !== "mouse") return;
+          if (event.pointerType !== "mouse" || (event.clientX === 0 && event.clientY === 0)) return;
           pointerWithinActionsRef.current = true;
           setHidden(false);
         }}
