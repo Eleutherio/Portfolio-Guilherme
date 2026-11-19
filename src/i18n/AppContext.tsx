@@ -14,9 +14,14 @@ const AppContext = createContext<AppContextValue | null>(null);
 export function AppProvider({ children }: { children: ReactNode }) {
   const { language: lang } = usePreferences();
 
-  const setLang = useCallback((next: Lang) => {
-    setLanguagePreference(next);
-  }, []);
+  const setLang = useCallback(
+    (next: Lang) => {
+      if (next === lang) return;
+      setLanguagePreference(next, { applyImmediately: false });
+      window.location.reload();
+    },
+    [lang],
+  );
 
   const value: AppContextValue = {
     lang,

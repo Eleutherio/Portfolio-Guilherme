@@ -6,7 +6,8 @@
 
 **Referencial:** [Web Content Accessibility Guidelines 2.2](https://www.w3.org/TR/WCAG22/) e [WCAG-EM](https://www.w3.org/WAI/test-evaluate/conformance/wcag-em/)
 
-> Este arquivo define escopo, método e condição de declaração. Tarefas, prioridades e validações abertas ficam exclusivamente em `.agente/backlog.md`.
+> Este arquivo define escopo, método e condição de declaração. Estado, prioridade e aceite das
+> validações abertas ficam na [spec de acessibilidade](../../specs/007-accessibility-approvals/spec.md).
 
 ## Escopo
 
@@ -31,14 +32,14 @@ Os endpoints de API, o sitemap e os documentos disponibilizados para download n�
 
 ## Evidências automatizadas
 
-| Verificação | Estado | Critério de aceite |
-| --- | --- | --- |
-| ESLint | Última rodada consolidada aprovada em 24/08/2026 | Sem erros |
-| TypeScript (`tsc --noEmit`) | Última rodada consolidada aprovada em 24/08/2026 | Sem erros |
-| Build de produção | Última rodada consolidada aprovada em 24/08/2026 | Build concluído |
-| Playwright + axe-core WCAG A/AA | Última rodada consolidada em 24/08/2026: 131/131 | Zero violações automáticas fora das exceções manuais conhecidas |
-| Reflow 320–1440 px | Aprovado na home | Sem overflow bidirecional indevido nas seis larguras testadas |
-| Forced Colors emulado | Aprovado | Estrutura e nomes acessíveis preservados; teste manual permanece obrigatório |
+| Verificação                       | Estado                                                               | Critério de aceite                                                                                                                    |
+| --------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| ESLint                            | Última rodada consolidada aprovada em 24/08/2026                     | Sem erros                                                                                                                             |
+| TypeScript (`tsc --noEmit`)       | Última rodada consolidada aprovada em 24/08/2026                     | Sem erros                                                                                                                             |
+| Build de produção                 | Última rodada consolidada aprovada em 24/08/2026                     | Build concluído                                                                                                                       |
+| Playwright + axe-core WCAG A/AA   | Rodada consolidada em 31/08/2026: 225/225                            | Zero violações automáticas fora das exceções manuais conhecidas                                                                       |
+| Inventário responsivo 320–1920 px | Oito rotas nos extremos e quatro arquétipos ao redor dos breakpoints | Estrutura, alturas, cortes, scrollers, overlays e foco registrados; sem overflow global acima da tolerância de arredondamento de 1 px |
+| Forced Colors emulado             | Aprovado                                                             | Estrutura e nomes acessíveis preservados; teste manual permanece obrigatório                                                          |
 
 Os relatórios brutos, traces e screenshots ficam em diretórios ignorados pelo Git.
 
@@ -48,6 +49,12 @@ Os relatórios brutos, traces e screenshots ficam em diretórios ignorados pelo 
 - Menu mobile, timeline, carrossel, widget aberto, persistência, reset e quatro perfis.
 - Validação client-side e estados de sucesso, 422, 429, 500 e reCAPTCHA indisponível do formulário.
 - Reflow em 320, 375, 500, 768, 1024 e 1440 px, Forced Colors emulado e espaçamento textual.
+- Inventário estrutural em 320×568, 667×375, 767×600, 768×1024, 1023×600, 1024×768 e 1920×1080, cobrindo retrato, paisagem, baixa altura e os dois lados dos breakpoints `md` e `lg`.
+- As oito rotas foram mapeadas nos extremos em PT/EN e claro/escuro. Home, Sobre, GrenGame e Acessibilidade receberam a matriz intermediária; menu, widget, privacidade, controles flutuantes e ciclos completos de foco foram aferidos separadamente.
+- Seis capturas renderizadas reproduzíveis registram Hero mobile, Cases e Footer em paisagem, Trajetória tablet e cases internos em tablet e tela ampla. Conteúdo lazy e animações são estabilizados antes da captura.
+
+O RESP-02 eliminou o excesso global de 3 px em 667 px: o deslocamento óptico da marca passou a respeitar uma folga mínima de foco, e o tooltip de vitals do Footer passou a se alinhar pela borda interna da coluna. O inventário agora admite somente 1 px de tolerância para arredondamento do navegador. Achados internos contidos por scrollers ou `overflow-x-clip` continuam registrados para revisão visual no RESP-04; não houve `tabindex` positivo, overlay fora da viewport ou foco invisível nos cenários inventariados.
+
 - O gate falha para qualquer `incomplete` axe não revisado. Resultados de `color-contrast` causados por gradientes, pseudo-elementos ou sobreposições continuam separados para decisão manual.
 
 Os estados HTTP do formulário são simulados no navegador para validar a interface acessível. Isso não substitui testes de integração com Brevo, Google reCAPTCHA e Supabase em preview autorizado.
@@ -56,18 +63,18 @@ Os estados HTTP do formulário são simulados no navegador para validar a interf
 
 A verificação combinou Axe (`color-contrast`) nas oito rotas, nos temas claro e escuro, com cálculo manual pela luminância relativa definida na WCAG. O Axe não encontrou violações. Na home, os resultados inconclusivos ocorreram somente porque a ferramenta não determina fundos com gradiente; cada cor foi então comparada aos dois extremos e às superfícies intermediárias, adotando-se sempre a menor razão.
 
-| Elemento ou estado | Tema claro | Tema escuro | Critério aplicado |
-| --- | ---: | ---: | --- |
-| Texto principal sobre superfícies | 14,39:1 | 13,49:1 | 4,5:1 |
-| Texto secundário sobre superfícies | 4,84:1 | 6,76:1 | 4,5:1 |
-| Texto em gradiente, pior extremo | 5,03:1 | 5,95:1 | 4,5:1 |
-| Mensagens de erro do formulário | 5,01:1 | 6,17:1 | 4,5:1 |
-| Mensagens de sucesso | 4,70:1 | 7,02:1 | 4,5:1 |
-| Texto dos botões, pior extremo do gradiente | 5,68:1 | 7,16:1 | 4,5:1 |
-| Limites visuais dos campos, pior superfície | 3,56:1 | 3,12:1 | 3:1 |
-| Metadados dos depoimentos com 60% de opacidade | 6,21:1 | 4,66:1 | 4,5:1 |
-| Texto secundário do rodapé | 7,10:1 | 8,13:1 | 4,5:1 |
-| Caixa textual do cursor sobre o pior fundo possível | 6,02:1 | 6,02:1 | 4,5:1 |
+| Elemento ou estado                                  | Tema claro | Tema escuro | Critério aplicado |
+| --------------------------------------------------- | ---------: | ----------: | ----------------- |
+| Texto principal sobre superfícies                   |    14,39:1 |     13,49:1 | 4,5:1             |
+| Texto secundário sobre superfícies                  |     4,84:1 |      6,76:1 | 4,5:1             |
+| Texto em gradiente, pior extremo                    |     5,03:1 |      5,95:1 | 4,5:1             |
+| Mensagens de erro do formulário                     |     5,01:1 |      6,17:1 | 4,5:1             |
+| Mensagens de sucesso                                |     4,70:1 |      7,02:1 | 4,5:1             |
+| Texto dos botões, pior extremo do gradiente         |     5,68:1 |      7,16:1 | 4,5:1             |
+| Limites visuais dos campos, pior superfície         |     3,56:1 |      3,12:1 | 3:1               |
+| Metadados dos depoimentos com 60% de opacidade      |     6,21:1 |      4,66:1 | 4,5:1             |
+| Texto secundário do rodapé                          |     7,10:1 |      8,13:1 | 4,5:1             |
+| Caixa textual do cursor sobre o pior fundo possível |     6,02:1 |      6,02:1 | 4,5:1             |
 
 A caixa do cursor é suplementar e fica fora da árvore de acessibilidade, mas também satisfaz contraste textual no pior caso, calculado sobre branco após a composição da transparência. O modal de privacidade usa superfície sólida; o escurecimento atrás dele é decorativo e não altera o contraste interno.
 

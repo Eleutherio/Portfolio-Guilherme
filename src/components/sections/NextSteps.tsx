@@ -16,13 +16,8 @@ export function NextSteps() {
       <div className="section-container py-16 md:py-24">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:items-end md:gap-10">
           <div className="md:col-span-5">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">
-              {t.nextSteps.kicker}
-            </p>
-            <h2 className="mt-2 font-display text-2xl font-medium leading-[1.05] tracking-[-0.03em] text-foreground md:text-3xl lg:text-4xl">
-              {t.nextSteps.title}
-            </h2>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground md:text-base">
+            <h2 className="section-title text-foreground">{t.nextSteps.title}</h2>
+            <p className="section-intro mt-4 max-w-md text-muted-foreground">
               {t.nextSteps.subtitle}
             </p>
           </div>
@@ -32,10 +27,10 @@ export function NextSteps() {
               const content = (
                 <div className="flex items-center justify-between gap-4 border-t border-hairline py-5 transition-colors last:border-b hover:border-accent/60">
                   <div className="min-w-0">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+                    <p className="meta-text text-muted-foreground">
                       {String(i + 1).padStart(2, "0")} · {item.meta}
                     </p>
-                    <p className="mt-1.5 font-display text-lg font-medium tracking-[-0.01em] text-foreground group-hover:text-accent md:text-xl">
+                    <p className="content-title mt-1.5 text-foreground group-hover:text-accent">
                       {item.label}
                     </p>
                   </div>

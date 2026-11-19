@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const INCIDENT_TITLE = "ops: keep-alive indisponível";
+const VALIDATION_INCIDENT_TITLE = "ops: validar observabilidade do keep-alive";
 
 function requireValue(name, value) {
   const normalized = value?.trim();
@@ -52,17 +53,23 @@ export function createGitHubIssuesClient({ token, repository, fetchImplementatio
   return { owner, request, findIssue, createIssue };
 }
 
-export async function recordKeepAliveFailure(client, { runUrl, occurredAt }) {
+export async function recordKeepAliveFailure(
+  client,
+  { runUrl, occurredAt },
+  { incidentTitle = INCIDENT_TITLE, validation = false } = {},
+) {
   const body = [
-    `@${client.owner}, o keep-alive não conseguiu validar Render e Supabase.`,
+    validation
+      ? `@${client.owner}, este é um ensaio controlado da observabilidade; os serviços não falharam.`
+      : `@${client.owner}, o keep-alive não conseguiu validar Render e Supabase.`,
     "",
     `- Última falha: ${occurredAt}`,
     `- Execução: ${runUrl}`,
     "",
     "A issue será atualizada nas falhas seguintes e fechada automaticamente após a recuperação.",
   ].join("\n");
-  const existing = await client.findIssue(INCIDENT_TITLE);
-  if (!existing) return client.createIssue(INCIDENT_TITLE, body);
+  const existing = await client.findIssue(incidentTitle);
+  if (!existing) return client.createIssue(incidentTitle, body);
   return client.request(`/issues/${existing.number}`, {
     method: "PATCH",
     headers: { "content-type": "application/json" },
@@ -70,8 +77,12 @@ export async function recordKeepAliveFailure(client, { runUrl, occurredAt }) {
   });
 }
 
-export async function recordKeepAliveRecovery(client, { runUrl, occurredAt }) {
-  const existing = await client.findIssue(INCIDENT_TITLE);
+export async function recordKeepAliveRecovery(
+  client,
+  { runUrl, occurredAt },
+  { incidentTitle = INCIDENT_TITLE } = {},
+) {
+  const existing = await client.findIssue(incidentTitle);
   if (!existing) return null;
   await client.request(`/issues/${existing.number}/comments`, {
     method: "POST",
@@ -114,6 +125,18 @@ async function main() {
     await recordKeepAliveFailure(client, { runUrl, occurredAt });
   } else if (event === "incident-recovered") {
     await recordKeepAliveRecovery(client, { runUrl, occurredAt });
+  } else if (event === "validation-incident-failure") {
+    await recordKeepAliveFailure(
+      client,
+      { runUrl, occurredAt },
+      { incidentTitle: VALIDATION_INCIDENT_TITLE, validation: true },
+    );
+  } else if (event === "validation-incident-recovered") {
+    await recordKeepAliveRecovery(
+      client,
+      { runUrl, occurredAt },
+      { incidentTitle: VALIDATION_INCIDENT_TITLE },
+    );
   } else if (event === "monthly-review") {
     await ensureMonthlyUsageReview(client, { month: occurredAt.slice(0, 7) });
   } else {
@@ -126,4 +149,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   await main();
 }
 
-export { INCIDENT_TITLE };
+export { INCIDENT_TITLE, VALIDATION_INCIDENT_TITLE };

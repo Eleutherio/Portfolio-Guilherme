@@ -9,11 +9,78 @@ import {
 } from "./support/portfolio";
 
 test.describe("WCAG 2.2 AA — estados interativos", () => {
+  for (const language of ["pt", "en"] as const) {
+    test(`aviso de consentimento mantém pontuação junto ao botão em ${language}`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await openPage(page, "/#contato", { width: 768, height: 900, language });
+      const notice = page.locator("#contact-consent-copy");
+      await expect(notice).toBeVisible();
+      for (const width of [320, 412, 768, 1440]) {
+        await page.setViewportSize({ width, height: 900 });
+        const geometry = await notice.evaluate((element) => {
+          const button = element.querySelector("button")!;
+          const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+          let lastText: Text | null = null;
+          while (walker.nextNode()) {
+            if (walker.currentNode.textContent?.trim()) lastText = walker.currentNode as Text;
+          }
+          const range = document.createRange();
+          const offset = lastText!.textContent!.lastIndexOf(".");
+          range.setStart(lastText!, offset);
+          range.setEnd(lastText!, offset + 1);
+          const period = range.getBoundingClientRect();
+          const trigger = button.getBoundingClientRect();
+          return {
+            periodTop: period.top,
+            periodBottom: period.bottom,
+            triggerTop: trigger.top,
+            triggerBottom: trigger.bottom,
+            viewport: document.documentElement.clientWidth,
+            content: document.documentElement.scrollWidth,
+          };
+        });
+        expect(geometry.periodTop).toBeLessThan(geometry.triggerBottom);
+        expect(geometry.periodBottom).toBeGreaterThan(geometry.triggerTop);
+        expect(geometry.content).toBeLessThanOrEqual(geometry.viewport + 1);
+      }
+      await notice.screenshot({ path: `tmp/contact-consent-${language}.png` });
+    });
+  }
+
+  test("preserva destinos sociais fora do Hero", async ({ page }) => {
+    await openPage(page, "/", { width: 1440, height: 900 });
+    const hero = page.locator("#home");
+    const about = page.locator("#sobre");
+    const contact = page.locator("#contato");
+
+    await expect(
+      hero.locator('a[href*="github"], a[href*="linkedin"], a[href*="wa.me"], a[href^="mailto:"]'),
+    ).toHaveCount(0);
+    await expect(about.getByRole("link", { name: "GitHub" })).toHaveAttribute(
+      "href",
+      "https://github.com/Eleutherio",
+    );
+    await expect(about.getByRole("link", { name: "LinkedIn" })).toHaveAttribute(
+      "href",
+      "https://www.linkedin.com/in/eleutherio/",
+    );
+    await expect(
+      contact.getByRole("link", { name: "contato@guifer.tech", exact: true }),
+    ).toHaveAttribute("href", "mailto:contato@guifer.tech");
+    expect(await contact.locator('a[href="https://wa.me/5551994055984"]').count()).toBeGreaterThan(
+      0,
+    );
+  });
+
   test("menu mobile aberto", async ({ page }, testInfo) => {
     await openPage(page, "/", { width: 375, height: 900 });
-    const trigger = page.getByRole("button", { name: "Abrir menu", exact: true });
+    await page.locator('header a:has([data-wordmark="guifer.tech"])').focus();
+    const trigger = page.locator('button[aria-controls="primary-navigation-panel"]');
+    await expect(trigger).toHaveAccessibleName("Abrir menu");
     await trigger.click();
-    await expect(page.locator("#mobile-navigation")).toBeVisible();
+    await expect(page.locator("#primary-navigation-panel")).toBeVisible();
     await runAxe(page, testInfo, "mobile-menu");
     await page.keyboard.press("Escape");
     await expect(trigger).toBeFocused();
@@ -42,15 +109,16 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       if (request.url().includes("accessible-web-widget")) widgetRequests.push(request.url());
     });
     await openPage(page, "/acessibilidade", { width: 375, height: 900 });
-    const launcher = page.locator("#accessibility-widget-launcher");
-    await expect(launcher).toBeVisible();
+    expect(widgetRequests).toEqual([]);
     await expect(page.locator("#acc-widget-host")).toHaveCount(0);
-    expect(widgetRequests).toHaveLength(0);
-
-    await launcher.focus();
+    await page.locator("#accessibility-widget-launcher").focus();
     await page.keyboard.press("Enter");
     const host = page.locator("#acc-widget-host");
     const trigger = host.locator("#accessibilityWidget");
+    await expect(host).toBeAttached();
+    await expect(page.locator("#accessibility-widget-launcher")).toHaveCount(0);
+    expect(widgetRequests.length).toBeGreaterThan(0);
+
     await expect(host.locator(".acc-menu")).toBeVisible();
     expect(widgetRequests.length).toBeGreaterThan(0);
     await runAxe(page, testInfo, "widget-open");
@@ -157,6 +225,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await page.locator("#contact-name").fill("A");
     await page.locator("#contact-email").fill("email-invalido");
     await page.locator("#contact-message").fill("curta");
+    await page.locator("#contact-privacy-consent").check();
     await page.locator('button[type="submit"]').click();
     await expect(page.locator('[role="alert"]')).toHaveCount(3);
     await runAxe(page, testInfo, "contact-errors");
@@ -176,13 +245,14 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     const whatsapp = contact.getByRole("link", { name: "(51) 99405-5984", exact: true }).first();
     await expect(whatsapp).toHaveAttribute("href", "https://wa.me/5551994055984");
     await expect(whatsapp).toHaveAttribute("target", "_blank");
-    await expect(
-      contact.getByRole("link", { name: "linkedin.com/in/Eleutherio", exact: true }),
-    ).toHaveAttribute("href", "https://www.linkedin.com/in/guifer-dev/");
+    await expect(contact.getByRole("link", { name: "LinkedIn", exact: true })).toHaveAttribute(
+      "href",
+      "https://www.linkedin.com/in/eleutherio/",
+    );
     await expect(contact.getByRole("form", { name: "Formulário de contato" })).toBeVisible();
 
     const notice = contact.getByText(/^Protegido por reCAPTCHA/);
-    await expect(notice).toHaveCSS("font-size", "11px");
+    await expect(notice).toHaveCSS("font-size", "12px");
     expect(
       await notice.evaluate((element) => {
         const button = element.closest("form")?.querySelector('button[type="submit"]');
@@ -205,7 +275,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       return { boxShadow: style.boxShadow, outlineStyle: style.outlineStyle };
     });
     expect(focusStyle.outlineStyle).toBe("none");
-    expect(focusStyle.boxShadow).toBe("none");
+    expect(focusStyle.boxShadow).toContain("0px 1px 0px");
     await runAxe(page, testInfo, "contact-whatsapp-focus", "#contato");
   });
 
@@ -220,8 +290,8 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     });
     await openPage(page, "/");
     await fillValidContactForm(page);
-    await page.getByRole("button", { name: "enviar mensagem" }).click();
-    await expect(page.getByRole("status")).toContainText("mensagem enviada");
+    await page.getByRole("button", { name: "Enviar mensagem" }).click();
+    await expect(page.getByRole("status")).toContainText("Mensagem enviada");
     await expect(page.locator("#contact-name")).toHaveValue("");
     await expect(page.locator("#contact-email")).toHaveValue("");
     await expect(page.locator("#contact-message")).toHaveValue("");
@@ -254,7 +324,7 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     });
 
     await expect(form.locator('button[type="submit"]')).toBeDisabled();
-    await expect(page.getByRole("status")).toContainText("mensagem enviada");
+    await expect(page.getByRole("status")).toContainText("Mensagem enviada");
     expect(contactRequests).toBe(1);
   });
 
@@ -262,10 +332,10 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await page.route(/\/src\/lib\/contact-contract\.ts(?:\?|$)/u, async (route) => route.abort());
     await openPage(page, "/");
     await fillValidContactForm(page);
-    await page.getByRole("button", { name: "enviar mensagem" }).click();
+    await page.getByRole("button", { name: "Enviar mensagem" }).click();
 
-    await expect(page.getByRole("status")).toContainText("algo deu errado");
-    await expect(page.getByRole("button", { name: "enviar mensagem" })).toBeEnabled();
+    await expect(page.getByRole("status")).toContainText("Algo deu errado");
+    await expect(page.getByRole("button", { name: "Enviar mensagem" })).toBeEnabled();
   });
 
   for (const status of [422, 429, 500]) {
@@ -283,9 +353,9 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
       });
       await openPage(page, "/");
       await fillValidContactForm(page);
-      await page.getByRole("button", { name: "enviar mensagem" }).click();
-      await expect(page.getByRole("status")).toContainText("algo deu errado");
-      await expect(page.getByRole("button", { name: "enviar mensagem" })).toBeEnabled();
+      await page.getByRole("button", { name: "Enviar mensagem" }).click();
+      await expect(page.getByRole("status")).toContainText("Algo deu errado");
+      await expect(page.getByRole("button", { name: "Enviar mensagem" })).toBeEnabled();
       await expect(page.locator("#contato form")).toHaveCSS("opacity", "1");
       await runAxe(page, testInfo, `contact-${status}`);
     });
@@ -295,16 +365,15 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
     await page.route("https://www.google.com/recaptcha/**", async (route) => route.abort());
     await openPage(page, "/");
     await fillValidContactForm(page);
-    await page.getByRole("button", { name: "enviar mensagem" }).click();
-    await expect(page.getByRole("status")).toContainText("algo deu errado");
-    await expect(page.getByRole("button", { name: "enviar mensagem" })).toBeEnabled();
+    await page.getByRole("button", { name: "Enviar mensagem" }).click();
+    await expect(page.getByRole("status")).toContainText("Algo deu errado");
+    await expect(page.getByRole("button", { name: "Enviar mensagem" })).toBeEnabled();
     await runAxe(page, testInfo, "contact-recaptcha-unavailable");
   });
 
   test("nova tentativa substitui o script expirado do reCAPTCHA e envia sem recarregar", async ({
     page,
   }) => {
-    await page.clock.install();
     let scriptRequests = 0;
     let contactRequests = 0;
     await page.route("https://www.google.com/recaptcha/**", async (route) => {
@@ -340,16 +409,17 @@ test.describe("WCAG 2.2 AA — estados interativos", () => {
 
     await openPage(page, "/");
     await fillValidContactForm(page);
-    const submit = page.getByRole("button", { name: "enviar mensagem" });
+    await page.clock.install();
+    const submit = page.getByRole("button", { name: "Enviar mensagem" });
 
     await submit.click();
     await expect(page.locator("#google-recaptcha-v3")).toHaveCount(1);
     await page.clock.fastForward(10_100);
-    await expect(page.getByRole("status")).toContainText("algo deu errado");
+    await expect(page.getByRole("status")).toContainText("Algo deu errado");
     await expect(page.locator("#google-recaptcha-v3")).toHaveCount(0);
 
     await submit.click();
-    await expect(page.getByRole("status")).toContainText("mensagem enviada");
+    await expect(page.getByRole("status")).toContainText("Mensagem enviada");
     expect(scriptRequests).toBe(2);
     expect(contactRequests).toBe(1);
   });

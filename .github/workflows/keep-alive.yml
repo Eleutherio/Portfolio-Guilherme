@@ -5,6 +5,17 @@ on:
     - cron: "7,17,27,37,47,57 * * * *"
     - cron: "23 9 1 * *"
   workflow_dispatch:
+    inputs:
+      validation_mode:
+        description: "Cenário operacional a validar"
+        required: true
+        default: healthy
+        type: choice
+        options:
+          - healthy
+          - incident-failure
+          - incident-recovery
+          - monthly-review
 
 permissions:
   contents: read
@@ -16,7 +27,9 @@ concurrency:
 
 jobs:
   keep-alive:
-    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '7,17,27,37,47,57 * * * *'
+    if: >-
+      github.event.schedule == '7,17,27,37,47,57 * * * *' ||
+      (github.event_name == 'workflow_dispatch' && inputs.validation_mode == 'healthy')
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -50,7 +63,9 @@ jobs:
         run: node scripts/github-operations-issues.mjs
 
   monthly-usage-review:
-    if: github.event_name == 'schedule' && github.event.schedule == '23 9 1 * *'
+    if: >-
+      (github.event_name == 'schedule' && github.event.schedule == '23 9 1 * *') ||
+      (github.event_name == 'workflow_dispatch' && inputs.validation_mode == 'monthly-review')
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
@@ -66,4 +81,33 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           OBSERVABILITY_EVENT: monthly-review
+        run: node scripts/github-operations-issues.mjs
+
+  validate-incident-cycle:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      (inputs.validation_mode == 'incident-failure' || inputs.validation_mode == 'incident-recovery')
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Record simulated keep-alive failure
+        if: inputs.validation_mode == 'incident-failure'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OBSERVABILITY_EVENT: validation-incident-failure
+        run: node scripts/github-operations-issues.mjs
+
+      - name: Record simulated keep-alive recovery
+        if: inputs.validation_mode == 'incident-recovery'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OBSERVABILITY_EVENT: validation-incident-recovered
         run: node scripts/github-operations-issues.mjs
