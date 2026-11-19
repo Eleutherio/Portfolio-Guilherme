@@ -1,4 +1,10 @@
-import { HeadContent, Outlet, createRootRoute, useRouter } from "@tanstack/react-router";
+import {
+  HeadContent,
+  Outlet,
+  createRootRoute,
+  useRouter,
+  type ErrorComponentProps,
+} from "@tanstack/react-router";
 
 import { useApp } from "@/i18n/AppContext";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
@@ -33,7 +39,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   const { t } = useApp();
