@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" class="light">
+<html lang="pt-BR" class="light" data-page-loading="true">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,10 +8,39 @@
     <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <title>Guilherme Ferreira Eleutherio — Full-stack Developer</title>
+    <link rel="stylesheet" href="/preloader.css" />
+    <title>Portfólio - Guilherme Ferreira Eleuthério</title>
     <script src="/preferences-init.js"></script>
+    <script src="/preloader.js" defer></script>
   </head>
   <body>
+    <div
+      id="site-preloader"
+      class="site-preloader"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading. Please wait."
+    >
+      <div class="site-preloader__content">
+        <span class="site-preloader__wordmark" aria-hidden="true">
+          <span class="site-preloader__wordmark-core">
+            <span class="site-preloader__gui"><span>gui</span></span>
+            <span class="site-preloader__suffix" data-preloader-wordmark>
+              <span data-preloader-fer>fer</span><span data-preloader-tech>.tech</span>
+            </span>
+          </span>
+        </span>
+        <span class="site-preloader__message">
+          <span>Loading.</span>
+          <span class="site-preloader__message-detail">
+            Please wait<span class="site-preloader__dots" aria-hidden="true"
+              ><span>.</span><span>.</span><span>.</span></span
+            >
+          </span>
+        </span>
+        <button type="button" class="site-preloader__retry" hidden>Reload page</button>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -1,58 +1,101 @@
-import { Fragment } from "react";
-import { motion } from "@/lib/motion";
+import { useEffect, useState } from "react";
 import { useApp } from "@/i18n/AppContext";
-import { SectionShell } from "./SectionShell";
-import { ProcessIllustration } from "./process/ProcessIllustration";
-import { ProcessConnector } from "./process/ProcessConnector";
-
-const STEP_VARIANTS = ["discovery", "build", "delivery"] as const;
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+import { scrollWithMomentum } from "@/components/layout/MomentumScroll";
+import { DevelopmentPrinciplesMarquee } from "@/components/DevelopmentPrinciplesMarquee";
 
 export function Skills() {
   const { t } = useApp();
-  const { steps, title, subtitle } = t.skills;
+  const { intro, services, title, knowledgeTitle, knowledgeIntro, knowledge } = t.skills;
+  const reducedMotion = usePrefersReducedMotion();
+  const [mobileLayout, setMobileLayout] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 47.999rem)");
+    const update = () => setMobileLayout(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
+  const closing = (
+    <div className="services-section__closing">
+      <div className="services-section__paragraphs">
+        {intro.map((paragraph) => (
+          <p key={paragraph} className="section-editorial-intro">
+            {paragraph}
+          </p>
+        ))}
+      </div>
+      <a
+        href="#contact-form"
+        className="services-section__contact btn-primary w-fit"
+        data-cursor-open={t.cursor.destinations.contact}
+        onClick={(event) => {
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          const form = document.querySelector<HTMLFormElement>("#contato form");
+          if (!form) return;
+          event.preventDefault();
+          if (!scrollWithMomentum(form, reducedMotion)) {
+            form.scrollIntoView({
+              behavior: reducedMotion ? "instant" : "smooth",
+              block: "start",
+            });
+          }
+          history.replaceState(null, "", "#contact-form");
+          form.focus({ preventScroll: true });
+        }}
+      >
+        {t.nav.talk}
+      </a>
+    </div>
+  );
 
   return (
-    <SectionShell id="processo" label={title} sublabel={subtitle} headerVariant="centered">
-      <div className="md:col-span-12">
-        {/* Grid de etapas com conectores */}
-        <div className="grid grid-cols-1 items-start gap-10 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:gap-4">
-          {steps.map((step, i) => (
-            <Fragment key={step.title}>
-              <motion.article
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.55, delay: i * 0.08, ease: [0.2, 0.8, 0.2, 1] }}
-                className="flex flex-col items-center text-center"
+    <section id="habilidades" aria-labelledby="habilidades-heading" className="relative">
+      <div className="section-container services-section">
+        <div className="services-section__content">
+          <div className="services-section__overview">
+            <div className="services-section__intro">
+              <h2
+                id="habilidades-heading"
+                tabIndex={-1}
+                className="section-editorial-title services-section__title outline-none"
               >
-                <ProcessIllustration variant={STEP_VARIANTS[i] ?? "discovery"} />
+                {title}
+              </h2>
+              <span
+                className="section-editorial-rule services-section__accent"
+                aria-hidden="true"
+              />
+              {!mobileLayout && closing}
+            </div>
+            <ul className="services-section__services">
+              {services.map((service) => (
+                <li key={service.title} className="services-section__item">
+                  <h3 className="content-title text-foreground">{service.title}</h3>
+                  <p className="body-copy text-muted-foreground">{service.description}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-                <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                  {step.kicker}
-                </p>
-                <h3 className="mt-2 font-display text-xl font-medium leading-snug tracking-[-0.01em] text-foreground md:text-2xl">
-                  {step.title}
-                </h3>
-                <p className="prose-measure mt-3 text-sm leading-relaxed text-muted-foreground">
-                  {step.description}
-                </p>
-                <ul className="mt-5 flex flex-wrap justify-center gap-1.5">
-                  {step.tags.map((tag) => (
-                    <li key={tag} className="chip">
-                      {tag}
-                    </li>
-                  ))}
-                </ul>
-              </motion.article>
-              {i < steps.length - 1 && (
-                <div className="hidden self-center px-2 md:block" aria-hidden="true">
-                  <ProcessConnector />
-                </div>
-              )}
-            </Fragment>
-          ))}
+          <section className="services-section__knowledge" aria-labelledby="knowledge-heading">
+            <h2 id="knowledge-heading" className="section-editorial-title services-section__title">
+              {knowledgeTitle}
+            </h2>
+            <span className="section-editorial-rule services-section__accent" aria-hidden="true" />
+            <p className="section-editorial-intro services-section__knowledge-intro">
+              {knowledgeIntro}
+            </p>
+            <DevelopmentPrinciplesMarquee
+              items={knowledge}
+              label={knowledgeTitle}
+              controls={t.skills.marquee}
+            />
+            {mobileLayout && closing}
+          </section>
         </div>
       </div>
-    </SectionShell>
+    </section>
   );
 }

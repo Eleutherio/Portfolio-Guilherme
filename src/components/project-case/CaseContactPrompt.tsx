@@ -7,7 +7,7 @@ export function CaseContactPrompt({ t }: { t: Dict }) {
     <section className="border-t border-hairline">
       <div className="section-container py-14 md:py-16">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <p className="prose-measure text-sm text-muted-foreground md:text-base">{text}</p>
+          <p className="body-copy prose-measure text-muted-foreground">{text}</p>
           <a
             href="/#contato"
             data-cursor-open={t.cursor.destinations.contact}

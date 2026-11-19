@@ -21,35 +21,19 @@ async function collectSourceText(directory) {
 }
 
 const sourceText = await collectSourceText(sourceRoot);
-const soraCharacters = [...new Set(sourceText)].join("");
-const caveatCharacters = "Eu me chamo Guilherme Eleuthério.I'm ";
+const dmSansCharacters = [...new Set(sourceText)].join("");
 
 const fonts = [
   {
     input: path.join(
       repositoryRoot,
-      "node_modules",
-      "@fontsource-variable",
-      "sora",
-      "files",
-      "sora-latin-wght-normal.woff2",
+      "scripts",
+      "assets",
+      "fonts",
+      "dm-sans-latin-wght-normal.woff2",
     ),
-    output: "sora-heading-500.woff2",
-    characters: soraCharacters,
-    weight: 500,
-  },
-  {
-    input: path.join(
-      repositoryRoot,
-      "node_modules",
-      "@fontsource-variable",
-      "caveat",
-      "files",
-      "caveat-latin-wght-normal.woff2",
-    ),
-    output: "caveat-signature-600.woff2",
-    characters: caveatCharacters,
-    weight: 600,
+    output: "dm-sans-heading.woff2",
+    characters: dmSansCharacters,
   },
   {
     input: path.join(
@@ -71,7 +55,12 @@ for (const font of fonts) {
   const input = await readFile(font.input);
   const subset = await subsetFont(input, font.characters, {
     targetFormat: "woff2",
-    ...(font.weight ? { variationAxes: { wght: font.weight } } : {}),
+    variationAxes: {
+      wght: {
+        min: font.output === "dm-sans-heading.woff2" ? 400 : 300,
+        max: font.output === "dm-sans-heading.woff2" ? 600 : 700,
+      },
+    },
   });
   await writeFile(path.join(outputRoot, font.output), subset);
 }
