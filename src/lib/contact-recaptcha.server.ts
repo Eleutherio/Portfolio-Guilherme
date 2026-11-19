@@ -87,15 +87,22 @@ export async function verifyContactRecaptchaWithSecrets(
   let receivedValidAssessment = false;
   for (const secret of [...new Set(secrets.map((value) => value.trim()).filter(Boolean))]) {
     let response: Response;
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(new DOMException("The reCAPTCHA request timed out", "TimeoutError")),
+      timeoutMs,
+    );
     try {
       response = await fetcher(VERIFY_ENDPOINT, {
         method: "POST",
         headers: { "content-type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ secret, response: token }),
-        signal: AbortSignal.timeout(timeoutMs),
+        signal: controller.signal,
       });
     } catch {
       continue;
+    } finally {
+      clearTimeout(timeout);
     }
 
     if (!response.ok) continue;

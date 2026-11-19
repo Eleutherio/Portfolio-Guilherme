@@ -75,10 +75,18 @@ test("server environment rejects invalid startup configuration without exposing 
 });
 
 test("API process rejects invalid configuration before opening a port", () => {
+  const env = { ...process.env };
+  delete env.GITHUB_TOKEN;
+  delete env.PORT;
+
   const result = spawnSync(process.execPath, ["--import", "tsx", "server/index.ts"], {
     cwd: process.cwd(),
     encoding: "utf8",
-    env: { ...process.env, ...validTestServerEnvironment, PORT: "invalid-port" },
+    env: {
+      ...env,
+      ...validTestServerEnvironment,
+      PORT: "invalid-port",
+    },
     timeout: 5_000,
   });
 

@@ -87,7 +87,7 @@ test("reCAPTCHA distinguishes provider timeout and malformed responses", async (
         request,
         ["secret"],
         fetcher,
-        index === 0 ? 5 : 7_000,
+        index === 0 ? 50 : 7_000,
       ),
       RecaptchaUnavailableError,
     );
