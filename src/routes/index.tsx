@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/layout/Header";
-import { BackToTop } from "@/components/layout/BackToTop";
+import { DeferredBackToTop } from "@/components/layout/DeferredBackToTop";
 import { About } from "@/components/sections/About";
 import { Projects } from "@/components/sections/Projects";
 import { Skills } from "@/components/sections/Skills";
@@ -39,7 +39,7 @@ function Index() {
         <Contact />
       </main>
       <Footer />
-      <BackToTop />
+      <DeferredBackToTop />
     </div>
   );
 }
